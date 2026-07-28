@@ -1,60 +1,26 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 
-import Login from "./pages/Login";
-import Register from "./pages/Register";
+import DashboardLayout from "./layouts/DashboardLayout";
 
-import RecruiterDashboard from "./pages/RecruiterDashboard";
+import Dashboard from "./pages/Dashboard";
 import PostJob from "./pages/PostJob";
-
+import MyJobs from "./pages/MyJobs";
+import AIReports from "./pages/AIReports";
 
 function App() {
-
   return (
-
-    <BrowserRouter>
-
+    <DashboardLayout>
       <Routes>
+        <Route path="/" element={<Dashboard />} />
 
-        {/* Login */}
-        <Route
-          path="/login"
-          element={<Login />}
-        />
+        <Route path="/jobs" element={<MyJobs />} />
 
+        <Route path="/post-job" element={<PostJob />} />
 
-        {/* Register */}
-        <Route
-          path="/register"
-          element={<Register />}
-        />
-
-
-        {/* Recruiter Dashboard */}
-        <Route
-          path="/recruiter"
-          element={<RecruiterDashboard />}
-        />
-
-
-        {/* Create Job */}
-        <Route
-          path="/post-job"
-          element={<PostJob />}
-        />
-
-
-        {/* Default Route */}
-        <Route
-          path="*"
-          element={<Login />}
-        />
-
+        <Route path="/reports" element={<AIReports />} />
       </Routes>
-
-    </BrowserRouter>
-
+    </DashboardLayout>
   );
-
 }
 
 export default App;

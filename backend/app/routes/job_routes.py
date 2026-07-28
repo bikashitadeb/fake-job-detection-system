@@ -1,5 +1,5 @@
 from flask import Blueprint, request
-
+from app.services.prediction_service import analyze_and_save_job
 from flask_jwt_extended import (
     jwt_required,
     get_jwt_identity
@@ -83,18 +83,18 @@ def create_job():
         recruiter_id
 
     )
+    prediction = analyze_and_save_job(job)
 
 
 
     return success_response(
-
-        "Job created successfully.",
-
-        data=job.to_dict(),
-
-        status_code=201
-
-    )
+    "Job created and analysed successfully.",
+    data={
+        "job": job.to_dict(),
+        "prediction": prediction
+    },
+    status_code=201
+)
 
 
 
