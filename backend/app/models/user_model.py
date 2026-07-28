@@ -73,6 +73,13 @@ class User(db.Model):
 
     )
 
+    is_active = db.Column(
+        db.Boolean,
+        nullable=False,
+        default=True
+    
+    )   
+
 
 
     company_id = db.Column(
@@ -128,6 +135,14 @@ class User(db.Model):
 
     )
 
+        # Recruiter profile
+    recruiter_profile = db.relationship(
+        "Recruiter",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan"
+    )
+
 
 
 
@@ -154,6 +169,7 @@ class User(db.Model):
 
             "role": self.role,
 
+            "is_active": self.is_active, 
 
             "company_id": self.company_id
 

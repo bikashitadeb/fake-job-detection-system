@@ -64,6 +64,15 @@ class Company(db.Model):
         default=datetime.utcnow
 
     )
+        # ==========================
+    # RELATIONSHIPS
+    # ==========================
+
+    recruiters = db.relationship(
+        "Recruiter",
+        back_populates="company",
+        cascade="all, delete-orphan"
+    )
 
 
 
