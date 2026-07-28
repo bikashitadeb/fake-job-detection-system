@@ -1,76 +1,79 @@
-from flask_jwt_extended import (
-    create_access_token,
-    create_refresh_token,
-    get_jwt,
-)
-
 from app.extensions import db
 
 from app.models.user_model import User
-from app.models.recruiter_model import Recruiter
-from app.models.company_model import Company
-from app.models.token_blocklist_model import TokenBlocklist
 
+from app.models.company_model import Company
 
 from app.utils.password_utils import (
     hash_password,
     verify_password
 )
 
-
-from app.utils.token_utils import (
-    generate_reset_token,
-    verify_reset_token
-)
-
-
 from app.utils.exceptions import (
     ConflictError,
-    UnauthorizedError,
-    NotFoundError,
-    ValidationError,
+    UnauthorizedError
 )
 
 
 
-# =========================
-# REGISTER JOBSEEKER
-# =========================
+
+
+# =====================================
+# EMPLOYEE REGISTER
+# =====================================
+
 
 def register_jobseeker(data):
 
-    existing = User.query.filter_by(
+
+    existing_user = User.query.filter_by(
+
         email=data["email"]
+
     ).first()
 
 
-    if existing:
+
+    if existing_user:
+
+
         raise ConflictError(
+
             "Email already exists"
+
         )
+
+
+
 
 
     user = User(
 
-        full_name=data["full_name"],
+        name=data["full_name"],
 
         email=data["email"],
 
-        password_hash=
-        hash_password(
+        password_hash=hash_password(
+
             data["password"]
+
         ),
 
-        role="jobseeker",
+        phone=data.get("phone"),
 
-        phone=data.get("phone")
+        role="employee"
 
     )
 
 
+
+
+
     db.session.add(user)
 
+
     db.session.commit()
+
 
 
     return user.to_dict()
@@ -79,327 +82,148 @@ def register_jobseeker(data):
 
 
 
-# =========================
-# REGISTER RECRUITER
-# =========================
+
+
+# =====================================
+# RECRUITER REGISTER
+# =====================================
+
 
 def register_recruiter(data):
 
 
-    existing = User.query.filter_by(
+    existing_user = User.query.filter_by(
+
         email=data["email"]
+
     ).first()
 
 
-    if existing:
+
+    if existing_user:
+
+
         raise ConflictError(
+
             "Email already exists"
-        )
 
-
-    company = Company.query.get(
-        data["company_id"]
-    )
-
-
-    if not company:
-
-        raise NotFoundError(
-            "Company not found"
         )
 
 
 
-    user = User(
 
-        full_name=data["full_name"],
 
-        email=data["email"],
+    company = Company(
 
-        password_hash=
-        hash_password(
-            data["password"]
-        ),
+        name=data.get("company_name"),
 
-        role="recruiter",
+        website=data.get("company_website"),
 
-        phone=data.get("phone")
+        linkedin_url=data.get("linkedin_url")
 
     )
 
 
-    db.session.add(user)
+
+
+
+    db.session.add(company)
+
 
     db.session.flush()
 
 
 
-    recruiter = Recruiter(
 
-        user_id=user.id,
 
-        company_id=data["company_id"],
+    recruiter = User(
 
-        designation=data.get(
-            "designation"
-        )
+        name=data["full_name"],
+
+        email=data["email"],
+
+        password_hash=hash_password(
+
+            data["password"]
+
+        ),
+
+        phone=data.get("phone"),
+
+        role="recruiter",
+
+        company_id=company.id
 
     )
+
+
+
 
 
     db.session.add(recruiter)
 
+
     db.session.commit()
 
 
 
-    return user.to_dict()
+    return recruiter.to_dict()
 
 
 
 
-# =========================
+
+
+
+# =====================================
 # LOGIN
-# =========================
+# =====================================
 
-def login_user(email, password):
+
+def login_user(data):
 
 
     user = User.query.filter_by(
-        email=email
+
+        email=data["email"]
+
     ).first()
 
 
 
     if not user:
 
+
         raise UnauthorizedError(
+
             "Invalid email or password"
+
         )
+
+
 
 
 
     if not verify_password(
-        password,
+
+        data["password"],
+
         user.password_hash
+
     ):
 
+
         raise UnauthorizedError(
+
             "Invalid email or password"
+
         )
 
 
 
-    claims = {
 
-        "role": user.role,
 
-        "email": user.email
+    # IMPORTANT
+    # Return User object for JWT creation
 
-    }
-
-
-
-    access_token = create_access_token(
-
-        identity=str(user.id),
-
-        additional_claims=claims
-
-    )
-
-
-
-    refresh_token = create_refresh_token(
-
-        identity=str(user.id),
-
-        additional_claims=claims
-
-    )
-
-
-
-    return {
-
-
-        "user":
-        user.to_dict(),
-
-
-        "access_token":
-        access_token,
-
-
-        "refresh_token":
-        refresh_token
-
-    }
-
-
-
-
-# =========================
-# CHANGE PASSWORD
-# =========================
-
-
-def change_password(
-        user_id,
-        old_password,
-        new_password
-):
-
-
-    user = User.query.get(
-        user_id
-    )
-
-
-    if not user:
-
-        raise NotFoundError(
-            "User not found"
-        )
-
-
-
-    if not verify_password(
-        old_password,
-        user.password_hash
-    ):
-
-        raise UnauthorizedError(
-            "Wrong password"
-        )
-
-
-
-    user.password_hash = hash_password(
-        new_password
-    )
-
-
-    db.session.commit()
-
-
-
-
-
-# =========================
-# LOGOUT
-# =========================
-
-
-def logout_current_token(user_id):
-
-
-    token = get_jwt()
-
-
-    block = TokenBlocklist(
-
-        jti=token["jti"],
-
-        token_type=token["type"],
-
-        user_id=user_id
-
-    )
-
-
-    db.session.add(block)
-
-    db.session.commit()
-
-
-
-
-# =========================
-# FORGOT PASSWORD
-# =========================
-
-
-def request_password_reset(email):
-
-
-    user = User.query.filter_by(
-        email=email
-    ).first()
-
-
-
-    if not user:
-
-        return {
-
-            "message":
-            "If email exists reset link sent"
-
-        }
-
-
-
-    token = generate_reset_token(
-        email
-    )
-
-
-    return {
-
-
-        "message":
-        "Reset token generated",
-
-
-        "reset_token":
-        token
-
-    }
-
-
-
-
-# =========================
-# RESET PASSWORD
-# =========================
-
-
-def reset_password(token,new_password):
-
-
-    try:
-
-        email = verify_reset_token(
-            token
-        )
-
-
-    except ValueError as e:
-
-        raise ValidationError(
-            str(e)
-        )
-
-
-
-    user = User.query.filter_by(
-        email=email
-    ).first()
-
-
-
-    if not user:
-
-        raise NotFoundError(
-            "User not found"
-        )
-
-
-
-    user.password_hash = hash_password(
-        new_password
-    )
-
-
-    db.session.commit()
+    return user

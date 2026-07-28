@@ -1,65 +1,90 @@
+from datetime import datetime
+
 from app.extensions import db
+
+
 
 
 class Company(db.Model):
 
+
     __tablename__ = "companies"
 
 
+
+
     id = db.Column(
+
         db.Integer,
+
         primary_key=True
+
     )
+
+
 
 
     name = db.Column(
-        db.String(150),
+
+        db.String(200),
+
         nullable=False
+
     )
+
+
 
 
     website = db.Column(
-        db.String(255)
+
+        db.String(255),
+
+        nullable=True
+
     )
 
 
-    email = db.Column(
-        db.String(150)
+
+
+    linkedin_url = db.Column(
+
+        db.String(255),
+
+        nullable=True
+
     )
+
+
 
 
     created_at = db.Column(
-        db.DateTime
-    )
 
+        db.DateTime,
 
-
-    # =========================
-    # RELATIONSHIP
-    # =========================
-
-    recruiters = db.relationship(
-
-        "Recruiter",
-
-        back_populates="company",
-
-        lazy=True
+        default=datetime.utcnow
 
     )
+
+
 
 
 
     def to_dict(self):
 
+
         return {
+
 
             "id": self.id,
 
+
             "name": self.name,
+
 
             "website": self.website,
 
-            "email": self.email
+
+            "linkedin_url": self.linkedin_url
+
 
         }

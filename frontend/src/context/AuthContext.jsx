@@ -1,52 +1,216 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+
+createContext,
+
+useContext,
+
+useEffect,
+
+useState
+
+} from "react";
+
+
 
 const AuthContext = createContext();
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
 
-  useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    const role = localStorage.getItem("role");
 
-    if (token) {
-      setUser({
-        token,
-        role,
-      });
-    }
-  }, []);
+export function AuthProvider({children}){
 
-  const login = (token, role) => {
-    localStorage.setItem("access_token", token);
-    localStorage.setItem("role", role);
 
-    setUser({
-      token,
-      role,
-    });
-  };
+const [user,setUser] = useState(null);
 
-  const logout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("role");
 
-    setUser(null);
-  };
+const [token,setToken] = useState(
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        login,
-        logout,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+localStorage.getItem("access_token")
+
+);
+
+
+const [loading,setLoading] = useState(true);
+
+
+
+
+
+// ============================
+// LOAD USER ON REFRESH
+// ============================
+
+useEffect(()=>{
+
+
+const savedUser = localStorage.getItem("user");
+
+
+if(savedUser){
+
+setUser(
+
+JSON.parse(savedUser)
+
+);
+
 }
 
-export function useAuth() {
-  return useContext(AuthContext);
+
+setLoading(false);
+
+
+},[]);
+
+
+
+
+
+// ============================
+// LOGIN
+// ============================
+
+const login=(data)=>{
+
+
+const accessToken =
+
+data.access_token ||
+
+data.token;
+
+
+
+const userData = data.user;
+
+
+
+
+
+if(accessToken){
+
+
+localStorage.setItem(
+
+"access_token",
+
+accessToken
+
+);
+
+
+setToken(accessToken);
+
+
+}
+
+
+
+
+
+if(userData){
+
+
+localStorage.setItem(
+
+"user",
+
+JSON.stringify(userData)
+
+);
+
+
+setUser(userData);
+
+
+}
+
+
+
+};
+
+
+
+
+
+
+
+// ============================
+// LOGOUT
+// ============================
+
+const logout=()=>{
+
+
+localStorage.removeItem(
+
+"access_token"
+
+);
+
+
+localStorage.removeItem(
+
+"user"
+
+);
+
+
+
+setToken(null);
+
+
+setUser(null);
+
+
+
+};
+
+
+
+
+
+
+
+return(
+
+<AuthContext.Provider
+
+value={{
+
+user,
+
+token,
+
+loading,
+
+login,
+
+logout
+
+}}
+
+>
+
+{children}
+
+</AuthContext.Provider>
+
+
+);
+
+
+}
+
+
+
+
+
+
+
+export function useAuth(){
+
+
+return useContext(AuthContext);
+
+
 }

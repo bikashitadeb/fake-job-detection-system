@@ -1,99 +1,27 @@
-from flask import Blueprint, request
-from app.services.prediction_service import analyze_and_save_job
+from flask import Blueprint, jsonify, request
+
 from flask_jwt_extended import (
     jwt_required,
     get_jwt_identity
 )
 
-from app.services import job_service
 
-from app.utils.responses import success_response
+from app.extensions import db
 
-from app.utils.exceptions import (
-    ValidationError,
-    NotFoundError
-)
+from app.models.job_model import Job
+
+from app.models.application_model import Application
+
 
 
 job_bp = Blueprint(
+
     "jobs",
+
     __name__,
+
     url_prefix="/api/jobs"
-)
 
-
-
-# =====================================
-# CREATE JOB
-# =====================================
-
-@job_bp.post("")
-@jwt_required()
-def create_job():
-
-    recruiter_id = int(
-        get_jwt_identity()
-    )
-
-
-    data = request.get_json(
-        silent=True
-    )
-
-
-    print("===================")
-    print("JOB DATA:")
-    print(data)
-
-    print("RECRUITER:")
-    print(recruiter_id)
-    print("===================")
-
-
-
-    if not data:
-
-        raise ValidationError(
-            "Request body is empty"
-        )
-
-
-    required_fields = [
-        "title",
-        "description",
-        "company",
-        "location"
-    ]
-
-
-    for field in required_fields:
-
-        if not data.get(field):
-
-            raise ValidationError(
-                f"{field} is required"
-            )
-
-
-
-    job = job_service.create_job(
-
-        data,
-
-        recruiter_id
-
-    )
-    prediction = analyze_and_save_job(job)
-
-
-
-    return success_response(
-    "Job created and analysed successfully.",
-    data={
-        "job": job.to_dict(),
-        "prediction": prediction
-    },
-    status_code=201
 )
 
 
@@ -104,107 +32,343 @@ def create_job():
 # GET ALL JOBS
 # =====================================
 
-@job_bp.get("")
+
+@job_bp.route(
+
+    "",
+
+    methods=["GET"]
+
+)
+
+@jwt_required()
+
 def get_jobs():
 
-    jobs = job_service.get_all_jobs()
+
+    jobs = Job.query.all()
 
 
-    return success_response(
 
-        "Jobs fetched successfully.",
+    return jsonify({
 
-        data=[
+
+        "jobs":[
+
             job.to_dict()
+
             for job in jobs
+
         ]
 
-    )
+
+
+    }),200
+
+
 
 
 
 
 
 # =====================================
-# GET SINGLE JOB
+# VERIFY JOB USING ML
 # =====================================
 
-@job_bp.get("/<int:job_id>")
-def get_job(job_id):
 
-    job = job_service.get_job(
-        job_id
-    )
+@job_bp.route(
+
+    "/<int:job_id>/verify",
+
+    methods=["POST"]
+
+)
+
+@jwt_required()
+
+def verify_job(job_id):
+
+
+    job = Job.query.get(job_id)
+
 
 
     if not job:
 
-        raise NotFoundError(
-            "Job not found"
-        )
+
+        return jsonify({
+
+            "message":"Job not found"
+
+        }),404
 
 
-    return success_response(
 
-        "Job fetched successfully.",
 
-        data=job.to_dict()
 
-    )
+    # TEMP ML RESULT
+    # Later connect your ML model here
+
+
+    score = 85
+
+
+
+    job.trust_score = score
+
+
+
+    if score >= 70:
+
+
+        job.status = "verified"
+
+
+
+    else:
+
+
+        job.status = "fake"
+
+
+
+
+
+    db.session.commit()
+
+
+
+    return jsonify({
+
+
+        "message":"Verification completed",
+
+
+        "trust_score":score,
+
+
+        "status":job.status
+
+
+
+    }),200
+
+
 
 
 
 
 
 # =====================================
-# UPDATE JOB
+# APPLY FOR JOB
 # =====================================
 
-@job_bp.put("/<int:job_id>")
+
+@job_bp.route(
+
+    "/<int:job_id>/apply",
+
+    methods=["POST"]
+
+)
+
 @jwt_required()
-def update_job(job_id):
 
-    data = request.get_json(
-        silent=True
-    ) or {}
+def apply_job(job_id):
 
 
-    job = job_service.update_job(
+    user_id = get_jwt_identity()
 
-        job_id,
 
-        data
+
+    job = Job.query.get(job_id)
+
+
+
+
+    if not job:
+
+
+        return jsonify({
+
+            "message":"Job not found"
+
+        }),404
+
+
+
+
+
+
+    existing = Application.query.filter_by(
+
+        job_id=job_id,
+
+        user_id=user_id
+
+    ).first()
+
+
+
+
+
+    if existing:
+
+
+        return jsonify({
+
+            "message":"Already applied"
+
+        }),400
+
+
+
+
+
+
+    application = Application(
+
+        job_id=job_id,
+
+        user_id=user_id,
+
+        status="pending"
 
     )
 
 
-    return success_response(
-
-        "Job updated successfully.",
-
-        data=job.to_dict()
-
-    )
 
 
 
+    db.session.add(application)
 
 
+    db.session.commit()
+
+
+
+
+
+    return jsonify({
+
+
+        "message":
+
+        "Application submitted"
+
+
+
+    }),201
 # =====================================
-# DELETE JOB
+# CREATE JOB (RECRUITER)
 # =====================================
 
-@job_bp.delete("/<int:job_id>")
+
+@job_bp.route(
+
+    "/create",
+
+    methods=["POST"]
+
+)
+
 @jwt_required()
-def delete_job(job_id):
 
-    job_service.delete_job(
-        job_id
+def create_job():
+
+
+    recruiter_id = get_jwt_identity()
+
+
+
+    data = request.get_json()
+
+
+
+    recruiter = User.query.get(
+
+        recruiter_id
+
     )
 
 
-    return success_response(
 
-        "Job deleted successfully."
+    if not recruiter:
+
+
+        return jsonify({
+
+            "message":"Recruiter not found"
+
+        }),404
+
+
+
+
+
+    if recruiter.role != "recruiter":
+
+
+        return jsonify({
+
+            "message":"Only recruiters can post jobs"
+
+        }),403
+
+
+
+
+
+
+    job = Job(
+
+
+        title=data.get("title"),
+
+
+        description=data.get("description"),
+
+
+        company_name=data.get("company_name"),
+
+
+        location=data.get("location"),
+
+
+        salary=data.get("salary"),
+
+
+        recruiter_id=recruiter.id,
+
+
+        trust_score=0,
+
+
+        status="pending"
+
 
     )
+
+
+
+
+
+    db.session.add(job)
+
+
+    db.session.commit()
+
+
+
+
+
+    return jsonify({
+
+
+        "message":"Job posted successfully",
+
+
+        "job":job.to_dict()
+
+
+    }),201

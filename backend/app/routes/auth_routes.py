@@ -1,77 +1,168 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 
-from flask_jwt_extended import (
-    jwt_required,
-    get_jwt_identity,
-    create_access_token,
-    get_jwt,
+
+from app.services.auth_service import (
+
+    register_jobseeker,
+
+    register_recruiter,
+
+    login_user
+
 )
 
-from app.services import auth_service
 
-from app.utils.responses import success_response
+from app.utils.jwt_utils import generate_token
 
-from app.models.user_model import User
 
-from app.utils.exceptions import NotFoundError
+
 
 
 
 auth_bp = Blueprint(
+
     "auth",
+
     __name__,
+
     url_prefix="/api/auth"
+
 )
 
 
 
+
+
+
+
+
 # =====================================
-# REGISTER JOBSEEKER
+# REGISTER USER
 # =====================================
 
-@auth_bp.post("/register")
+
+@auth_bp.route(
+
+    "/register",
+
+    methods=["POST"]
+
+)
+
 def register():
 
-    data = request.get_json(
-        silent=True
-    ) or {}
 
-
-    result = auth_service.register_jobseeker(
-        data
-    )
-
-
-    return success_response(
-        "User registered successfully.",
-        data=result,
-        status_code=201
-    )
+    data = request.get_json()
 
 
 
-# =====================================
-# REGISTER RECRUITER
-# =====================================
-
-@auth_bp.post("/register/recruiter")
-def register_recruiter():
-
-    data = request.get_json(
-        silent=True
-    ) or {}
+    if not data:
 
 
-    result = auth_service.register_recruiter(
-        data
-    )
+        return jsonify({
+
+            "message":"Invalid request"
+
+        }),400
 
 
-    return success_response(
-        "Recruiter registered successfully.",
-        data=result,
-        status_code=201
-    )
+
+
+
+
+    role = data.get("role")
+
+
+
+    try:
+
+
+
+        if role == "employee":
+
+
+            user = register_jobseeker(data)
+
+
+
+
+        elif role == "recruiter":
+
+
+            user = register_recruiter(data)
+
+
+
+
+        else:
+
+
+            return jsonify({
+
+                "message":"Invalid role"
+
+            }),400
+
+
+
+
+
+
+        return jsonify({
+
+
+            "message":
+
+            "Registration successful",
+
+
+
+            "user":
+
+            user
+
+
+
+        }),201
+
+
+
+
+
+    except Exception as e:
+
+
+
+        print(
+
+            "REGISTER ERROR:",
+
+            str(e)
+
+        )
+
+
+
+        return jsonify({
+
+
+            "message":
+
+            str(e)
+
+
+
+        }),400
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -79,244 +170,100 @@ def register_recruiter():
 # LOGIN
 # =====================================
 
-@auth_bp.post("/login")
+
+@auth_bp.route(
+
+    "/login",
+
+    methods=["POST"]
+
+)
+
 def login():
 
-    data = request.get_json(
-        silent=True
-    ) or {}
 
 
-    email = data.get(
-        "email"
-    )
-
-    password = data.get(
-        "password"
-    )
-
-
-    result = auth_service.login_user(
-        email,
-        password
-    )
-
-
-    return success_response(
-        "Login successful.",
-        data=result,
-        status_code=200
-    )
+    data = request.get_json()
 
 
 
-# =====================================
-# REFRESH TOKEN
-# =====================================
+    if not data:
 
-@auth_bp.post("/refresh")
-@jwt_required(refresh=True)
-def refresh():
 
-    identity = get_jwt_identity()
+        return jsonify({
 
-    claims = get_jwt()
+            "message":"Invalid request"
+
+        }),400
 
 
 
-    access_token = create_access_token(
-
-        identity=identity,
-
-        additional_claims={
-
-            "role": claims.get("role"),
-
-            "email": claims.get("email")
-
-        }
-
-    )
 
 
-    return success_response(
+    try:
 
-        "Token refreshed.",
 
-        data={
+
+        user = login_user(data)
+
+
+
+
+        token = generate_token(user)
+
+
+
+
+
+        return jsonify({
+
+
+            "message":
+
+            "Login successful",
+
+
 
             "access_token":
-            access_token
 
-        }
-
-    )
+            token,
 
 
 
-# =====================================
-# CURRENT USER
-# =====================================
+            "user":
 
-@auth_bp.get("/me")
-@jwt_required()
-def me():
-
-    user_id = int(
-        get_jwt_identity()
-    )
+            user.to_dict()
 
 
-    user = User.query.get(
-        user_id
-    )
+
+        }),200
 
 
-    if not user:
 
-        raise NotFoundError(
-            "User not found"
+
+
+
+    except Exception as e:
+
+
+
+        print(
+
+            "LOGIN ERROR:",
+
+            str(e)
+
         )
 
 
-    return success_response(
 
-        "Current user fetched.",
-
-        data=user.to_dict()
-
-    )
+        return jsonify({
 
 
+            "message":
 
-# =====================================
-# CHANGE PASSWORD
-# =====================================
-
-@auth_bp.put("/change-password")
-@jwt_required()
-def change_password():
-
-    user_id = int(
-        get_jwt_identity()
-    )
-
-
-    data = request.get_json(
-        silent=True
-    ) or {}
+            str(e)
 
 
 
-    auth_service.change_password(
-
-        user_id,
-
-        data.get(
-            "old_password"
-        ),
-
-        data.get(
-            "new_password"
-        )
-
-    )
-
-
-    return success_response(
-
-        "Password changed successfully."
-
-    )
-
-
-
-# =====================================
-# LOGOUT
-# =====================================
-
-@auth_bp.post("/logout")
-@jwt_required()
-def logout():
-
-    user_id = int(
-        get_jwt_identity()
-    )
-
-
-    auth_service.logout_current_token(
-        user_id
-    )
-
-
-    return success_response(
-
-        "Logged out successfully."
-
-    )
-
-
-
-# =====================================
-# FORGOT PASSWORD
-# =====================================
-
-@auth_bp.post("/forgot-password")
-def forgot_password():
-
-    data = request.get_json(
-        silent=True
-    ) or {}
-
-
-
-    result = auth_service.request_password_reset(
-
-        data.get(
-            "email"
-        )
-
-    )
-
-
-    return success_response(
-
-        result["message"],
-
-        data=result
-
-    )
-
-
-
-# =====================================
-# RESET PASSWORD
-# =====================================
-
-@auth_bp.post("/reset-password")
-def reset_password():
-
-    data = request.get_json(
-        silent=True
-    ) or {}
-
-
-
-    auth_service.reset_password(
-
-        data.get(
-            "token"
-        ),
-
-        data.get(
-            "new_password"
-        )
-
-    )
-
-
-    return success_response(
-
-        "Password reset successful."
-
-    )
+        }),401

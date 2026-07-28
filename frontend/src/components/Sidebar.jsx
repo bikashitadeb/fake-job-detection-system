@@ -1,76 +1,473 @@
 import {
-  Drawer,
-  Toolbar,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
+
+Box,
+
+Typography
+
 } from "@mui/material";
 
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import WorkIcon from "@mui/icons-material/Work";
-import AddCircleIcon from "@mui/icons-material/AddCircle";
-import AnalyticsIcon from "@mui/icons-material/Analytics";
 
-import { Link, useLocation } from "react-router-dom";
+import {
 
-const drawerWidth = 240;
+Dashboard,
 
-export default function Sidebar() {
-  const location = useLocation();
+Work,
 
-  const menuItems = [
-    {
-      text: "Dashboard",
-      icon: <DashboardIcon />,
-      path: "/",
-    },
-    {
-      text: "My Jobs",
-      icon: <WorkIcon />,
-      path: "/jobs",
-    },
-    {
-      text: "Post Job",
-      icon: <AddCircleIcon />,
-      path: "/post-job",
-    },
-    {
-      text: "AI Reports",
-      icon: <AnalyticsIcon />,
-      path: "/reports",
-    },
-  ];
+Bookmark,
 
-  return (
-    <Drawer
-      variant="permanent"
-      sx={{
-        width: drawerWidth,
-        flexShrink: 0,
+Assignment,
 
-        "& .MuiDrawer-paper": {
-          width: drawerWidth,
-          boxSizing: "border-box",
-        },
-      }}
-    >
-      <Toolbar />
+VerifiedUser,
 
-      <List>
-        {menuItems.map((item) => (
-          <ListItemButton
-            key={item.text}
-            component={Link}
-            to={item.path}
-            selected={location.pathname === item.path}
-          >
-            <ListItemIcon>{item.icon}</ListItemIcon>
+Person,
 
-            <ListItemText primary={item.text} />
-          </ListItemButton>
-        ))}
-      </List>
-    </Drawer>
-  );
+AddCircle,
+
+People,
+
+Analytics,
+
+Security
+
+} from "@mui/icons-material";
+
+
+import {
+
+useNavigate,
+
+useLocation
+
+} from "react-router-dom";
+
+
+
+import {
+
+useAuth
+
+} from "../context/AuthContext";
+
+
+
+
+
+export default function Sidebar(){
+
+
+const navigate = useNavigate();
+
+
+const location = useLocation();
+
+
+const {
+
+user
+
+}=useAuth();
+
+
+
+
+
+const employeeMenu=[
+
+
+{
+
+title:"Dashboard",
+
+path:"/employee/dashboard",
+
+icon:<Dashboard/>
+
+},
+
+
+{
+
+title:"Browse Jobs",
+
+path:"/employee/jobs",
+
+icon:<Work/>
+
+},
+
+
+{
+
+title:"Saved Jobs",
+
+path:"/employee/saved",
+
+icon:<Bookmark/>
+
+},
+
+
+{
+
+title:"Applications",
+
+path:"/employee/applications",
+
+icon:<Assignment/>
+
+},
+
+
+{
+
+title:"Verified Jobs",
+
+path:"/employee/verified",
+
+icon:<VerifiedUser/>
+
+},
+
+
+{
+
+title:"Profile",
+
+path:"/employee/profile",
+
+icon:<Person/>
+
+}
+
+
+];
+
+
+
+
+
+
+
+const recruiterMenu=[
+
+
+{
+
+title:"Dashboard",
+
+path:"/recruiter/dashboard",
+
+icon:<Dashboard/>
+
+},
+
+
+
+{
+
+title:"Post Job",
+
+path:"/recruiter/post-job",
+
+icon:<AddCircle/>
+
+},
+
+
+
+{
+
+title:"My Jobs",
+
+path:"/recruiter/jobs",
+
+icon:<Work/>
+
+},
+
+
+
+{
+
+title:"AI Verification",
+
+path:"/recruiter/verification",
+
+icon:<Security/>
+
+},
+
+
+
+{
+
+title:"Applicants",
+
+path:"/recruiter/applicants",
+
+icon:<People/>
+
+},
+
+
+
+{
+
+title:"Analytics",
+
+path:"/recruiter/analytics",
+
+icon:<Analytics/>
+
+},
+
+
+
+{
+
+title:"Profile",
+
+path:"/recruiter/profile",
+
+icon:<Person/>
+
+}
+
+
+];
+
+
+
+
+
+const menu =
+
+user?.role==="recruiter"
+
+?
+
+recruiterMenu
+
+:
+
+employeeMenu;
+
+
+
+
+
+
+
+
+return(
+
+
+<Box
+
+
+className="sidebar"
+
+
+sx={{
+
+
+width:260,
+
+
+minHeight:"100vh",
+
+
+padding:"25px 15px",
+
+
+display:"flex",
+
+
+flexDirection:"column",
+
+
+background:
+
+"linear-gradient(180deg,#020617,#0f172a)",
+
+
+borderRight:
+
+"1px solid rgba(255,255,255,0.08)"
+
+
+}}
+
+
+>
+
+
+
+<Typography
+
+
+variant="h5"
+
+
+fontWeight="800"
+
+
+sx={{
+
+
+mb:5,
+
+
+textAlign:"center",
+
+
+color:"white"
+
+
+}}
+
+
+>
+
+
+FakeJob AI
+
+</Typography>
+
+
+
+
+
+
+
+{
+
+menu.map((item,index)=>(
+
+
+<Box
+
+
+key={index}
+
+
+onClick={()=>navigate(item.path)}
+
+
+className={
+
+location.pathname===item.path
+
+?
+
+"active-menu sidebar-item"
+
+:
+
+"sidebar-item"
+
+}
+
+
+
+sx={{
+
+
+display:"flex",
+
+
+alignItems:"center",
+
+
+gap:2,
+
+
+cursor:"pointer",
+
+
+color:
+
+location.pathname===item.path
+
+?
+
+"white"
+
+:
+
+"#94a3b8",
+
+
+
+padding:"14px 18px",
+
+
+borderRadius:"14px",
+
+
+mb:1,
+
+
+
+transition:"0.3s",
+
+
+
+"&:hover":{
+
+
+background:
+
+"rgba(99,102,241,.15)",
+
+
+color:"white"
+
+
+}
+
+
+}}
+
+
+>
+
+
+
+{
+
+item.icon
+
+}
+
+
+
+<Typography>
+
+
+{item.title}
+
+</Typography>
+
+
+
+</Box>
+
+
+
+))
+
+
+}
+
+
+
+
+
+</Box>
+
+
+);
+
+
 }
