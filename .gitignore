@@ -1,0 +1,17 @@
+# Python
+.venv-1/
+__pycache__/
+*.pyc
+
+# Environment variables
+.env
+backend/.env
+
+# Node
+node_modules/
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
