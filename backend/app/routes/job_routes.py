@@ -1,16 +1,18 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, request, jsonify
 
 from flask_jwt_extended import (
     jwt_required,
     get_jwt_identity
 )
 
-
 from app.extensions import db
 
 from app.models.job_model import Job
+from app.models.user_model import User
 
-from app.models.application_model import Application
+from app.services.linkedin_verification import verify_company
+from app.services.ai_verification import predict_fake_job
+
 
 
 
@@ -30,40 +32,57 @@ job_bp = Blueprint(
 
 # =====================================
 # GET ALL JOBS
+# EMPLOYEE DASHBOARD
 # =====================================
 
 
 @job_bp.route(
-
     "",
-
     methods=["GET"]
-
 )
-
-@jwt_required()
 
 def get_jobs():
 
 
-    jobs = Job.query.all()
+    try:
+
+
+        jobs = Job.query.order_by(
+
+            Job.created_at.desc()
+
+        ).all()
 
 
 
-    return jsonify({
+        return jsonify({
+
+            "jobs":[
+
+                job.to_dict()
+
+                for job in jobs
+
+            ]
+
+        }),200
 
 
-        "jobs":[
 
-            job.to_dict()
-
-            for job in jobs
-
-        ]
+    except Exception as e:
 
 
+        print(
+            "GET JOB ERROR:",
+            e
+        )
 
-    }),200
+
+        return jsonify({
+
+            "message":str(e)
+
+        }),500
 
 
 
@@ -72,24 +91,19 @@ def get_jobs():
 
 
 # =====================================
-# VERIFY JOB USING ML
+# GET SINGLE JOB
 # =====================================
 
 
 @job_bp.route(
-
-    "/<int:job_id>/verify",
-
-    methods=["POST"]
-
+    "/<int:id>",
+    methods=["GET"]
 )
 
-@jwt_required()
-
-def verify_job(job_id):
+def get_job(id):
 
 
-    job = Job.query.get(job_id)
+    job = Job.query.get(id)
 
 
 
@@ -106,50 +120,9 @@ def verify_job(job_id):
 
 
 
-    # TEMP ML RESULT
-    # Later connect your ML model here
-
-
-    score = 85
-
-
-
-    job.trust_score = score
-
-
-
-    if score >= 70:
-
-
-        job.status = "verified"
-
-
-
-    else:
-
-
-        job.status = "fake"
-
-
-
-
-
-    db.session.commit()
-
-
-
     return jsonify({
 
-
-        "message":"Verification completed",
-
-
-        "trust_score":score,
-
-
-        "status":job.status
-
-
+        "job":job.to_dict()
 
     }),200
 
@@ -160,116 +133,15 @@ def verify_job(job_id):
 
 
 # =====================================
-# APPLY FOR JOB
+# CREATE JOB
+# RECRUITER
+# AI + LINKEDIN VERIFICATION
 # =====================================
 
 
 @job_bp.route(
-
-    "/<int:job_id>/apply",
-
+    "",
     methods=["POST"]
-
-)
-
-@jwt_required()
-
-def apply_job(job_id):
-
-
-    user_id = get_jwt_identity()
-
-
-
-    job = Job.query.get(job_id)
-
-
-
-
-    if not job:
-
-
-        return jsonify({
-
-            "message":"Job not found"
-
-        }),404
-
-
-
-
-
-
-    existing = Application.query.filter_by(
-
-        job_id=job_id,
-
-        user_id=user_id
-
-    ).first()
-
-
-
-
-
-    if existing:
-
-
-        return jsonify({
-
-            "message":"Already applied"
-
-        }),400
-
-
-
-
-
-
-    application = Application(
-
-        job_id=job_id,
-
-        user_id=user_id,
-
-        status="pending"
-
-    )
-
-
-
-
-
-    db.session.add(application)
-
-
-    db.session.commit()
-
-
-
-
-
-    return jsonify({
-
-
-        "message":
-
-        "Application submitted"
-
-
-
-    }),201
-# =====================================
-# CREATE JOB (RECRUITER)
-# =====================================
-
-
-@job_bp.route(
-
-    "/create",
-
-    methods=["POST"]
-
 )
 
 @jwt_required()
@@ -277,98 +149,408 @@ def apply_job(job_id):
 def create_job():
 
 
-    recruiter_id = get_jwt_identity()
+    try:
+
+
+        user_id = int(
+
+            get_jwt_identity()
+
+        )
+
+
+        user = User.query.get(user_id)
 
 
 
-    data = request.get_json()
+        if not user:
+
+
+            return jsonify({
+
+                "message":"User not found"
+
+            }),404
 
 
 
-    recruiter = User.query.get(
-
-        recruiter_id
-
-    )
 
 
+        if user.role != "recruiter":
 
-    if not recruiter:
+
+            return jsonify({
+
+                "message":
+                "Only recruiters can post jobs"
+
+            }),403
+
+
+
+
+
+
+        data = request.get_json()
+
+
+
+        print(
+            "JOB DATA:",
+            data
+        )
+
+
+
+
+
+
+
+        company_name = (
+
+            data.get("company")
+
+            or
+
+            "Unknown Company"
+
+        )
+
+
+
+
+
+        # =================================
+        # LINKEDIN COMPANY VERIFICATION
+        # =================================
+
+
+        linkedin_result = verify_company(
+
+            company_name
+
+        )
+
+
+
+
+
+
+        # =================================
+        # AI FAKE JOB PREDICTION
+        # =================================
+
+
+        ai_result = predict_fake_job(
+
+            {
+
+            "title":
+            data.get("title",""),
+
+
+            "company":
+            company_name,
+
+
+            "description":
+            data.get("description",""),
+
+
+            "requirements":
+            data.get("requirements","")
+
+            }
+
+        )
+
+
+
+
+
+
+
+        # =================================
+        # FINAL TRUST SCORE
+        # =================================
+
+
+        final_trust_score = (
+
+            ai_result["trust_score"] * 0.7
+
+            +
+
+            linkedin_result["score"] * 0.3
+
+        )
+
+
+
+
+
+
+
+
+
+        job = Job(
+
+
+            title=data.get(
+                "title"
+            ),
+
+
+
+            description=data.get(
+                "description"
+            ),
+
+
+
+            company=company_name,
+
+
+
+            location=data.get(
+                "location"
+            ),
+
+
+
+            salary=data.get(
+                "salary"
+            ),
+
+
+
+            requirements=data.get(
+                "requirements"
+            ),
+
+
+
+
+
+            recruiter_id=user.id,
+
+
+
+
+
+
+            # AI RESULTS
+
+            is_fake_predicted=
+
+            ai_result["is_fake"],
+
+
+
+            fake_probability=
+
+            ai_result["fake_probability"],
+
+
+
+            trust_score=
+
+            round(
+                final_trust_score,
+                2
+            ),
+
+
+
+
+
+
+            # LINKEDIN RESULTS
+
+
+            linkedin_verified=
+
+            linkedin_result["verified"],
+
+
+
+            linkedin_url=
+
+            linkedin_result["linkedin_url"],
+
+
+
+            company_verified=
+
+            linkedin_result["verified"],
+
+
+
+
+
+
+
+            status=
+
+            "verified"
+
+            if final_trust_score >= 70
+
+            else
+
+            "pending"
+
+
+
+
+        )
+
+
+
+
+
+        db.session.add(job)
+
+        db.session.commit()
+
+
+
 
 
         return jsonify({
 
-            "message":"Recruiter not found"
 
-        }),404
+            "message":
 
-
-
+            "Job posted successfully",
 
 
-    if recruiter.role != "recruiter":
+
+
+            "ai_result":
+
+            ai_result,
+
+
+
+
+            "linkedin_result":
+
+            linkedin_result,
+
+
+
+
+            "job":
+
+            job.to_dict()
+
+
+
+        }),201
+
+
+
+
+
+
+
+    except Exception as e:
+
+
+
+        db.session.rollback()
+
+
+
+        print(
+
+            "CREATE JOB ERROR:",
+
+            e
+
+        )
+
 
 
         return jsonify({
 
-            "message":"Only recruiters can post jobs"
+            "message":str(e)
 
-        }),403
-
-
-
-
-
-
-    job = Job(
-
-
-        title=data.get("title"),
-
-
-        description=data.get("description"),
-
-
-        company_name=data.get("company_name"),
-
-
-        location=data.get("location"),
-
-
-        salary=data.get("salary"),
-
-
-        recruiter_id=recruiter.id,
-
-
-        trust_score=0,
-
-
-        status="pending"
-
-
-    )
+        }),500
 
 
 
 
 
-    db.session.add(job)
-
-
-    db.session.commit()
 
 
 
 
 
-    return jsonify({
+
+# =====================================
+# RECRUITER OWN JOBS
+# =====================================
 
 
-        "message":"Job posted successfully",
+@job_bp.route(
+    "/my-jobs",
+    methods=["GET"]
+)
+
+@jwt_required()
+
+def my_jobs():
 
 
-        "job":job.to_dict()
+    try:
 
 
-    }),201
+        user_id = int(
+
+            get_jwt_identity()
+
+        )
+
+
+
+        jobs = Job.query.filter_by(
+
+            recruiter_id=user_id
+
+        ).all()
+
+
+
+
+
+        return jsonify({
+
+            "jobs":[
+
+                job.to_dict()
+
+                for job in jobs
+
+            ]
+
+        }),200
+
+
+
+
+    except Exception as e:
+
+
+        print(
+            "MY JOB ERROR:",
+            e
+        )
+
+
+        return jsonify({
+
+            "message":str(e)
+
+        }),500

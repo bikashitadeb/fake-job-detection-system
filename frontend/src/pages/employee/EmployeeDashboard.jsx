@@ -1,167 +1,39 @@
 import {
+    useEffect,
+    useState
+} from "react";
 
-Grid,
 
-Card,
-
-CardContent,
-
-Typography,
-
-Box,
-
-Chip,
-
-Button
-
+import {
+    Box,
+    Typography,
+    Card,
+    Button,
+    TextField,
+    Chip,
+    CircularProgress,
+    Alert,
+    Grid,
+    InputAdornment
 } from "@mui/material";
 
 
-
 import {
-
-Work,
-
-VerifiedUser,
-
-Bookmark,
-
-Assignment
-
+    VerifiedUser,
+    Search,
+    Clear,
+    Warning
 } from "@mui/icons-material";
 
 
-
 import {
+    getJobs,
+    getApplications,
+    getProfile
+} from "../../api/dashboard";
 
-useNavigate
 
-} from "react-router-dom";
-
-
-
-
-
-const stats=[
-
-
-{
-
-title:"Available Jobs",
-
-value:"124",
-
-icon:<Work/>,
-
-color:"#2563eb"
-
-},
-
-
-
-{
-
-title:"Verified Jobs",
-
-value:"98",
-
-icon:<VerifiedUser/>,
-
-color:"#16a34a"
-
-},
-
-
-
-{
-
-title:"Saved Jobs",
-
-value:"16",
-
-icon:<Bookmark/>,
-
-color:"#9333ea"
-
-},
-
-
-
-{
-
-title:"Applications",
-
-value:"12",
-
-icon:<Assignment/>,
-
-color:"#f97316"
-
-}
-
-
-];
-
-
-
-
-
-
-const jobs=[
-
-
-{
-
-title:"Software Engineer",
-
-company:"Google",
-
-location:"Bangalore",
-
-trust:96,
-
-status:"Verified"
-
-},
-
-
-
-{
-
-title:"Frontend Developer",
-
-company:"Infosys",
-
-location:"Remote",
-
-trust:87,
-
-status:"Verified"
-
-},
-
-
-
-{
-
-title:"Data Entry Operator",
-
-company:"Unknown",
-
-location:"Online",
-
-trust:24,
-
-status:"Suspicious"
-
-}
-
-
-
-];
-
-
-
+import API from "../../api/API";
 
 
 
@@ -170,8 +42,367 @@ status:"Suspicious"
 export default function EmployeeDashboard(){
 
 
+const [user,setUser]=useState(null);
 
-const navigate=useNavigate();
+const [jobs,setJobs]=useState([]);
+
+const [applications,setApplications]=useState([]);
+
+
+const [search,setSearch]=useState("");
+
+const [searchQuery,setSearchQuery]=useState("");
+
+
+const [loading,setLoading]=useState(true);
+
+
+const [error,setError]=useState("");
+
+
+const [appliedJobs,setAppliedJobs]=useState([]);
+
+
+const [showVerified,setShowVerified]=useState(false);
+
+
+const [showSuspicious,setShowSuspicious]=useState(false);
+
+
+const [activeSection,setActiveSection]=useState("jobs");
+
+
+
+
+
+
+
+useEffect(()=>{
+
+    loadDashboard();
+
+},[]);
+
+
+
+
+
+
+
+
+const loadDashboard=async()=>{
+
+
+try{
+
+
+const profileResponse =
+await getProfile();
+
+
+
+const jobsResponse =
+await getJobs();
+
+
+
+const applicationsResponse =
+await getApplications();
+
+
+
+
+setUser(
+profileResponse.data.user
+);
+
+
+
+setJobs(
+jobsResponse.data.jobs || []
+);
+
+
+
+setApplications(
+applicationsResponse.data.applications || []
+);
+
+
+
+setAppliedJobs(
+
+applicationsResponse.data.applications?.map(
+
+app=>app.job_id
+
+) || []
+
+);
+
+
+
+}
+
+catch(err){
+
+
+console.log(err);
+
+
+setError(
+"Unable to load employee dashboard"
+);
+
+
+}
+
+finally{
+
+setLoading(false);
+
+}
+
+};
+
+
+
+
+
+
+
+
+const applyJob=async(jobId)=>{
+
+
+try{
+
+
+await API.post(
+
+`/applications/${jobId}/apply`,
+
+{
+
+cover_letter:"",
+
+resume_url:""
+
+}
+
+);
+
+
+
+alert(
+"Application submitted successfully"
+);
+
+
+
+setAppliedJobs(prev=>[
+
+...prev,
+
+jobId
+
+]);
+
+
+
+loadDashboard();
+
+
+
+}
+
+catch(err){
+
+
+setError(
+
+err.response?.data?.message ||
+
+"Unable to apply"
+
+);
+
+
+}
+
+
+};
+
+
+
+
+
+
+
+
+
+const handleSearch=(e)=>{
+
+
+if(e.key==="Enter"){
+
+
+setSearchQuery(
+
+search.trim()
+
+);
+
+
+}
+
+};
+
+
+
+
+
+
+
+const clearSearch=()=>{
+
+
+setSearch("");
+
+setSearchQuery("");
+
+};
+
+
+
+
+
+
+
+
+
+const filteredJobs = jobs.filter(job=>{
+
+
+const query =
+searchQuery.toLowerCase();
+
+
+
+
+const matchesSearch =
+
+
+!query ||
+
+job.title?.toLowerCase()
+.includes(query)
+
+
+||
+
+job.company_name?.toLowerCase()
+.includes(query)
+
+
+||
+
+job.company?.toLowerCase()
+.includes(query)
+
+
+||
+
+job.location?.toLowerCase()
+.includes(query);
+
+
+
+
+
+const matchesVerified =
+
+showVerified
+
+?
+
+job.status==="verified"
+
+:
+
+true;
+
+
+
+
+
+const matchesSuspicious =
+
+showSuspicious
+
+?
+
+job.is_fake_predicted === true
+
+:
+
+true;
+
+
+
+
+
+return (
+
+matchesSearch
+
+&&
+
+matchesVerified
+
+&&
+
+matchesSuspicious
+
+);
+
+
+});
+
+
+
+
+
+
+
+
+
+if(loading){
+
+
+return(
+
+<Box
+
+display="flex"
+
+justifyContent="center"
+
+mt={10}
+
+>
+
+<CircularProgress/>
+
+</Box>
+
+);
+
+}
+
+
+
+
 
 
 
@@ -180,189 +411,425 @@ const navigate=useNavigate();
 return(
 
 
-<Box>
+<Box
+
+sx={{
+
+minHeight:"100vh",
+
+background:
+"linear-gradient(135deg,#020617,#172554)",
+
+padding:4,
+
+color:"white"
+
+}}
+
+>
 
 
-
-{/* HEADER */}
 
 
 
 <Typography
 
+variant="h4"
 
-className="dashboard-title"
-
+fontWeight="900"
 
 >
 
-Employee Dashboard 👋
+Welcome {user?.name || "Employee"} 👋
 
 </Typography>
 
 
 
 
+
 <Typography
 
+sx={{
 
-className="dashboard-subtitle"
+color:"#94a3b8",
 
+mb:4
 
-mb={4}
+}}
 
 >
 
-Find verified jobs protected by AI.
+Find verified jobs using AI powered fake job detection
 
 </Typography>
 
 
 
-
-
-
-{/* STAT CARDS */}
-
-
-<Grid
-
-container
-
-spacing={3}
-
->
 
 
 
 {
+error &&
 
-stats.map((item,index)=>(
+<Alert
 
+severity="error"
 
-
-<Grid
-
-
-item
-
-xs={12}
-
-sm={6}
-
-lg={3}
-
-key={index}
-
+sx={{mb:3}}
 
 >
 
+{error}
 
-<Card
-
-
-className="glass stat-card"
-
-
-sx={{
-
-
-background:
-
-`linear-gradient(
-
-135deg,
-
-${item.color},
-
-#020617
-
-)`
-
-}}
-
-
-
->
-
-
-<CardContent>
-
-
-
-<Box
-
-
-sx={{
-
-
-fontSize:40
-
-}}
-
-
-
->
-
-
-{item.icon}
-
-
-</Box>
-
-
-
-
-<Typography
-
-
-variant="h3"
-
-
-fontWeight="700"
-
-
-mt={2}
-
->
-
-
-{item.value}
-
-
-</Typography>
-
-
-
-<Typography>
-
-
-{item.title}
-
-
-</Typography>
-
-
-
-</CardContent>
-
-
-
-</Card>
-
-
-
-</Grid>
-
-
-))
-
+</Alert>
 
 }
 
 
 
 
+
+
+<Card sx={cardStyle}>
+
+
+<TextField
+
+fullWidth
+
+placeholder="Search jobs, company or location and press Enter"
+
+value={search}
+
+onChange={(e)=>setSearch(e.target.value)}
+
+onKeyDown={handleSearch}
+
+
+
+InputProps={{
+
+startAdornment:(
+
+<InputAdornment position="start">
+
+<Search sx={{color:"white"}}/>
+
+</InputAdornment>
+
+),
+
+
+endAdornment:
+
+search &&
+
+(
+
+<Clear
+
+sx={{
+
+cursor:"pointer",
+
+color:"white"
+
+}}
+
+onClick={clearSearch}
+
+/>
+
+)
+
+}}
+
+
+/>
+
+
+</Card>
+
+
+
+
+
+
+
+
+
+<Grid
+
+container
+
+spacing={3}
+
+sx={{mt:2}}
+
+>
+
+
+
+
+
+<Grid
+
+item
+
+xs={12}
+
+md={3}
+
+>
+
+
+<Card
+
+sx={statCard}
+
+onClick={()=>{
+
+setShowVerified(false);
+
+setShowSuspicious(false);
+
+setActiveSection("jobs");
+
+}}
+
+>
+
+
+<Typography>
+
+Available Jobs
+
+</Typography>
+
+
+
+<Typography
+
+fontSize={40}
+
+fontWeight="900"
+
+>
+
+{jobs.length}
+
+</Typography>
+
+
+</Card>
+
+</Grid>
+
+
+
+
+
+
+
+
+<Grid
+
+item
+
+xs={12}
+
+md={3}
+
+>
+
+
+<Card
+
+sx={statCard}
+
+onClick={()=>{
+
+setActiveSection("applications");
+
+}}
+
+>
+
+
+<Typography>
+
+Applications
+
+</Typography>
+
+
+
+<Typography
+
+fontSize={40}
+
+fontWeight="900"
+
+>
+
+{applications.length}
+
+</Typography>
+
+
+</Card>
+
+</Grid>
+
+
+
+
+
+
+
+
+<Grid
+
+item
+
+xs={12}
+
+md={3}
+
+>
+
+
+<Card
+
+sx={statCard}
+
+onClick={()=>{
+
+setShowVerified(true);
+
+setShowSuspicious(false);
+
+setActiveSection("jobs");
+
+}}
+
+>
+
+
+<Typography>
+
+Verified Jobs
+
+</Typography>
+
+
+
+<Typography
+
+fontSize={40}
+
+fontWeight="900"
+
+>
+
+{
+
+jobs.filter(
+
+job=>job.status==="verified"
+
+).length
+
+}
+
+</Typography>
+
+
+</Card>
+
+</Grid>
+
+
+
+
+
+
+
+
+<Grid
+
+item
+
+xs={12}
+
+md={3}
+
+>
+
+
+<Card
+
+sx={{
+
+...statCard,
+
+background:
+"linear-gradient(135deg,#7f1d1d,#450a0a)"
+
+}}
+
+onClick={()=>{
+
+setShowSuspicious(true);
+
+setShowVerified(false);
+
+setActiveSection("jobs");
+
+}}
+
+>
+
+
+<Typography>
+
+⚠ Suspicious Jobs
+
+</Typography>
+
+
+
+<Typography
+
+fontSize={40}
+
+fontWeight="900"
+
+>
+
+{
+
+jobs.filter(
+
+job=>job.is_fake_predicted===true
+
+).length
+
+}
+
+</Typography>
+
+
+</Card>
+
+</Grid>
+
+
+
+
+
+
 </Grid>
 
 
@@ -373,46 +840,46 @@ mt={2}
 
 
 
-{/* JOB SECTION */}
+{
+activeSection==="jobs" &&
 
-
-<Card
-
-
-className="glass"
-
-
-sx={{
-
-
-mt:5,
-
-
-padding:3
-
-}}
-
-
->
-
-
+<>
 
 
 <Typography
 
-
 variant="h5"
 
+fontWeight="800"
 
-fontWeight="700"
-
+mt={5}
 
 mb={3}
 
-
 >
 
-AI Verified Job Recommendations
+{
+
+showSuspicious
+
+?
+
+"⚠ Suspicious Jobs"
+
+:
+
+showVerified
+
+?
+
+"✓ Verified Jobs"
+
+:
+
+"Available Jobs"
+
+}
+
 
 </Typography>
 
@@ -424,7 +891,6 @@ AI Verified Job Recommendations
 
 <Grid
 
-
 container
 
 spacing={3}
@@ -432,72 +898,46 @@ spacing={3}
 >
 
 
-
 {
 
-jobs.map((job,index)=>(
+filteredJobs.length===0
 
+?
+
+<Typography>
+
+No jobs found.
+
+</Typography>
+
+
+:
+
+
+filteredJobs.map(job=>(
 
 
 <Grid
-
 
 item
 
 xs={12}
 
-md={4}
+md={6}
 
-key={index}
-
->
-
-
-
-<Card
-
-
-sx={{
-
-
-height:"100%",
-
-
-background:
-
-"rgba(15,23,42,.8)",
-
-
-color:"white",
-
-
-borderRadius:4,
-
-
-border:
-
-"1px solid rgba(255,255,255,.08)"
-
-}}
-
-
+key={job.id}
 
 >
 
 
-
-<CardContent>
-
-
+<Card sx={cardStyle}>
 
 
 <Typography
 
-
 variant="h6"
 
-
-fontWeight="700"
+fontWeight="900"
 
 >
 
@@ -508,88 +948,24 @@ fontWeight="700"
 
 
 
-<Typography
+<Typography>
 
+Company:
 
-color="#94a3b8"
-
-
->
-
-{job.company}
+{job.company_name || job.company}
 
 </Typography>
 
-
-
-<Typography
-
-
-mt={1}
-
->
-
-📍 {job.location}
-
-</Typography>
-
-
-
-
-
-
-<Box
-
-
-mt={2}
-
->
 
 
 
 <Typography>
 
+Location:
 
-AI Trust Score
-
-</Typography>
-
-
-
-<Typography
-
-
-fontSize={28}
-
-
-fontWeight="800"
-
-
-color={
-
-job.trust>80
-
-?
-
-"#22c55e"
-
-:
-
-"#ef4444"
-
-}
-
-
->
-
-{job.trust}%
+{job.location}
 
 </Typography>
-
-
-</Box>
-
-
 
 
 
@@ -597,28 +973,53 @@ job.trust>80
 
 <Chip
 
+icon={
 
-sx={{mt:2}}
-
-
-label={job.status}
-
-
-color={
-
-job.status==="Verified"
+job.is_fake_predicted
 
 ?
 
-"success"
+<Warning/>
 
 :
 
-"error"
+<VerifiedUser/>
 
 }
 
+label={
 
+job.is_fake_predicted
+
+?
+
+`Suspicious ${job.fake_probability}%`
+
+:
+
+`AI Trust Score ${job.trust_score || 0}%`
+
+}
+
+sx={{
+
+mt:2,
+
+background:
+
+job.is_fake_predicted
+
+?
+
+"#dc2626"
+
+:
+
+"#22c55e",
+
+color:"white"
+
+}}
 
 />
 
@@ -627,49 +1028,75 @@ job.status==="Verified"
 
 
 
+{
+job.linkedin_verified &&
 
+<Chip
 
-<Button
+label="LinkedIn Verified"
 
+sx={{
 
-fullWidth
+mt:2,
 
+ml:1,
 
-variant="contained"
+background:"#2563eb",
 
+color:"white"
 
-sx={{mt:3}}
+}}
 
-
-onClick={()=>
-
-
-navigate("/employee/jobs")
-
+/>
 
 }
 
 
+
+
+
+<Button
+
+fullWidth
+
+variant="contained"
+
+sx={{mt:3}}
+
+disabled={
+
+appliedJobs.includes(job.id)
+
+}
+
+onClick={()=>applyJob(job.id)}
+
 >
 
-View Job
+{
+
+appliedJobs.includes(job.id)
+
+?
+
+"Applied"
+
+:
+
+"Apply Now"
+
+}
+
 
 </Button>
 
 
 
 
-
-
-</CardContent>
-
-
 </Card>
 
 
-
 </Grid>
-
 
 
 ))
@@ -678,15 +1105,15 @@ View Job
 }
 
 
-
 </Grid>
 
 
+</>
 
 
+}
 
 
-</Card>
 
 
 
@@ -699,3 +1126,46 @@ View Job
 
 
 }
+
+
+
+
+
+
+
+const cardStyle={
+
+background:
+"rgba(255,255,255,0.08)",
+
+backdropFilter:"blur(20px)",
+
+border:
+"1px solid rgba(255,255,255,0.1)",
+
+borderRadius:5,
+
+padding:3,
+
+color:"white"
+
+};
+
+
+
+
+
+const statCard={
+
+background:
+"linear-gradient(135deg,#1e293b,#0f172a)",
+
+padding:3,
+
+borderRadius:4,
+
+color:"white",
+
+cursor:"pointer"
+
+};

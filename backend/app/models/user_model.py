@@ -11,6 +11,34 @@ class User(db.Model):
 
 
 
+    # ==========================
+    # TABLE CONSTRAINTS
+    # ==========================
+
+
+    __table_args__ = (
+
+        db.UniqueConstraint(
+
+            "email",
+
+            "role",
+
+            name="unique_email_role"
+
+        ),
+
+    )
+
+
+
+
+
+    # ==========================
+    # COLUMNS
+    # ==========================
+
+
     id = db.Column(
 
         db.Integer,
@@ -34,8 +62,6 @@ class User(db.Model):
     email = db.Column(
 
         db.String(150),
-
-        unique=True,
 
         nullable=False
 
@@ -73,12 +99,17 @@ class User(db.Model):
 
     )
 
+
+
     is_active = db.Column(
+
         db.Boolean,
+
         nullable=False,
+
         default=True
-    
-    )   
+
+    )
 
 
 
@@ -87,7 +118,9 @@ class User(db.Model):
         db.Integer,
 
         db.ForeignKey(
+
             "companies.id"
+
         ),
 
         nullable=True
@@ -108,22 +141,28 @@ class User(db.Model):
 
 
 
+
+
     # ==========================
     # RELATIONSHIPS
     # ==========================
 
 
+    # User belongs to company
+
     company = db.relationship(
 
         "Company",
 
-        backref="users"
+        back_populates="users"
 
     )
 
 
 
-    # Recruiter posted jobs
+
+
+    # Recruiter creates jobs
 
     jobs = db.relationship(
 
@@ -135,18 +174,63 @@ class User(db.Model):
 
     )
 
-        # Recruiter profile
-    recruiter_profile = db.relationship(
-        "Recruiter",
+
+
+
+
+    # Employee applications
+
+    applications = db.relationship(
+
+        "Application",
+
         back_populates="user",
-        uselist=False,
+
         cascade="all, delete-orphan"
+
     )
 
 
 
 
 
+    # Notifications
+
+    notifications = db.relationship(
+
+        "Notification",
+
+        back_populates="user",
+
+        cascade="all, delete-orphan"
+
+    )
+
+
+
+
+
+    # Recruiter profile
+
+    recruiter_profiles = db.relationship(
+
+        "Recruiter",
+
+        back_populates="user",
+
+        cascade="all, delete-orphan"
+
+    )
+
+
+
+
+
+
+
+    # ==========================
+    # JSON RESPONSE
+    # ==========================
 
 
     def to_dict(self):
@@ -169,7 +253,9 @@ class User(db.Model):
 
             "role": self.role,
 
-            "is_active": self.is_active, 
+
+            "is_active": self.is_active,
+
 
             "company_id": self.company_id
 

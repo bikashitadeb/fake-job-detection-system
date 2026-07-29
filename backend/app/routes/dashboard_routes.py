@@ -1,19 +1,250 @@
-from flask import Blueprint
+from flask import Blueprint, jsonify
 
 from flask_jwt_extended import (
     jwt_required,
     get_jwt_identity
 )
 
+from app.models.user_model import User
 from app.models.job_model import Job
+from app.models.application_model import Application
 
 
 
 dashboard_bp = Blueprint(
+
     "dashboard",
+
     __name__,
+
     url_prefix="/api/dashboard"
+
 )
+
+
+
+
+
+# =====================================
+# COMMON PROFILE
+# =====================================
+
+@dashboard_bp.route(
+    "/profile",
+    methods=["GET"]
+)
+
+@jwt_required()
+
+def profile():
+
+
+    user_id = int(
+        get_jwt_identity()
+    )
+
+
+    user = User.query.get(user_id)
+
+
+
+    if not user:
+
+        return jsonify({
+
+            "message":"User not found"
+
+        }),404
+
+
+
+
+    return jsonify({
+
+        "user": user.to_dict()
+
+    }),200
+
+
+
+
+
+
+
+# =====================================
+# EMPLOYEE DASHBOARD
+# =====================================
+
+
+@dashboard_bp.route(
+    "/employee",
+    methods=["GET"]
+)
+
+@jwt_required()
+
+def employee_dashboard():
+
+
+    user_id = int(
+        get_jwt_identity()
+    )
+
+
+    user = User.query.get(user_id)
+
+
+
+    if not user:
+
+        return jsonify({
+
+            "message":"User not found"
+
+        }),404
+
+
+
+
+    if user.role != "employee":
+
+        return jsonify({
+
+            "message":"Access denied"
+
+        }),403
+
+
+
+
+
+
+    # Show all approved jobs
+    jobs = Job.query.filter(
+
+        Job.status.in_(
+            [
+                "verified",
+                "pending"
+            ]
+        )
+
+    ).all()
+
+
+
+
+
+    applications = Application.query.filter_by(
+
+        jobseeker_id=user.id
+
+    ).all()
+
+
+
+
+
+    suspicious_jobs = Job.query.filter_by(
+
+        is_fake_predicted=True
+
+    ).all()
+
+
+
+
+
+
+    return jsonify({
+
+
+        "user":
+
+        user.to_dict(),
+
+
+
+
+        "jobs":
+
+        [
+
+            job.to_dict()
+
+            for job in jobs
+
+        ],
+
+
+
+
+        "applications":
+
+        [
+
+            app.to_dict()
+
+            for app in applications
+
+        ],
+
+
+
+
+
+        "suspicious_jobs":
+
+        [
+
+            job.to_dict()
+
+            for job in suspicious_jobs
+
+        ],
+
+
+
+
+        "analytics":
+
+        {
+
+            "total_jobs":
+
+            len(jobs),
+
+
+
+            "verified_jobs":
+
+            len(
+
+                [
+                    j for j in jobs
+
+                    if j.linkedin_verified
+                ]
+
+            ),
+
+
+
+            "suspicious_jobs":
+
+            len(suspicious_jobs)
+
+        }
+
+
+    }),200
+
+
+
+
+
+
+
 
 
 
@@ -22,115 +253,173 @@ dashboard_bp = Blueprint(
 # RECRUITER DASHBOARD
 # =====================================
 
-@dashboard_bp.get("/recruiter")
+
+@dashboard_bp.route(
+    "/recruiter",
+    methods=["GET"]
+)
+
 @jwt_required()
+
 def recruiter_dashboard():
 
-    recruiter_id = int(
+
+    user_id = int(
+
         get_jwt_identity()
+
     )
 
 
+
+    user = User.query.get(user_id)
+
+
+
+
+    if not user:
+
+        return jsonify({
+
+            "message":"User not found"
+
+        }),404
+
+
+
+
+
+    if user.role != "recruiter":
+
+
+        return jsonify({
+
+            "message":"Access denied"
+
+        }),403
+
+
+
+
+
+
+
     jobs = Job.query.filter_by(
-        recruiter_id=recruiter_id
+
+        recruiter_id=user.id
+
     ).all()
 
 
 
-    total_jobs = len(jobs)
 
 
 
-    fake_jobs = 0
 
-    verified_jobs = 0
+    applications = Application.query.join(
 
-    pending_jobs = 0
+        Job
 
+    ).filter(
 
+        Job.recruiter_id == user.id
 
-    for job in jobs:
-
-
-        if job.is_fake_predicted:
-
-            fake_jobs += 1
-
-
-
-        if job.status == "verified":
-
-            verified_jobs += 1
-
-
-        else:
-
-            pending_jobs += 1
+    ).all()
 
 
 
 
 
-    recent_jobs = []
+
+    return jsonify({
 
 
+        "user":
 
-    for job in jobs[-5:]:
-
-
-        trust_score = 100 - (
-            job.fake_probability or 0
-        )
-
-
-        recent_jobs.append({
-
-            "id": job.id,
-
-            "title": job.title,
-
-            "company": job.company,
-
-            "location": job.location,
-
-            "trust_score": round(
-                trust_score,
-                2
-            ),
-
-            "status": job.status
-
-        })
+        user.to_dict(),
 
 
 
 
 
-    return {
+        "jobs":
+
+        [
+
+            job.to_dict()
+
+            for job in jobs
+
+        ],
 
 
-        "stats": {
+
+
+
+
+        "applications":
+
+        [
+
+            app.to_dict()
+
+            for app in applications
+
+        ],
+
+
+
+
+        "analytics":
+
+        {
 
 
             "total_jobs":
-            total_jobs,
+
+            len(jobs),
+
 
 
             "fake_jobs":
-            fake_jobs,
+
+            len(
+
+                [
+
+                j for j in jobs
+
+                if j.is_fake_predicted
+
+                ]
+
+            ),
 
 
-            "verified_jobs":
-            verified_jobs,
+
+            "average_trust_score":
+
+            (
+
+                sum(
+
+                    j.trust_score or 0
+
+                    for j in jobs
+
+                )
+
+                /
+
+                len(jobs)
+
+            )
+
+            if jobs else 0
 
 
-            "pending_jobs":
-            pending_jobs
-
-        },
+        }
 
 
-        "recent_jobs":
-        recent_jobs
 
-    }
+    }),200

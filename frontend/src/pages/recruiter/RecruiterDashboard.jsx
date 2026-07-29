@@ -1,164 +1,42 @@
 import {
+    useEffect,
+    useState
+} from "react";
 
-Grid,
 
-Card,
-
-CardContent,
-
-Typography,
-
-Box,
-
-Chip,
-
-Button,
-
-LinearProgress
-
+import {
+    Box,
+    Typography,
+    Grid,
+    Card,
+    Button,
+    CircularProgress,
+    Divider,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    TextField
 } from "@mui/material";
 
 
 import {
-
-Work,
-
-People,
-
-Security,
-
-VerifiedUser
-
+    Work,
+    People,
+    VerifiedUser,
+    Notifications,
+    Add
 } from "@mui/icons-material";
 
 
 import {
-
-useNavigate
-
+    useNavigate
 } from "react-router-dom";
 
 
-
-
-
-const stats=[
-
-
-{
-
-title:"Jobs Posted",
-
-value:"32",
-
-icon:<Work/>,
-
-color:"#2563eb"
-
-},
-
-
-
-{
-
-title:"Applications",
-
-value:"245",
-
-icon:<People/>,
-
-color:"#16a34a"
-
-},
-
-
-
-{
-
-title:"Recruiter Trust Score",
-
-value:"92%",
-
-icon:<VerifiedUser/>,
-
-color:"#9333ea"
-
-},
-
-
-
-{
-
-title:"Verification Status",
-
-value:"Verified",
-
-icon:<Security/>,
-
-color:"#f97316"
-
-}
-
-
-
-];
-
-
-
-
-
-
-
-const recentJobs=[
-
-
-{
-
-title:"Software Engineer",
-
-company:"Tech Solutions",
-
-trust:96,
-
-status:"Verified"
-
-},
-
-
-
-{
-
-title:"Frontend Developer",
-
-company:"Startup Labs",
-
-trust:82,
-
-status:"Verified"
-
-},
-
-
-
-{
-
-title:"Data Entry Work",
-
-company:"Unknown Company",
-
-trust:35,
-
-status:"Suspicious"
-
-}
-
-
-
-];
-
-
-
-
+import {
+    getRecruiterDashboard
+} from "../../api/recruiter";
 
 
 
@@ -167,8 +45,214 @@ status:"Suspicious"
 export default function RecruiterDashboard(){
 
 
-
 const navigate = useNavigate();
+
+
+
+const [dashboard,setDashboard]=useState(null);
+
+const [notifications,setNotifications]=useState([]);
+
+const [loading,setLoading]=useState(true);
+
+const [error,setError]=useState("");
+
+
+
+const [verifyOpen,setVerifyOpen]=useState(false);
+
+const [verifyType,setVerifyType]=useState("");
+
+const [verifyValue,setVerifyValue]=useState("");
+
+
+
+
+
+
+
+
+useEffect(()=>{
+
+
+loadDashboard();
+
+
+},[]);
+
+
+
+
+
+
+
+
+const loadDashboard=async()=>{
+
+
+try{
+
+
+const response = await getRecruiterDashboard();
+
+
+console.log(
+
+"RECRUITER DASHBOARD",
+
+response.data
+
+);
+
+
+
+setDashboard(
+
+response.data
+
+);
+
+
+
+setNotifications([]);
+
+
+
+}
+
+
+catch(err){
+
+
+console.log(
+
+err
+
+);
+
+
+setError(
+
+"Unable to load recruiter dashboard"
+
+);
+
+
+}
+
+
+finally{
+
+
+setLoading(false);
+
+
+}
+
+
+};
+
+
+
+
+
+
+
+
+const openVerification=(type)=>{
+
+
+setVerifyType(type);
+
+setVerifyValue("");
+
+setVerifyOpen(true);
+
+
+};
+
+
+
+
+
+
+
+const submitVerification=()=>{
+
+
+console.log(
+
+"Verification Submitted:",
+
+verifyType,
+
+verifyValue
+
+);
+
+
+setVerifyOpen(false);
+
+
+};
+
+
+
+
+
+
+
+
+if(loading){
+
+
+return(
+
+<Box
+
+height="100vh"
+
+display="flex"
+
+justifyContent="center"
+
+alignItems="center"
+
+>
+
+<CircularProgress/>
+
+</Box>
+
+);
+
+
+}
+
+
+
+
+
+
+
+const jobs =
+
+dashboard?.jobs || [];
+
+
+
+const applications =
+
+dashboard?.applications || [];
+
+
+
+const user =
+
+dashboard?.user;
+
+
+
 
 
 
@@ -177,17 +261,33 @@ const navigate = useNavigate();
 return(
 
 
-<Box>
+<Box
+
+sx={{
+
+minHeight:"100vh",
+
+background:
+
+"linear-gradient(135deg,#020617,#111827,#312e81)",
+
+padding:4,
+
+color:"white"
+
+}}
+
+>
 
 
 
-
-{/* HEADER */}
 
 
 <Typography
 
-className="dashboard-title"
+variant="h4"
+
+fontWeight="900"
 
 >
 
@@ -198,15 +298,20 @@ Recruiter Dashboard 👋
 
 
 
+
 <Typography
 
-className="dashboard-subtitle"
+sx={{
 
-mb={4}
+color:"#94a3b8",
+
+mb:4
+
+}}
 
 >
 
-Manage jobs, verify your profile and track recruitment activity.
+Welcome {user?.name || "Recruiter"} • Manage jobs, applicants and verification
 
 </Typography>
 
@@ -216,8 +321,25 @@ Manage jobs, verify your profile and track recruitment activity.
 
 
 
+{
+error &&
 
-{/* STATISTICS */}
+<Typography
+
+color="error"
+
+>
+
+{error}
+
+</Typography>
+
+}
+
+
+
+
+
 
 
 
@@ -230,96 +352,101 @@ spacing={3}
 >
 
 
-{
 
-stats.map((item,index)=>(
+<Grid item xs={12} md={3}>
 
+<StatCard
 
+icon={<Work/>}
 
-<Grid
+title="Jobs Posted"
 
-item
+value={jobs.length}
 
-xs={12}
+/>
 
-sm={6}
-
-lg={3}
-
-key={index}
-
->
+</Grid>
 
 
 
-<Card
 
 
-className="glass stat-card"
+<Grid item xs={12} md={3}>
 
+<StatCard
 
-sx={{
+icon={<People/>}
 
+title="Applications"
 
-background:
+value={applications.length}
 
-`linear-gradient(
+/>
 
-135deg,
-
-${item.color},
-
-#020617
-
-)`
-
-
-}}
+</Grid>
 
 
 
->
+
+
+<Grid item xs={12} md={3}>
+
+<StatCard
+
+icon={<VerifiedUser/>}
+
+title="Trust Score"
+
+value="92%"
+
+/>
+
+</Grid>
 
 
 
-<CardContent>
+
+
+<Grid item xs={12} md={3}>
+
+<StatCard
+
+icon={<Notifications/>}
+
+title="Notifications"
+
+value={notifications.length}
+
+/>
+
+</Grid>
 
 
 
-<Box
-
-fontSize={40}
-
->
-
-{item.icon}
-
-</Box>
+</Grid>
 
 
 
+
+
+
+
+
+
+<Card sx={cardStyle}>
 
 
 <Typography
 
-variant="h4"
+variant="h5"
 
 fontWeight="800"
 
-mt={2}
+mb={3}
 
 >
 
-{item.value}
-
-</Typography>
-
-
-
-
-<Typography>
-
-{item.title}
+Quick Actions
 
 </Typography>
 
@@ -327,7 +454,49 @@ mt={2}
 
 
 
-</CardContent>
+<Button
+
+variant="contained"
+
+startIcon={<Add/>}
+
+onClick={()=>navigate("/recruiter/post-job")}
+
+sx={buttonStyle}
+
+>
+
+Post New Job
+
+</Button>
+
+
+
+
+
+<Button
+
+variant="outlined"
+
+onClick={()=>navigate("/recruiter/applicants")}
+
+sx={{
+
+...buttonStyle,
+
+ml:2,
+
+color:"white",
+
+borderColor:"#64748b"
+
+}}
+
+>
+
+View Applicants
+
+</Button>
 
 
 
@@ -335,60 +504,20 @@ mt={2}
 
 
 
-</Grid>
-
-
-
-))
-
-
-}
-
-
-</Grid>
 
 
 
 
 
 
-
-
-
-{/* VERIFICATION SECTION */}
-
-
-
-<Card
-
-
-className="glass"
-
-
-sx={{
-
-
-mt:5,
-
-padding:3,
-
-color:"white"
-
-}}
-
-
-
->
-
+<Card sx={cardStyle}>
 
 
 <Typography
 
 variant="h5"
 
-fontWeight="700"
-
-mb={3}
+fontWeight="800"
 
 >
 
@@ -400,26 +529,11 @@ Recruiter Verification Score
 
 
 
-
-<Box>
-
-
-
-<Typography>
-
-Overall Trust Score
-
-</Typography>
-
-
-
 <Typography
 
-variant="h2"
+fontSize={70}
 
 fontWeight="900"
-
-color="#22c55e"
 
 >
 
@@ -430,111 +544,110 @@ color="#22c55e"
 
 
 
-<LinearProgress
-
-
-variant="determinate"
-
-
-value={92}
-
-
-sx={{
-
-
-height:10,
-
-
-borderRadius:5,
-
-
-mt:2
-
-}}
-
-
-
-/>
-
-
-
-</Box>
-
-
-
-
 
 
 
 <Box
 
-mt={3}
+sx={{
 
-display="flex"
+height:12,
 
-gap={2}
+background:"#334155",
 
-flexWrap="wrap"
+borderRadius:10
+
+}}
 
 >
 
 
 
-<Chip
+<Box
 
-label="LinkedIn Verified"
+sx={{
 
-color="success"
+width:"92%",
 
-/>
+height:"100%",
 
+background:
 
+"linear-gradient(90deg,#6366f1,#22c55e)",
 
-<Chip
+borderRadius:10
 
-label="Official Email Verified"
-
-color="success"
-
-/>
-
-
-
-<Chip
-
-label="Company Verified"
-
-color="success"
+}}
 
 />
 
 
 
 </Box>
+
+
+
+
+
+
+
+
+<Box mt={3}>
+
+
+<Button
+
+variant="contained"
+
+onClick={()=>openVerification("LinkedIn")}
+
+sx={verifyButtonStyle}
+
+>
+
+LinkedIn Verified
+
+</Button>
+
 
 
 
 
 <Button
 
-
 variant="contained"
 
+onClick={()=>openVerification("Email")}
 
-sx={{mt:3}}
-
-
-onClick={()=>navigate("/recruiter/verification")}
-
+sx={verifyButtonStyle}
 
 >
 
-
-Improve Verification
+Email Verified
 
 </Button>
 
 
+
+
+
+<Button
+
+variant="contained"
+
+onClick={()=>openVerification("Company")}
+
+sx={verifyButtonStyle}
+
+>
+
+Company Verified
+
+</Button>
+
+
+
+</Box>
 
 
 
@@ -548,38 +661,14 @@ Improve Verification
 
 
 
-{/* JOB POSTS */}
-
-
-
-<Card
-
-
-className="glass"
-
-
-sx={{
-
-
-mt:5,
-
-padding:3,
-
-color:"white"
-
-}}
-
-
-
->
-
+<Card sx={cardStyle}>
 
 
 <Typography
 
 variant="h5"
 
-fontWeight="700"
+fontWeight="800"
 
 mb={3}
 
@@ -593,71 +682,47 @@ Recent Job Posts
 
 
 
-
-
-<Grid
-
-container
-
-spacing={3}
-
->
-
-
-
 {
 
-recentJobs.map((job,index)=>(
+jobs.length===0
+
+?
+
+<Typography>
+
+No jobs posted yet.
+
+</Typography>
 
 
 
-<Grid
+:
 
-item
-
-xs={12}
-
-md={4}
-
-key={index}
-
->
-
+jobs.map(job=>(
 
 
 <Card
 
+key={job.id}
 
 sx={{
 
+background:"rgba(255,255,255,.06)",
 
-background:"rgba(15,23,42,.8)",
+padding:3,
 
+marginBottom:2,
 
-color:"white",
-
-
-borderRadius:4
-
+color:"white"
 
 }}
-
-
 
 >
 
 
-
-<CardContent>
-
-
-
-
 <Typography
 
-variant="h6"
-
-fontWeight="700"
+fontWeight="800"
 
 >
 
@@ -667,113 +732,15 @@ fontWeight="700"
 
 
 
-
-<Typography
-
-color="#94a3b8"
-
->
-
-{job.company}
-
-</Typography>
-
-
-
-
-
-
-
-<Box mt={2}>
-
-
 <Typography>
 
-AI Trust Score
+{job.company_name}
 
 </Typography>
-
-
-
-<Typography
-
-variant="h3"
-
-fontWeight="800"
-
-color={
-
-job.trust>80
-
-?
-
-"#22c55e"
-
-:
-
-"#ef4444"
-
-}
-
->
-
-{job.trust}%
-
-</Typography>
-
-
-
-</Box>
-
-
-
-
-
-
-
-<Chip
-
-
-sx={{mt:2}}
-
-
-label={job.status}
-
-
-color={
-
-job.status==="Verified"
-
-?
-
-"success"
-
-:
-
-"error"
-
-}
-
-
-
-/>
-
-
-
-
-
-
-
-</CardContent>
 
 
 
 </Card>
-
-
-
-</Grid>
-
 
 
 ))
@@ -783,15 +750,174 @@ job.status==="Verified"
 
 
 
-</Grid>
+</Card>
 
 
 
 
+
+
+
+
+
+<Card sx={cardStyle}>
+
+
+<Typography
+
+variant="h5"
+
+fontWeight="800"
+
+>
+
+Notifications 🔔
+
+</Typography>
+
+
+
+<Divider
+
+sx={{
+
+my:2,
+
+borderColor:"#475569"
+
+}}
+
+/>
+
+
+
+
+
+<Typography>
+
+No new notifications
+
+</Typography>
 
 
 
 </Card>
+
+
+
+
+
+
+
+
+
+<Dialog
+
+open={verifyOpen}
+
+onClose={()=>setVerifyOpen(false)}
+
+fullWidth
+
+maxWidth="sm"
+
+>
+
+
+<DialogTitle>
+
+Verify {verifyType}
+
+</DialogTitle>
+
+
+
+
+<DialogContent>
+
+
+<TextField
+
+fullWidth
+
+sx={{mt:2}}
+
+label={
+
+verifyType==="LinkedIn"
+
+?
+
+"LinkedIn Profile URL"
+
+:
+
+verifyType==="Email"
+
+?
+
+"Official Email Address"
+
+:
+
+"Company Registration Details"
+
+}
+
+value={verifyValue}
+
+onChange={(e)=>setVerifyValue(e.target.value)}
+
+/>
+
+
+
+</DialogContent>
+
+
+
+
+
+
+
+<DialogActions>
+
+
+<Button
+
+onClick={()=>setVerifyOpen(false)}
+
+>
+
+Cancel
+
+</Button>
+
+
+
+<Button
+
+variant="contained"
+
+onClick={submitVerification}
+
+>
+
+Submit Verification
+
+</Button>
+
+
+
+</DialogActions>
+
+
+
+</Dialog>
+
+
+
+
 
 
 
@@ -804,3 +930,161 @@ job.status==="Verified"
 
 
 }
+
+
+
+
+
+
+
+
+function StatCard({
+
+icon,
+
+title,
+
+value
+
+}){
+
+
+return(
+
+
+<Card
+
+sx={{
+
+background:
+
+"linear-gradient(135deg,#1e293b,#0f172a)",
+
+padding:3,
+
+borderRadius:4,
+
+color:"white"
+
+}}
+
+>
+
+
+<Box
+
+display="flex"
+
+gap={2}
+
+>
+
+{icon}
+
+</Box>
+
+
+
+
+<Typography
+
+fontSize={40}
+
+fontWeight="900"
+
+>
+
+{value}
+
+</Typography>
+
+
+
+
+<Typography>
+
+{title}
+
+</Typography>
+
+
+
+</Card>
+
+
+);
+
+
+}
+
+
+
+
+
+
+
+const cardStyle={
+
+
+background:
+
+"rgba(255,255,255,0.08)",
+
+
+backdropFilter:"blur(20px)",
+
+
+border:
+
+"1px solid rgba(255,255,255,0.12)",
+
+
+borderRadius:5,
+
+
+padding:4,
+
+
+mt:4,
+
+
+color:"white"
+
+
+};
+
+
+
+
+
+const buttonStyle={
+
+
+borderRadius:3,
+
+padding:"12px 25px"
+
+
+};
+
+
+
+
+
+const verifyButtonStyle={
+
+
+background:"#22c55e",
+
+color:"#052e16",
+
+borderRadius:3,
+
+marginRight:10,
+
+marginTop:10,
+
+fontWeight:700
+
+
+};

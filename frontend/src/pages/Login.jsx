@@ -15,7 +15,8 @@ import {
     Typography,
     Box,
     Alert,
-    CircularProgress
+    CircularProgress,
+    MenuItem
 } from "@mui/material";
 
 
@@ -53,9 +54,12 @@ const [form,setForm]=useState({
 
     email:"",
 
-    password:""
+    password:"",
+
+    role:"employee"
 
 });
+
 
 
 
@@ -90,7 +94,6 @@ setForm({
 
 
 
-
 const handleLogin=async(e)=>{
 
 
@@ -100,6 +103,7 @@ e.preventDefault();
 setError("");
 
 setLoading(true);
+
 
 
 
@@ -123,8 +127,6 @@ console.log(
 
 
 
-// check response
-
 if(!data.user){
 
 
@@ -138,7 +140,7 @@ throw new Error(
 
 
 
-// save authentication
+
 
 login({
 
@@ -152,12 +154,6 @@ login({
 
 
 
-
-
-
-// ========================
-// ROLE BASED REDIRECT
-// ========================
 
 
 switch(data.user.role){
@@ -232,6 +228,7 @@ console.log(
     err.response?.data || err.message
 
 );
+
 
 
 
@@ -413,6 +410,7 @@ sx={{mb:3}}
 
 
 
+
 <Box
 
 component="form"
@@ -420,6 +418,92 @@ component="form"
 onSubmit={handleLogin}
 
 >
+
+
+
+
+
+
+{/* ROLE SELECT */}
+
+<TextField
+
+
+select
+
+
+fullWidth
+
+
+label="Login As"
+
+
+name="role"
+
+
+value={form.role}
+
+
+onChange={handleChange}
+
+
+margin="normal"
+
+
+
+InputLabelProps={{
+
+style:{
+
+color:"#94a3b8"
+
+}
+
+}}
+
+
+
+sx={{
+
+
+"& .MuiOutlinedInput-root":{
+
+"& fieldset":{
+
+borderColor:"#475569"
+
+}
+
+}
+
+
+}}
+
+
+
+>
+
+
+<MenuItem value="employee">
+
+Employee
+
+</MenuItem>
+
+
+
+<MenuItem value="recruiter">
+
+Recruiter
+
+</MenuItem>
+
+
+
+</TextField>
+
+
+
 
 
 
@@ -487,6 +571,7 @@ borderColor:"#475569"
 
 
 
+
 <TextField
 
 fullWidth
@@ -506,6 +591,7 @@ margin="normal"
 
 
 InputLabelProps={{
+
 
 style:{
 
@@ -549,6 +635,8 @@ borderColor:"#475569"
 
 
 
+
+
 <Button
 
 fullWidth
@@ -564,15 +652,20 @@ disabled={loading}
 
 sx={{
 
+
 mt:4,
+
 
 height:50,
 
+
 borderRadius:3,
+
 
 background:
 
 "linear-gradient(90deg,#4f46e5,#7c3aed)"
+
 
 }}
 
@@ -586,6 +679,7 @@ background:
 
 loading ?
 
+
 <CircularProgress
 
 size={25}
@@ -593,6 +687,7 @@ size={25}
 color="inherit"
 
 />
+
 
 :
 
@@ -603,6 +698,7 @@ color="inherit"
 
 
 </Button>
+
 
 
 
@@ -628,7 +724,9 @@ onClick={()=>navigate("/register")}
 
 >
 
+
 Create Account
+
 
 </Button>
 
@@ -648,8 +746,8 @@ Create Account
 
 
 
-</Box>
 
+</Box>
 
 
 );

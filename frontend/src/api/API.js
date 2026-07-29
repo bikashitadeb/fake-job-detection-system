@@ -1,18 +1,13 @@
 import axios from "axios";
 
 
-
 // ================================
 // BACKEND URL
 // ================================
 
-
 const BASE_URL =
-
     import.meta.env.VITE_API_URL ||
-
     "http://127.0.0.1:5000/api";
-
 
 
 
@@ -21,26 +16,17 @@ const BASE_URL =
 // AXIOS INSTANCE
 // ================================
 
-
 const API = axios.create({
-
 
     baseURL: BASE_URL,
 
+    headers: {
 
-    headers:{
-
-
-        "Content-Type":"application/json"
-
+        "Content-Type": "application/json"
 
     }
 
-
 });
-
-
-
 
 
 
@@ -50,56 +36,41 @@ const API = axios.create({
 // ADD JWT TOKEN
 // ================================
 
-
 API.interceptors.request.use(
 
-
-(config)=>{
-
-
-    const token = localStorage.getItem(
-
-        "access_token"
-
-    );
+    (config)=>{
 
 
+        const token = localStorage.getItem(
+            "access_token"
+        );
 
-    if(token){
+
+        if(token){
 
 
-        config.headers.Authorization =
+            config.headers = config.headers || {};
 
-        `Bearer ${token}`;
 
+            config.headers.Authorization =
+                `Bearer ${token}`;
+
+        }
+
+
+        return config;
+
+
+    },
+
+
+    (error)=>{
+
+        return Promise.reject(error);
 
     }
 
-
-
-    return config;
-
-
-
-},
-
-
-
-(error)=>{
-
-
-    return Promise.reject(error);
-
-
-}
-
-
-
 );
-
-
-
-
 
 
 
@@ -107,81 +78,79 @@ API.interceptors.request.use(
 
 // ================================
 // RESPONSE INTERCEPTOR
-// HANDLE ERRORS
+// HANDLE AUTH ERRORS
 // ================================
-
 
 API.interceptors.response.use(
 
 
-
-(response)=>{
-
-
-    return response;
+    (response)=>{
 
 
-},
+        return response;
 
 
+    },
 
 
-(error)=>{
+    (error)=>{
 
 
-
-    if(error.response){
-
+        if(error.response){
 
 
-        // JWT expired / unauthorized
-
-        if(error.response.status === 401){
+            const status = error.response.status;
 
 
 
-            localStorage.removeItem(
-
-                "access_token"
-
-            );
+            // Unauthorized
+            if(status === 401){
 
 
-
-            localStorage.removeItem(
-
-                "user"
-
-            );
+                console.log(
+                    "JWT expired or missing"
+                );
 
 
+                localStorage.removeItem(
+                    "access_token"
+                );
 
-            window.location.href="/login";
+
+                localStorage.removeItem(
+                    "user"
+                );
+
+
+                window.location.href =
+                    "/login";
+
+
+            }
+
+
+            // Forbidden
+            if(status === 403){
+
+
+                console.log(
+                    "Access denied"
+                );
+
+
+            }
 
 
         }
 
 
+        return Promise.reject(error);
+
 
     }
 
 
-
-
-
-    return Promise.reject(error);
-
-
-
-}
-
-
-
 );
-
-
-
-
 
 
 

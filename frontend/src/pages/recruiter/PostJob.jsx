@@ -1,55 +1,54 @@
 import {
-
-useState
-
+    useState
 } from "react";
 
 
 import {
 
-Box,
+    Box,
 
-Card,
+    Card,
 
-CardContent,
+    CardContent,
 
-Typography,
+    Typography,
 
-TextField,
+    TextField,
 
-Button,
+    Button,
 
-Grid,
+    Grid,
 
-Alert,
+    Alert,
 
-Dialog,
+    Dialog,
 
-DialogTitle,
+    DialogTitle,
 
-DialogContent,
+    DialogContent,
 
-DialogActions,
+    DialogActions,
 
-Chip,
+    Chip,
 
-CircularProgress
+    CircularProgress
 
 } from "@mui/material";
 
 
+
 import {
 
-CheckCircle,
+    CheckCircle,
 
-Warning,
-
-Security
+    Warning
 
 } from "@mui/icons-material";
 
 
+
 import API from "../../api/API";
+
 
 
 
@@ -62,25 +61,25 @@ export default function PostJob(){
 const [form,setForm]=useState({
 
 
-title:"",
+    title:"",
 
-company:"",
+    company:"",
 
-location:"",
+    location:"",
 
-salary:"",
+    salary:"",
 
-experience:"",
+    experience:"",
 
-skills:"",
+    skills:"",
 
-description:"",
+    description:"",
 
-website:"",
+    website:"",
 
-official_email:"",
+    official_email:"",
 
-linkedin_url:""
+    linkedin_url:""
 
 
 });
@@ -95,10 +94,13 @@ const [loading,setLoading]=useState(false);
 const [error,setError]=useState("");
 
 
+
 const [result,setResult]=useState(null);
 
 
 const [open,setOpen]=useState(false);
+
+
 
 
 
@@ -111,11 +113,11 @@ const handleChange=(e)=>{
 
 setForm({
 
-...form,
+    ...form,
 
-[e.target.name]:
+    [e.target.name]:
 
-e.target.value
+    e.target.value
 
 });
 
@@ -147,23 +149,38 @@ setError("");
 try{
 
 
-
 const response = await API.post(
 
-"/jobs",
+    "/jobs",
 
-{
-
-
-...form,
+    {
 
 
-salary:
+        title:form.title,
 
-Number(form.salary)
 
-}
+        description:form.description,
 
+
+        location:form.location,
+
+
+        salary:form.salary
+
+
+    }
+
+);
+
+
+
+
+
+console.log(
+
+    "JOB RESPONSE",
+
+    response.data
 
 );
 
@@ -173,9 +190,11 @@ Number(form.salary)
 
 setResult(
 
-response.data.data
+    response.data.job
 
 );
+
+
 
 
 
@@ -183,27 +202,31 @@ setOpen(true);
 
 
 
+
+
 setForm({
 
-title:"",
 
-company:"",
+    title:"",
 
-location:"",
+    company:"",
 
-salary:"",
+    location:"",
 
-experience:"",
+    salary:"",
 
-skills:"",
+    experience:"",
 
-description:"",
+    skills:"",
 
-website:"",
+    description:"",
 
-official_email:"",
+    website:"",
 
-linkedin_url:""
+    official_email:"",
+
+    linkedin_url:""
+
 
 });
 
@@ -213,19 +236,39 @@ linkedin_url:""
 
 }
 
+
+
 catch(err){
 
 
-setError(
 
-err.response?.data?.message ||
+console.log(
 
-"Unable to post job"
+    "JOB POST ERROR",
+
+    err
 
 );
 
 
+
+
+setError(
+
+
+err.response?.data?.message ||
+
+
+"Unable to post job"
+
+
+);
+
+
+
 }
+
+
 
 
 
@@ -269,6 +312,8 @@ Post New Job 🚀
 
 
 
+
+
 <Typography
 
 className="dashboard-subtitle"
@@ -280,6 +325,7 @@ mb={4}
 AI will automatically verify this job before publishing.
 
 </Typography>
+
 
 
 
@@ -303,7 +349,11 @@ sx={{mb:3}}
 
 </Alert>
 
+
 }
+
+
+
 
 
 
@@ -318,9 +368,12 @@ className="glass"
 
 sx={{
 
+
 padding:3,
 
+
 color:"white"
+
 
 }}
 
@@ -330,6 +383,8 @@ color:"white"
 
 
 <CardContent>
+
+
 
 
 
@@ -352,6 +407,10 @@ container
 spacing={3}
 
 >
+
+
+
+
 
 
 
@@ -390,6 +449,7 @@ required
 
 
 
+
 <Grid
 
 item
@@ -412,8 +472,6 @@ name="company"
 value={form.company}
 
 onChange={handleChange}
-
-required
 
 />
 
@@ -461,6 +519,7 @@ required
 
 
 
+
 <Grid
 
 item
@@ -477,8 +536,6 @@ md={6}
 fullWidth
 
 label="Salary"
-
-type="number"
 
 name="salary"
 
@@ -523,6 +580,7 @@ onChange={handleChange}
 />
 
 </Grid>
+
 
 
 
@@ -595,6 +653,7 @@ onChange={handleChange}
 
 
 
+
 <Grid
 
 item
@@ -628,6 +687,7 @@ onChange={handleChange}
 
 
 
+
 <Grid
 
 item
@@ -654,6 +714,7 @@ onChange={handleChange}
 />
 
 </Grid>
+
 
 
 
@@ -699,6 +760,8 @@ required
 
 
 
+
+
 <Grid
 
 item
@@ -726,18 +789,22 @@ size="large"
 disabled={loading}
 
 
+
 sx={{
+
 
 height:55,
 
+
 borderRadius:3,
+
 
 background:
 
 "linear-gradient(90deg,#4f46e5,#7c3aed)"
 
-}}
 
+}}
 
 
 >
@@ -754,6 +821,7 @@ size={25}
 color="inherit"
 
 />
+
 
 :
 
@@ -774,12 +842,16 @@ color="inherit"
 
 
 
+
 </Grid>
 
 
 
 
+
+
 </Box>
+
 
 
 
@@ -798,7 +870,6 @@ color="inherit"
 
 
 
-{/* AI RESULT POPUP */}
 
 
 
@@ -818,8 +889,8 @@ maxWidth="sm"
 fullWidth
 
 
-
 >
+
 
 
 <DialogTitle>
@@ -827,6 +898,8 @@ fullWidth
 AI Job Verification Result 🤖
 
 </DialogTitle>
+
+
 
 
 
@@ -853,13 +926,7 @@ fontWeight="800"
 
 Trust Score:
 
-{
-
-result.trust_score ||
-
-"85"
-
-}%
+{result.trust_score ?? 0}%
 
 </Typography>
 
@@ -873,12 +940,14 @@ result.trust_score ||
 <Chip
 
 
+
 sx={{mt:2}}
+
 
 
 icon={
 
-result.risk_level==="Low"
+result.status==="verified"
 
 ?
 
@@ -891,19 +960,23 @@ result.risk_level==="Low"
 }
 
 
+
+
 label={
 
-result.risk_level ||
+result.status ||
 
-"Needs Review"
+"Pending Verification"
 
 }
 
 
 
+
+
 color={
 
-result.risk_level==="Low"
+result.status==="verified"
 
 ?
 
@@ -917,6 +990,8 @@ result.risk_level==="Low"
 
 
 />
+
+
 
 
 
@@ -939,6 +1014,7 @@ AI Explanation
 
 
 
+
 <Typography
 
 color="text.secondary"
@@ -949,12 +1025,11 @@ color="text.secondary"
 
 result.explanation ||
 
-"No suspicious patterns detected"
+"Job submitted for AI verification"
 
 }
 
 </Typography>
-
 
 
 </Box>
@@ -975,6 +1050,8 @@ result.explanation ||
 
 
 
+
+
 <DialogActions>
 
 
@@ -984,14 +1061,14 @@ onClick={()=>setOpen(false)}
 
 >
 
-
 Close
 
 </Button>
 
 
-
 </DialogActions>
+
+
 
 
 
@@ -1003,11 +1080,11 @@ Close
 
 
 
-
 </Box>
 
 
 );
+
 
 
 }

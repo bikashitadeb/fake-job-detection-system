@@ -4,6 +4,8 @@ from app.models.job_model import Job
 
 
 
+
+
 # =====================================
 # CREATE JOB
 # =====================================
@@ -13,39 +15,83 @@ def create_job(data, recruiter_id):
 
     job = Job(
 
-        title=data.get("title"),
 
-        description=data.get("description"),
+        title=data.get(
 
-        company_name=data.get("company_name"),
+            "title"
 
-        location=data.get("location"),
+        ),
 
-        job_type=data.get("job_type"),
 
-        experience=data.get("experience"),
 
-        salary=data.get("salary"),
+        description=data.get(
 
-        skills=data.get("skills"),
+            "description"
 
-        website=data.get("website"),
+        ),
 
-        official_email=data.get("official_email"),
 
-        linkedin_url=data.get("linkedin_url"),
+
+        company=data.get(
+
+            "company",
+
+            "Unknown Company"
+
+        ),
+
+
+
+        location=data.get(
+
+            "location"
+
+        ),
+
+
+
+        salary=data.get(
+
+            "salary"
+
+        ),
+
+
+
+        trust_score=data.get(
+
+            "trust_score",
+
+            0
+
+        ),
+
+
+
+        status="pending",
+
+
 
         recruiter_id=recruiter_id
+
+
 
     )
 
 
+
+
+
     db.session.add(job)
+
 
     db.session.commit()
 
 
+
     return job
+
+
 
 
 
@@ -57,7 +103,10 @@ def create_job(data, recruiter_id):
 
 def get_all_jobs():
 
+
     return Job.query.all()
+
+
 
 
 
@@ -69,7 +118,12 @@ def get_all_jobs():
 
 def get_job(job_id):
 
+
     return Job.query.get(job_id)
+
+
+
+
 
 
 
@@ -85,28 +139,78 @@ def update_job(job_id,data):
     job = Job.query.get(job_id)
 
 
+
     if not job:
 
+
         raise Exception(
+
             "Job not found"
+
         )
+
+
+
+
+
+    allowed_fields = [
+
+
+        "title",
+
+
+        "description",
+
+
+        "company",
+
+
+        "location",
+
+
+        "salary",
+
+
+        "status",
+
+
+        "trust_score"
+
+
+
+    ]
+
+
+
 
 
     for key,value in data.items():
 
-        if hasattr(job,key):
+
+        if key in allowed_fields:
+
 
             setattr(
+
                 job,
+
                 key,
+
                 value
+
             )
+
+
+
 
 
     db.session.commit()
 
 
+
     return job
+
+
 
 
 
@@ -122,13 +226,23 @@ def delete_job(job_id):
     job = Job.query.get(job_id)
 
 
+
+
     if not job:
 
+
         raise Exception(
+
             "Job not found"
+
         )
 
 
+
+
+
     db.session.delete(job)
+
+
 
     db.session.commit()

@@ -4,7 +4,6 @@ from app.extensions import db
 
 
 
-
 class Job(db.Model):
 
 
@@ -12,123 +11,59 @@ class Job(db.Model):
 
 
 
+    # ==========================
+    # BASIC DETAILS
+    # ==========================
+
 
     id = db.Column(
-
         db.Integer,
-
         primary_key=True
-
     )
-
-
 
 
     title = db.Column(
-
         db.String(200),
-
         nullable=False
-
     )
-
-
 
 
     description = db.Column(
-
         db.Text,
-
         nullable=False
-
     )
 
 
-
-
-    company_name = db.Column(
-
-        db.String(200),
-
+    company = db.Column(
+        db.String(150),
         nullable=False
-
     )
-
-
 
 
     location = db.Column(
-
         db.String(150),
-
-        nullable=True
-
+        nullable=False
     )
-
-
 
 
     salary = db.Column(
-
-        db.String(100),
-
+        db.Float,
         nullable=True
-
     )
 
 
-
-
-    # ML verification score
-
-    trust_score = db.Column(
-
-        db.Integer,
-
-        default=0
-
+    requirements = db.Column(
+        db.Text,
+        nullable=True
     )
-
-
-
-
-    # verified / fake / pending
-
-    status = db.Column(
-
-        db.String(50),
-
-        default="pending"
-
-    )
-
-
 
 
     recruiter_id = db.Column(
-
         db.Integer,
-
         db.ForeignKey(
-
             "users.id"
-
         ),
-
         nullable=False
-
-    )
-
-
-
-
-
-    created_at = db.Column(
-
-        db.DateTime,
-
-        default=datetime.utcnow
-
     )
 
 
@@ -136,7 +71,147 @@ class Job(db.Model):
 
 
     # ==========================
-    # RELATIONSHIP
+    # AI FAKE JOB DETECTION
+    # ==========================
+
+
+    is_fake_predicted = db.Column(
+        db.Boolean,
+        default=False
+    )
+
+
+    fake_probability = db.Column(
+        db.Float,
+        default=0
+    )
+
+
+    trust_score = db.Column(
+        db.Float,
+        default=0
+    )
+
+
+
+
+
+    # ==========================
+    # NLP RISK ANALYSIS
+    # ==========================
+
+
+    risk_score = db.Column(
+        db.Float,
+        default=0
+    )
+
+
+    ai_warnings = db.Column(
+        db.Text,
+        nullable=True
+    )
+
+
+    ai_explanation = db.Column(
+        db.Text,
+        nullable=True
+    )
+
+
+    suspicious_keywords = db.Column(
+        db.Text,
+        nullable=True
+    )
+
+
+
+
+
+    # ==========================
+    # COMPANY VERIFICATION
+    # ==========================
+
+
+    linkedin_verified = db.Column(
+        db.Boolean,
+        default=False
+    )
+
+
+    linkedin_url = db.Column(
+        db.String(300),
+        nullable=True
+    )
+
+
+    company_verified = db.Column(
+        db.Boolean,
+        default=False
+    )
+
+
+    company_reputation_score = db.Column(
+        db.Float,
+        default=0
+    )
+
+
+
+
+
+    # ==========================
+    # ADVANCED AI FEATURES
+    # ==========================
+
+
+    salary_anomaly = db.Column(
+        db.Boolean,
+        default=False
+    )
+
+
+    semantic_embedding = db.Column(
+        db.Text,
+        nullable=True
+    )
+
+
+
+
+
+    # ==========================
+    # JOB STATUS
+    # ==========================
+
+
+    status = db.Column(
+        db.String(20),
+        default="pending"
+    )
+
+
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
+
+
+    updated_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow
+    )
+
+
+
+
+
+
+
+    # ==========================
+    # RELATIONSHIPS
     # ==========================
 
 
@@ -149,8 +224,25 @@ class Job(db.Model):
     )
 
 
+    applications = db.relationship(
+
+        "Application",
+
+        back_populates="job",
+
+        cascade="all, delete-orphan"
+
+    )
 
 
+
+
+
+
+
+    # ==========================
+    # JSON RESPONSE
+    # ==========================
 
 
     def to_dict(self):
@@ -159,33 +251,149 @@ class Job(db.Model):
         return {
 
 
-            "id": self.id,
+            "id":
+            self.id,
 
 
-            "title": self.title,
+            "title":
+            self.title,
 
 
-            "description": self.description,
+            "description":
+            self.description,
 
 
-            "company_name": self.company_name,
+            "company_name":
+            self.company,
 
 
-            "location": self.location,
+            "location":
+            self.location,
 
 
-            "salary": self.salary,
+            "salary":
+            self.salary,
 
 
-            "trust_score": self.trust_score,
+            "requirements":
+            self.requirements,
 
 
-            "status": self.status,
+
+            # ==================
+            # ML RESULTS
+            # ==================
 
 
-            "recruiter_id": self.recruiter_id,
+            "is_fake_predicted":
+            self.is_fake_predicted,
 
 
-            "created_at": self.created_at
+            "fake_probability":
+            self.fake_probability or 0,
+
+
+            "trust_score":
+            self.trust_score or 0,
+
+
+
+
+
+            # ==================
+            # NLP RESULTS
+            # ==================
+
+
+            "risk_score":
+            self.risk_score or 0,
+
+
+            "ai_warnings":
+            self.ai_warnings,
+
+
+            "ai_explanation":
+            self.ai_explanation,
+
+
+            "suspicious_keywords":
+            self.suspicious_keywords,
+
+
+
+
+
+            # ==================
+            # COMPANY RESULTS
+            # ==================
+
+
+            "linkedin_verified":
+            self.linkedin_verified,
+
+
+            "linkedin_url":
+            self.linkedin_url,
+
+
+            "company_verified":
+            self.company_verified,
+
+
+            "company_reputation_score":
+            self.company_reputation_score or 0,
+
+
+
+
+
+            # ==================
+            # ADVANCED AI
+            # ==================
+
+
+            "salary_anomaly":
+            self.salary_anomaly,
+
+
+            "semantic_embedding":
+            self.semantic_embedding,
+
+
+
+
+
+            # ==================
+            # STATUS
+            # ==================
+
+
+            "status":
+            self.status,
+
+
+            "recruiter_id":
+            self.recruiter_id,
+
+
+
+            "created_at":
+
+            self.created_at.isoformat()
+
+            if self.created_at
+
+            else None,
+
+
+
+            "updated_at":
+
+            self.updated_at.isoformat()
+
+            if self.updated_at
+
+            else None
 
         }

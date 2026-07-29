@@ -1,6 +1,12 @@
 from flask import Blueprint, request, jsonify
 
 
+from flask_jwt_extended import (
+    jwt_required,
+    get_jwt_identity
+)
+
+
 from app.services.auth_service import (
 
     register_jobseeker,
@@ -10,6 +16,9 @@ from app.services.auth_service import (
     login_user
 
 )
+
+
+from app.models.user_model import User
 
 
 from app.utils.jwt_utils import generate_token
@@ -200,6 +209,7 @@ def login():
 
 
 
+
     try:
 
 
@@ -243,6 +253,7 @@ def login():
 
 
 
+
     except Exception as e:
 
 
@@ -267,3 +278,101 @@ def login():
 
 
         }),401
+
+
+
+
+
+
+
+
+
+
+
+
+
+# =====================================
+# GET CURRENT USER PROFILE
+# =====================================
+
+
+@auth_bp.route(
+
+    "/profile",
+
+    methods=["GET"]
+
+)
+
+@jwt_required()
+
+def profile():
+
+
+
+    try:
+
+
+        user_id = get_jwt_identity()
+
+
+
+        user = User.query.get(
+
+            int(user_id)
+
+        )
+
+
+
+        if not user:
+
+
+            return jsonify({
+
+                "message":"User not found"
+
+            }),404
+
+
+
+
+
+        return jsonify({
+
+
+            "user":
+
+            user.to_dict()
+
+
+
+        }),200
+
+
+
+
+    except Exception as e:
+
+
+
+        print(
+
+            "PROFILE ERROR:",
+
+            str(e)
+
+        )
+
+
+
+        return jsonify({
+
+
+            "message":
+
+            str(e)
+
+
+
+        }),500

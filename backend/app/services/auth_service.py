@@ -1,18 +1,23 @@
 from app.extensions import db
 
+
 from app.models.user_model import User
 
 from app.models.company_model import Company
+
 
 from app.utils.password_utils import (
     hash_password,
     verify_password
 )
 
+
 from app.utils.exceptions import (
     ConflictError,
     UnauthorizedError
 )
+
+
 
 
 
@@ -28,7 +33,9 @@ def register_jobseeker(data):
 
     existing_user = User.query.filter_by(
 
-        email=data["email"]
+        email=data["email"],
+
+        role="employee"
 
     ).first()
 
@@ -39,7 +46,7 @@ def register_jobseeker(data):
 
         raise ConflictError(
 
-            "Email already exists"
+            "Employee account already exists with this email"
 
         )
 
@@ -47,11 +54,15 @@ def register_jobseeker(data):
 
 
 
+
     user = User(
+
 
         name=data["full_name"],
 
+
         email=data["email"],
+
 
         password_hash=hash_password(
 
@@ -59,9 +70,12 @@ def register_jobseeker(data):
 
         ),
 
+
         phone=data.get("phone"),
 
+
         role="employee"
+
 
     )
 
@@ -84,6 +98,11 @@ def register_jobseeker(data):
 
 
 
+
+
+
+
+
 # =====================================
 # RECRUITER REGISTER
 # =====================================
@@ -94,7 +113,12 @@ def register_recruiter(data):
 
     existing_user = User.query.filter_by(
 
-        email=data["email"]
+
+        email=data["email"],
+
+
+        role="recruiter"
+
 
     ).first()
 
@@ -105,7 +129,7 @@ def register_recruiter(data):
 
         raise ConflictError(
 
-            "Email already exists"
+            "Recruiter account already exists with this email"
 
         )
 
@@ -113,61 +137,123 @@ def register_recruiter(data):
 
 
 
-    company = Company(
-
-        name=data.get("company_name"),
-
-        website=data.get("company_website"),
-
-        linkedin_url=data.get("linkedin_url")
-
-    )
 
 
 
-
-
-    db.session.add(company)
-
-
-    db.session.flush()
+    try:
 
 
 
+        # Create Company
 
 
-    recruiter = User(
+        company = Company(
 
-        name=data["full_name"],
 
-        email=data["email"],
+            company_name=data.get(
 
-        password_hash=hash_password(
+                "company_name"
 
-            data["password"]
+            ),
 
-        ),
 
-        phone=data.get("phone"),
+            website_url=data.get(
 
-        role="recruiter",
+                "company_website"
 
-        company_id=company.id
+            ),
 
-    )
 
+            company_domain=data.get(
+
+                "company_domain"
+
+            ),
+
+
+            verification_status="pending",
+
+
+            trust_score=0
+
+
+        )
 
 
 
 
-    db.session.add(recruiter)
+
+        db.session.add(company)
 
 
-    db.session.commit()
+        db.session.flush()
 
 
 
-    return recruiter.to_dict()
+
+
+
+
+        # Create Recruiter User
+
+
+        recruiter = User(
+
+
+            name=data["full_name"],
+
+
+            email=data["email"],
+
+
+            password_hash=hash_password(
+
+                data["password"]
+
+            ),
+
+
+            phone=data.get("phone"),
+
+
+            role="recruiter",
+
+
+            company_id=company.id
+
+
+        )
+
+
+
+
+
+        db.session.add(recruiter)
+
+
+        db.session.commit()
+
+
+
+        return recruiter.to_dict()
+
+
+
+
+
+    except Exception as e:
+
+
+
+        db.session.rollback()
+
+
+        raise e
+
+
+
+
+
 
 
 
@@ -185,9 +271,16 @@ def login_user(data):
 
     user = User.query.filter_by(
 
-        email=data["email"]
+
+        email=data["email"],
+
+
+        role=data["role"]
+
 
     ).first()
+
+
 
 
 
@@ -196,9 +289,12 @@ def login_user(data):
 
         raise UnauthorizedError(
 
-            "Invalid email or password"
+            "Invalid email, password or role"
 
         )
+
+
+
 
 
 
@@ -206,16 +302,20 @@ def login_user(data):
 
     if not verify_password(
 
+
         data["password"],
 
+
         user.password_hash
+
 
     ):
 
 
+
         raise UnauthorizedError(
 
-            "Invalid email or password"
+            "Invalid email, password or role"
 
         )
 
@@ -223,7 +323,8 @@ def login_user(data):
 
 
 
-    # IMPORTANT
-    # Return User object for JWT creation
+
+
+    # Return User object for JWT
 
     return user
