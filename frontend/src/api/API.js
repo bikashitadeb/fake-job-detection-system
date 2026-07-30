@@ -1,13 +1,20 @@
 import axios from "axios";
 
 
+
 // ================================
 // BACKEND URL
 // ================================
 
+
 const BASE_URL =
+
     import.meta.env.VITE_API_URL ||
+
     "http://127.0.0.1:5000/api";
+
+
+
 
 
 
@@ -16,61 +23,105 @@ const BASE_URL =
 // AXIOS INSTANCE
 // ================================
 
+
 const API = axios.create({
+
 
     baseURL: BASE_URL,
 
-    headers: {
 
-        "Content-Type": "application/json"
+    timeout: 15000,
+
+
+    headers:{
+
+
+        "Content-Type":
+
+        "application/json"
+
 
     }
+
 
 });
 
 
 
 
+
+
+
 // ================================
 // REQUEST INTERCEPTOR
-// ADD JWT TOKEN
+// ATTACH JWT TOKEN
 // ================================
+
 
 API.interceptors.request.use(
 
-    (config)=>{
+
+(config)=>{
 
 
-        const token = localStorage.getItem(
-            "access_token"
-        );
+    const token = localStorage.getItem(
+
+        "access_token"
+
+    );
 
 
-        if(token){
+
+    if(token){
 
 
-            config.headers = config.headers || {};
+        config.headers.Authorization =
 
+            `Bearer ${token}`;
 
-            config.headers.Authorization =
-                `Bearer ${token}`;
-
-        }
-
-
-        return config;
-
-
-    },
-
-
-    (error)=>{
-
-        return Promise.reject(error);
 
     }
 
+
+
+
+
+    console.log(
+
+        "API REQUEST:",
+
+        config.method?.toUpperCase(),
+
+        config.url
+
+    );
+
+
+
+
+
+    return config;
+
+
+
+},
+
+
+(error)=>{
+
+
+    return Promise.reject(error);
+
+
+}
+
+
+
 );
+
+
+
+
 
 
 
@@ -78,70 +129,46 @@ API.interceptors.request.use(
 
 // ================================
 // RESPONSE INTERCEPTOR
-// HANDLE AUTH ERRORS
+// GLOBAL ERROR HANDLING
 // ================================
+
 
 API.interceptors.response.use(
 
 
-    (response)=>{
+(response)=>{
 
 
-        return response;
+    console.log(
+
+        "API SUCCESS:",
+
+        response.status,
+
+        response.config.url
+
+    );
 
 
-    },
+    return response;
 
 
-    (error)=>{
-
-
-        if(error.response){
-
-
-            const status = error.response.status;
+},
 
 
 
-            // Unauthorized
-            if(status === 401){
+(error)=>{
 
 
-                console.log(
-                    "JWT expired or missing"
-                );
+
+    if(!error.response){
 
 
-                localStorage.removeItem(
-                    "access_token"
-                );
+        console.error(
 
+            "Backend server not reachable"
 
-                localStorage.removeItem(
-                    "user"
-                );
-
-
-                window.location.href =
-                    "/login";
-
-
-            }
-
-
-            // Forbidden
-            if(status === 403){
-
-
-                console.log(
-                    "Access denied"
-                );
-
-
-            }
-
-
-        }
+        );
 
 
         return Promise.reject(error);
@@ -150,7 +177,126 @@ API.interceptors.response.use(
     }
 
 
+
+
+
+    const status = error.response.status;
+
+
+
+
+
+    // JWT expired / invalid
+
+
+    if(
+
+        status === 401 ||
+
+        status === 422
+
+    ){
+
+
+
+        console.warn(
+
+            "Authentication expired"
+
+        );
+
+
+
+
+        localStorage.removeItem(
+
+            "access_token"
+
+        );
+
+
+        localStorage.removeItem(
+
+            "user"
+
+        );
+
+
+
+
+
+        if(
+
+            window.location.pathname !== "/login"
+
+        ){
+
+
+            window.location.href="/login";
+
+
+        }
+
+
+
+    }
+
+
+
+
+
+
+    // Permission denied
+
+
+    if(status === 403){
+
+
+        console.warn(
+
+            "Forbidden request"
+
+        );
+
+
+    }
+
+
+
+
+
+    // Server error
+
+
+    if(status >= 500){
+
+
+        console.error(
+
+            "Server error:",
+
+            error.response.data
+
+        );
+
+
+    }
+
+
+
+
+    return Promise.reject(error);
+
+
+
+}
+
+
+
 );
+
+
+
 
 
 

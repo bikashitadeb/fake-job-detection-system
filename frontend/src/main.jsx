@@ -1,3 +1,9 @@
+// =====================================================
+// SECUREHIRE AI - APPLICATION ENTRY
+// Premium Production Setup
+// =====================================================
+
+
 import React from "react";
 
 import ReactDOM from "react-dom/client";
@@ -12,6 +18,16 @@ import {
 } from "@mui/material/styles";
 
 
+import {
+    CssBaseline
+} from "@mui/material";
+
+
+import {
+    AnimatePresence
+} from "framer-motion";
+
+
 import App from "./App.jsx";
 
 
@@ -23,43 +39,86 @@ import {
 import theme from "./theme/theme.js";
 
 
+// Global styles
+import "./index.css";
+
 import "./theme/dashboard.css";
 
 
 
 
+// =====================================================
+// ROOT PROVIDER
+// =====================================================
 
-ReactDOM
-.createRoot(
+
+function Root(){
+
+
+    return (
+
+        <BrowserRouter>
+
+
+            <ThemeProvider theme={theme}>
+
+
+                {/* MUI Global Reset */}
+                <CssBaseline />
+
+
+
+                <AuthProvider>
+
+
+                    <AnimatePresence mode="wait">
+
+
+                        <App />
+
+
+                    </AnimatePresence>
+
+
+                </AuthProvider>
+
+
+            </ThemeProvider>
+
+
+        </BrowserRouter>
+
+    );
+
+}
+
+
+
+
+
+// =====================================================
+// APPLICATION MOUNT
+// =====================================================
+
+
+const root = ReactDOM.createRoot(
+
     document.getElementById("root")
-)
-.render(
 
-<React.StrictMode>
+);
 
 
-<BrowserRouter>
+
+root.render(
 
 
-<ThemeProvider theme={theme}>
+    <React.StrictMode>
 
 
-<AuthProvider>
+        <Root />
 
 
-<App/>
-
-
-</AuthProvider>
-
-
-</ThemeProvider>
-
-
-</BrowserRouter>
-
-
-</React.StrictMode>
+    </React.StrictMode>
 
 
 );

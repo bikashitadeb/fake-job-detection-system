@@ -1,58 +1,47 @@
+// src/components/Navbar.jsx
+
+
+import React, { useState } from "react";
+
 import {
-
-Box,
-
-Typography,
-
-IconButton,
-
-Avatar,
-
-Tooltip
-
-} from "@mui/material";
+    motion
+} from "framer-motion";
 
 
 import {
 
-Notifications,
+    Bell,
 
-Logout
+    UserCircle,
 
-} from "@mui/icons-material";
+    LogOut,
+
+    Menu,
+
+    X,
+
+    ShieldCheck,
+
+    ChevronDown
+
+} from "lucide-react";
 
 
 import {
 
-useNavigate
+    useNavigate
 
 } from "react-router-dom";
 
 
+
 import {
 
-useAuth
+    logoutUser,
 
-} from "../context/AuthContext";
+    getCurrentUser
 
-
-
-
-
-export default function Navbar(){
-
-
-
-const navigate = useNavigate();
-
-
-const {
-
-user,
-
-logout
-
-}=useAuth();
+} from "../api/auth";
 
 
 
@@ -60,13 +49,795 @@ logout
 
 
 
-const handleLogout=()=>{
+const Navbar = () => {
 
 
-logout();
+
+    const navigate = useNavigate();
 
 
-navigate("/login");
+
+    const user = getCurrentUser();
+
+
+
+    const [open,setOpen] = useState(false);
+
+
+
+    const [mobile,setMobile] = useState(false);
+
+
+
+
+
+
+    const handleLogout = async()=>{
+
+
+        try{
+
+            await logoutUser();
+
+        }
+
+        catch(error){
+
+            console.log(
+                "LOGOUT ERROR",
+                error
+            );
+
+        }
+
+
+        localStorage.removeItem(
+            "access_token"
+        );
+
+
+        localStorage.removeItem(
+            "user"
+        );
+
+
+        navigate("/login");
+
+
+    };
+
+
+
+
+
+
+
+
+
+    return (
+
+
+
+        <motion.nav
+
+
+
+            initial={{
+
+                y:-50,
+
+                opacity:0
+
+            }}
+
+
+
+            animate={{
+
+                y:0,
+
+                opacity:1
+
+            }}
+
+
+
+            className="
+
+            fixed
+
+            top-0
+
+            left-0
+
+            right-0
+
+            z-50
+
+            backdrop-blur-xl
+
+            bg-white/70
+
+            border-b
+
+            border-gray-200
+
+            shadow-sm
+
+            "
+
+
+        >
+
+
+
+
+
+            <div
+
+            className="
+
+            max-w-7xl
+
+            mx-auto
+
+            px-6
+
+            py-4
+
+            flex
+
+            justify-between
+
+            items-center
+
+            "
+
+
+            >
+
+
+
+
+
+
+                {/* LOGO */}
+
+
+
+                <div
+
+                onClick={()=>navigate("/")}
+
+                className="
+
+                flex
+
+                items-center
+
+                gap-3
+
+                cursor-pointer
+
+                "
+
+                >
+
+
+
+                    <div
+
+                    className="
+
+                    p-2
+
+                    rounded-xl
+
+                    bg-gradient-to-r
+
+                    from-blue-600
+
+                    to-purple-600
+
+                    "
+
+                    >
+
+
+                        <ShieldCheck
+
+                        className="text-white"
+
+                        size={25}
+
+                        />
+
+
+                    </div>
+
+
+
+
+
+                    <div>
+
+
+                        <h1
+
+                        className="
+
+                        text-xl
+
+                        font-bold
+
+                        bg-gradient-to-r
+
+                        from-blue-600
+
+                        to-purple-600
+
+                        bg-clip-text
+
+                        text-transparent
+
+                        "
+
+                        >
+
+                            FakeGuard AI
+
+
+                        </h1>
+
+
+
+
+                        <p
+
+                        className="
+
+                        text-xs
+
+                        text-gray-500
+
+                        "
+
+                        >
+
+                            AI Job Verification
+
+
+                        </p>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+
+
+
+
+
+
+
+                {/* DESKTOP MENU */}
+
+
+
+                <div
+
+                className="
+
+                hidden
+
+                md:flex
+
+                items-center
+
+                gap-6
+
+                "
+
+                >
+
+
+
+
+                    <button
+
+                    onClick={()=>navigate("/dashboard")}
+
+                    className="
+
+                    text-gray-700
+
+                    hover:text-blue-600
+
+                    transition
+
+                    "
+
+                    >
+
+                        Dashboard
+
+                    </button>
+
+
+
+
+
+                    <button
+
+                    onClick={()=>navigate("/jobs")}
+
+                    className="
+
+                    text-gray-700
+
+                    hover:text-blue-600
+
+                    transition
+
+                    "
+
+                    >
+
+                        Jobs
+
+                    </button>
+
+
+
+
+
+
+
+
+
+                    <button
+
+                    onClick={()=>navigate("/notifications")}
+
+                    className="
+
+                    relative
+
+                    "
+
+                    >
+
+
+                        <Bell
+
+                        size={22}
+
+                        className="text-gray-700"
+
+                        />
+
+
+                        <span
+
+                        className="
+
+                        absolute
+
+                        -top-2
+
+                        -right-2
+
+                        bg-red-500
+
+                        text-white
+
+                        text-xs
+
+                        w-5
+
+                        h-5
+
+                        rounded-full
+
+                        flex
+
+                        items-center
+
+                        justify-center
+
+                        "
+
+                        >
+
+                            3
+
+                        </span>
+
+
+                    </button>
+
+
+
+
+
+
+
+
+
+                    {/* PROFILE */}
+
+
+
+                    <div
+
+                    className="relative"
+
+                    >
+
+
+
+                        <button
+
+
+                        onClick={()=>setOpen(!open)}
+
+
+                        className="
+
+                        flex
+
+                        items-center
+
+                        gap-2
+
+                        "
+
+                        >
+
+
+
+                            <UserCircle
+
+                            size={30}
+
+                            className="text-gray-700"
+
+                            />
+
+
+
+                            <span
+
+                            className="font-medium"
+
+                            >
+
+                                {user?.name || "User"}
+
+                            </span>
+
+
+
+                            <ChevronDown
+
+                            size={18}
+
+                            />
+
+
+
+                        </button>
+
+
+
+
+
+
+
+                        {
+
+                        open &&
+
+
+
+                        <motion.div
+
+
+                        initial={{
+
+                            opacity:0,
+
+                            y:-10
+
+                        }}
+
+
+                        animate={{
+
+                            opacity:1,
+
+                            y:0
+
+                        }}
+
+
+                        className="
+
+                        absolute
+
+                        right-0
+
+                        mt-3
+
+                        w-48
+
+                        bg-white
+
+                        rounded-2xl
+
+                        shadow-xl
+
+                        border
+
+                        p-3
+
+                        "
+
+
+                        >
+
+
+
+                            <button
+
+                            onClick={()=>navigate("/profile")}
+
+                            className="
+
+                            w-full
+
+                            text-left
+
+                            px-3
+
+                            py-2
+
+                            rounded-lg
+
+                            hover:bg-gray-100
+
+                            "
+
+                            >
+
+                                Profile
+
+                            </button>
+
+
+
+
+
+
+
+                            <button
+
+                            onClick={handleLogout}
+
+                            className="
+
+                            w-full
+
+                            text-left
+
+                            px-3
+
+                            py-2
+
+                            rounded-lg
+
+                            hover:bg-red-50
+
+                            text-red-600
+
+                            flex
+
+                            gap-2
+
+                            items-center
+
+                            "
+
+                            >
+
+
+                                <LogOut size={17}/>
+
+                                Logout
+
+
+                            </button>
+
+
+
+
+                        </motion.div>
+
+
+                        }
+
+
+
+
+                    </div>
+
+
+
+
+
+
+                </div>
+
+
+
+
+
+
+
+
+
+                {/* MOBILE BUTTON */}
+
+
+
+                <button
+
+                className="md:hidden"
+
+                onClick={()=>setMobile(!mobile)}
+
+                >
+
+
+                    {
+
+                    mobile
+
+                    ?
+
+                    <X/>
+
+                    :
+
+                    <Menu/>
+
+                    }
+
+
+                </button>
+
+
+
+
+
+            </div>
+
+
+
+
+
+
+
+
+
+            {/* MOBILE MENU */}
+
+
+
+            {
+
+            mobile &&
+
+
+
+            <motion.div
+
+
+            initial={{
+
+                opacity:0
+
+            }}
+
+
+            animate={{
+
+                opacity:1
+
+            }}
+
+
+
+            className="
+
+            md:hidden
+
+            px-6
+
+            pb-5
+
+            space-y-3
+
+            "
+
+
+            >
+
+
+
+                <button
+
+                className="block"
+
+                onClick={()=>navigate("/dashboard")}
+
+                >
+
+                    Dashboard
+
+                </button>
+
+
+
+                <button
+
+                className="block"
+
+                onClick={()=>navigate("/jobs")}
+
+                >
+
+                    Jobs
+
+                </button>
+
+
+
+                <button
+
+                onClick={handleLogout}
+
+                className="
+
+                text-red-600
+
+                "
+
+                >
+
+                    Logout
+
+                </button>
+
+
+
+            </motion.div>
+
+
+            }
+
+
+
+
+
+        </motion.nav>
+
+
+    );
 
 
 };
@@ -75,339 +846,4 @@ navigate("/login");
 
 
 
-
-return(
-
-
-<Box
-
-
-sx={{
-
-
-height:"70px",
-
-
-width:"100%",
-
-
-display:"flex",
-
-
-alignItems:"center",
-
-
-justifyContent:"space-between",
-
-
-padding:"0 30px",
-
-
-background:
-
-"rgba(15,23,42,0.75)",
-
-
-backdropFilter:
-
-"blur(15px)",
-
-
-borderBottom:
-
-"1px solid rgba(255,255,255,0.08)",
-
-
-position:"sticky",
-
-
-top:0,
-
-
-zIndex:10
-
-
-}}
-
-
->
-
-
-
-{/* LEFT SIDE */}
-
-
-<Box>
-
-
-<Typography
-
-
-variant="h5"
-
-
-fontWeight="800"
-
-
-sx={{
-
-
-background:
-
-"linear-gradient(90deg,#6366f1,#a855f7)",
-
-
-WebkitBackgroundClip:"text",
-
-
-color:"transparent"
-
-
-}}
-
-
-
->
-
-
-FakeJob AI
-
-
-</Typography>
-
-
-</Box>
-
-
-
-
-
-
-
-{/* RIGHT SIDE */}
-
-
-<Box
-
-
-sx={{
-
-
-display:"flex",
-
-
-alignItems:"center",
-
-
-gap:2
-
-
-}}
-
-
-
->
-
-
-
-
-
-<Tooltip title="Notifications">
-
-
-<IconButton
-
-sx={{
-
-color:"white"
-
-}}
-
->
-
-
-<Notifications/>
-
-
-</IconButton>
-
-
-</Tooltip>
-
-
-
-
-
-
-
-<Box
-
-
-sx={{
-
-
-display:"flex",
-
-
-alignItems:"center",
-
-
-gap:1.5
-
-
-}}
-
-
-
->
-
-
-
-<Avatar
-
-
-sx={{
-
-
-background:
-
-"linear-gradient(135deg,#4f46e5,#9333ea)"
-
-}}
-
-
->
-
-
-{
-
-user?.full_name
-
-?
-
-user.full_name[0].toUpperCase()
-
-:
-
-"U"
-
-}
-
-
-</Avatar>
-
-
-
-
-
-<Box>
-
-
-<Typography
-
-
-fontWeight="600"
-
-
-color="white"
-
-
->
-
-
-{
-
-user?.full_name ||
-
-"User"
-
-}
-
-
-</Typography>
-
-
-
-<Typography
-
-
-fontSize="12px"
-
-
-color="#94a3b8"
-
-
->
-
-
-{
-
-user?.role ||
-
-"Guest"
-
-}
-
-
-</Typography>
-
-
-</Box>
-
-
-
-</Box>
-
-
-
-
-
-
-
-<Tooltip title="Logout">
-
-
-<IconButton
-
-
-onClick={handleLogout}
-
-
-sx={{
-
-
-color:"#f87171"
-
-}}
-
-
->
-
-
-<Logout/>
-
-
-</IconButton>
-
-
-</Tooltip>
-
-
-
-
-
-
-</Box>
-
-
-
-
-
-</Box>
-
-
-
-);
-
-
-}
+export default Navbar;

@@ -1,166 +1,34 @@
-import {
+// src/layouts/RecruiterLayout.jsx
 
-Box
+import React from "react";
+import { Outlet } from "react-router-dom";
 
-} from "@mui/material";
-
-
-import {
-
-Outlet
-
-} from "react-router-dom";
-
-
-import Sidebar from "../components/Sidebar";
-
-import Navbar from "../components/Navbar";
-
-
-
+import Sidebar from "../components/Sidebar.jsx";
+import Navbar from "../components/Navbar.jsx";
 
 
 export default function RecruiterLayout(){
 
+    return (
 
+        <div className="min-h-screen flex bg-[#020617] text-white">
 
-return(
+            <Sidebar />
 
+            <div className="flex-1">
 
-<Box
+                <Navbar />
 
+                <main className="p-6">
 
-sx={{
+                    <Outlet />
 
+                </main>
 
-display:"flex",
+            </div>
 
+        </div>
 
-minHeight:"100vh",
-
-
-background:"#020617"
-
-
-}}
-
-
-
->
-
-
-
-
-{/* SIDEBAR */}
-
-<Sidebar/>
-
-
-
-
-
-
-
-{/* MAIN CONTENT */}
-
-
-<Box
-
-
-sx={{
-
-
-flex:1,
-
-
-display:"flex",
-
-
-flexDirection:"column",
-
-
-overflow:"hidden"
-
-
-}}
-
-
->
-
-
-
-{/* TOP NAVBAR */}
-
-<Navbar/>
-
-
-
-
-
-
-{/* PAGE AREA */}
-
-
-<Box
-
-
-sx={{
-
-
-flex:1,
-
-
-padding:3,
-
-
-overflowY:"auto",
-
-
-
-background:
-
-
-`
-radial-gradient(
-circle at top right,
-rgba(124,58,237,.25),
-transparent 40%
-),
-
-#020617
-`
-
-
-
-}}
-
-
-
->
-
-
-<Outlet/>
-
-
-
-
-</Box>
-
-
-
-
-
-</Box>
-
-
-
-
-
-</Box>
-
-
-
-);
-
+    );
 
 }

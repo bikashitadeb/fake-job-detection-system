@@ -1,13 +1,17 @@
 import os
+
 from datetime import timedelta
 
 
 try:
+
     from dotenv import load_dotenv
 
 except Exception:
 
+
     def load_dotenv(*args, **kwargs):
+
         return False
 
 
@@ -16,12 +20,16 @@ load_dotenv()
 
 
 
+
+
 class Config:
+
 
 
     # ==========================
     # APPLICATION
     # ==========================
+
 
     SECRET_KEY = os.getenv(
 
@@ -33,9 +41,12 @@ class Config:
 
 
 
+
+
     # ==========================
     # DATABASE
     # ==========================
+
 
     SQLALCHEMY_DATABASE_URI = os.getenv(
 
@@ -50,9 +61,13 @@ class Config:
 
 
 
+
+
+
     # ==========================
     # JWT CONFIGURATION
     # ==========================
+
 
     JWT_SECRET_KEY = os.getenv(
 
@@ -63,7 +78,9 @@ class Config:
     )
 
 
-    # Where JWT token is searched
+
+
+    # JWT location
 
     JWT_TOKEN_LOCATION = [
 
@@ -72,7 +89,7 @@ class Config:
     ]
 
 
-    # Header configuration
+
 
     JWT_HEADER_NAME = "Authorization"
 
@@ -81,13 +98,25 @@ class Config:
 
 
 
+
+
+    # Allow identity as string
+
+    JWT_VERIFY_SUB = False
+
+
+
+
+
     # Token expiry
+
 
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(
 
         hours=1
 
     )
+
 
 
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(
@@ -97,15 +126,44 @@ class Config:
     )
 
 
-    # Error messages
+
+
+    # Token decoding tolerance
+
+
+    JWT_DECODE_LEEWAY = 10
+
+
+
+
 
     JWT_ERROR_MESSAGE_KEY = "msg"
+
+
+
+
+
+
+
+    # ==========================
+    # SECURITY
+    # ==========================
+
+
+    SESSION_COOKIE_SECURE = False
+
+
+    REMEMBER_COOKIE_SECURE = False
+
+
+
 
 
 
     # ==========================
     # PAGINATION
     # ==========================
+
 
     DEFAULT_PAGE_SIZE = 10
 
@@ -114,14 +172,22 @@ class Config:
 
 
 
+
+
+
     # ==========================
     # LOGGING
     # ==========================
+
 
     LOG_LEVEL = "INFO"
 
 
     LOG_FILE = "logs/app.log"
+
+
+
+
 
 
 

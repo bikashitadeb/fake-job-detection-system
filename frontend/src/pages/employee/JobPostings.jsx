@@ -1,51 +1,51 @@
 import {
+
     useEffect,
+
     useState
+
 } from "react";
 
 
 import {
 
-    Grid,
+    motion
 
-    Card,
-
-    CardContent,
-
-    Typography,
-
-    Box,
-
-    TextField,
-
-    Button,
-
-    Chip,
-
-    InputAdornment
-
-} from "@mui/material";
+} from "framer-motion";
 
 
 import {
 
-Search,
+    Search,
 
-VerifiedUser,
+    MapPin,
 
-Bookmark
+    IndianRupee,
 
-} from "@mui/icons-material";
+    ShieldCheck,
+
+    ShieldAlert,
+
+    Bookmark
+
+} from "lucide-react";
 
 
 import {
 
-useNavigate
+    useNavigate
 
 } from "react-router-dom";
 
 
 import API from "../../api/API";
+
+
+import EmptyState from "../../components/EmptyState";
+
+
+
+
 
 
 
@@ -55,35 +55,32 @@ export default function JobPostings(){
 
 
 
-const navigate = useNavigate();
+    const navigate = useNavigate();
 
 
 
-const [jobs,setJobs]=useState([]);
+    const [jobs,setJobs] = useState([]);
 
+    const [search,setSearch] = useState("");
 
-const [search,setSearch]=useState("");
+    const [loading,setLoading] = useState(true);
 
 
-const [loading,setLoading]=useState(true);
 
 
 
 
 
 
-// ============================
-// FETCH JOBS
-// ============================
 
+    useEffect(()=>{
 
-useEffect(()=>{
 
+        fetchJobs();
 
-fetchJobs();
 
+    },[]);
 
-},[]);
 
 
 
@@ -91,459 +88,460 @@ fetchJobs();
 
 
 
-const fetchJobs=async()=>{
 
+    const fetchJobs = async()=>{
 
-try{
 
+        try{
 
-const response = await API.get(
-"/jobs"
-);
 
+            const response = await API.get(
 
+                "/jobs"
 
-setJobs(
+            );
 
-response.data.data || []
 
-);
 
+            setJobs(
 
+                response.data.jobs
 
-}
+                ||
 
-catch(error){
+                response.data.data
 
+                ||
 
-console.log(error);
+                []
 
+            );
 
-}
 
+        }
 
-finally{
 
+        catch(error){
 
-setLoading(false);
 
+            console.log(
 
-}
+                "Job fetch error",
 
+                error
 
-};
+            );
 
 
+        }
 
 
+        finally{
 
 
+            setLoading(false);
 
 
-// ============================
-// SEARCH FILTER
-// ============================
+        }
 
 
-const filteredJobs = jobs.filter((job)=>{
+    };
 
 
-return (
 
-job.title
 
-?.toLowerCase()
 
-.includes(
 
-search.toLowerCase()
 
-)
 
-||
 
-job.company
+    const filteredJobs = jobs.filter(
 
-?.toLowerCase()
+        job =>
 
-.includes(
 
-search.toLowerCase()
 
-)
+        job.title
 
+        ?.toLowerCase()
 
-);
+        .includes(
 
+            search.toLowerCase()
 
-});
+        )
 
 
 
+        ||
 
 
 
+        job.company
 
-if(loading){
+        ?.toLowerCase()
 
+        .includes(
 
-return(
+            search.toLowerCase()
 
+        )
 
-<Typography
+    );
 
-color="white"
 
->
 
-Loading jobs...
 
-</Typography>
 
 
-);
 
 
-}
 
+    if(loading){
 
 
+        return (
 
+            <div
 
+            className="
 
+            text-white
 
-return(
+            animate-pulse
 
+            "
 
-<Box>
+            >
 
+                Loading verified jobs...
 
+            </div>
 
-<Typography
+        );
 
-className="dashboard-title"
 
->
+    }
 
-Browse Jobs
 
-</Typography>
 
 
 
-<Typography
 
-className="dashboard-subtitle"
 
-mb={4}
 
->
 
-AI verified opportunities only.
+    return(
 
-</Typography>
 
 
+        <div
 
+        className="
 
+        text-white
 
+        space-y-8
 
+        "
 
-{/* SEARCH */}
+        >
 
 
 
-<TextField
 
 
-fullWidth
+            {/* HEADER */}
 
 
-placeholder="Search jobs or companies..."
 
+            <div>
 
-value={search}
 
+                <h1
 
-onChange={(e)=>
+                className="
 
-setSearch(e.target.value)
+                text-4xl
 
-}
+                font-bold
 
+                "
 
-sx={{
+                >
 
+                    Browse Jobs 💼
 
-mb:4,
+                </h1>
 
 
-input:{
 
-color:"white"
+                <p
 
-}
+                className="
 
+                text-gray-400
 
+                mt-2
 
-}}
+                "
 
+                >
 
+                    AI verified opportunities with fraud detection.
 
-InputProps={{
+                </p>
 
 
-startAdornment:(
+            </div>
 
 
-<InputAdornment position="start">
 
 
-<Search
 
-sx={{
 
-color:"#94a3b8"
 
-}}
 
 
-/>
+            {/* SEARCH */}
 
 
-</InputAdornment>
 
+            <div
 
-)
+            className="
 
+            flex
 
-}}
+            items-center
 
+            gap-3
 
-/>
+            bg-white/10
 
+            backdrop-blur-xl
 
+            border
 
+            border-white/20
 
+            rounded-2xl
 
+            px-5
 
+            py-3
 
+            "
 
+            >
 
-<Grid
 
-container
 
-spacing={3}
+                <Search
 
->
+                className="text-gray-400"
 
+                />
 
 
-{
 
-filteredJobs.length===0 ?
+                <input
 
 
-<Typography
+                value={search}
 
-color="#94a3b8"
 
->
+                onChange={e=>
 
-No jobs found
+                    setSearch(e.target.value)
 
-</Typography>
+                }
 
 
 
-:
+                placeholder="Search jobs or companies..."
 
-filteredJobs.map((job,index)=>(
 
 
+                className="
 
-<Grid
+                flex-1
 
-item
+                bg-transparent
 
-xs={12}
+                outline-none
 
-md={6}
+                text-white
 
-lg={4}
+                "
 
-key={index}
+                />
 
->
 
+            </div>
 
 
-<Card
 
 
-className="glass"
 
 
-sx={{
 
 
-height:"100%",
 
+            {
 
-color:"white"
+            filteredJobs.length===0 ?
 
 
-}}
+            <EmptyState
 
 
+            title="No jobs found"
 
->
 
+            description="Try searching with another keyword."
 
 
-<CardContent>
+            />
 
 
 
+            :
 
-<Typography
 
-variant="h6"
 
-fontWeight="700"
 
->
 
-{job.title}
+            <div
 
-</Typography>
+            className="
 
+            grid
 
+            md:grid-cols-2
 
+            xl:grid-cols-3
 
+            gap-6
 
-<Typography
+            "
 
-color="#94a3b8"
+            >
 
->
 
-{job.company}
 
-</Typography>
 
+            {
 
+            filteredJobs.map(
 
+            (job,index)=>{
 
 
 
-<Box mt={2}>
+                const fakeProbability =
 
 
-<Typography>
+                job.fake_probability > 1
 
-📍 {job.location}
+                ?
 
-</Typography>
+                job.fake_probability
 
+                :
 
+                (job.fake_probability || 0)*100;
 
-<Typography>
 
-💰 Salary: {job.salary || "Not disclosed"}
 
-</Typography>
 
 
+                const trustScore =
 
-</Box>
 
+                job.trust_score
 
+                ||
 
+                100-fakeProbability;
 
 
 
 
-<Box
 
-mt={3}
+                const safe = trustScore>=70;
 
-display="flex"
 
-gap={1}
 
-flexWrap="wrap"
 
->
 
 
 
-<Chip
+                return(
 
 
-icon={<VerifiedUser/>}
 
+                <motion.div
 
-label={
 
-job.status ||
 
-"Pending"
+                key={job.id || index}
 
-}
 
 
-color={
+                initial={{
 
-job.status==="verified"
+                    opacity:0,
 
-?
+                    y:30
 
-"success"
+                }}
 
-:
 
-"warning"
 
-}
+                animate={{
 
+                    opacity:1,
 
+                    y:0
 
-/>
+                }}
 
 
 
+                transition={{
 
-<Chip
+                    delay:index*0.05
 
+                }}
 
-label={
 
-`Trust ${
 
-job.fake_probability
+                whileHover={{
 
-?
+                    scale:1.03
 
-100-job.fake_probability
+                }}
 
-:
 
-90
 
-}%`
+                className="
 
-}
+                bg-white/10
 
+                backdrop-blur-xl
 
+                border
 
-/>
+                border-white/20
 
+                rounded-3xl
 
+                p-6
 
+                "
 
-</Box>
+                >
 
 
 
@@ -552,100 +550,407 @@ job.fake_probability
 
 
 
-<Button
 
+                    {/* TITLE */}
 
-fullWidth
 
 
-variant="contained"
+                    <div
 
+                    className="
 
-sx={{mt:3}}
+                    flex
 
+                    justify-between
 
-onClick={()=>
+                    "
 
+                    >
 
-navigate(
 
-`/employee/job/${job.id}`
 
-)
+                        <div>
 
 
-}
+                            <h2
 
+                            className="
 
+                            text-xl
 
->
+                            font-bold
 
-View Details
+                            "
 
-</Button>
+                            >
 
+                                {job.title}
 
+                            </h2>
 
 
 
+                            <p
 
+                            className="
 
+                            text-gray-400
 
-<Button
+                            mt-1
 
+                            "
 
-fullWidth
+                            >
 
+                                {job.company}
 
-startIcon={<Bookmark/>}
+                            </p>
 
 
-sx={{mt:1,color:"white"}}
+                        </div>
 
 
->
 
 
-Save Job
 
-</Button>
+                        {
 
+                        safe
 
+                        ?
 
+                        <ShieldCheck
 
+                        className="text-green-400"
 
-</CardContent>
+                        />
 
+                        :
 
+                        <ShieldAlert
 
-</Card>
+                        className="text-red-400"
 
+                        />
 
+                        }
 
 
+                    </div>
 
 
-</Grid>
 
 
 
-))
 
 
-}
 
 
+                    {/* DETAILS */}
 
-</Grid>
 
 
+                    <div
 
+                    className="
 
+                    mt-5
 
-</Box>
+                    space-y-3
 
+                    text-gray-300
 
-);
+                    "
+
+                    >
+
+
+
+                        <p
+
+                        className="
+
+                        flex
+
+                        gap-2
+
+                        items-center
+
+                        "
+
+                        >
+
+                            <MapPin size={17}/>
+
+                            {job.location || "Remote"}
+
+                        </p>
+
+
+
+
+
+                        <p
+
+                        className="
+
+                        flex
+
+                        gap-2
+
+                        items-center
+
+                        "
+
+                        >
+
+                            <IndianRupee size={17}/>
+
+                            {job.salary || "Not disclosed"}
+
+                        </p>
+
+
+
+                    </div>
+
+
+
+
+
+
+
+
+
+                    {/* AI SCORE */}
+
+
+
+                    <div
+
+                    className="
+
+                    mt-5
+
+                    bg-black/20
+
+                    rounded-2xl
+
+                    p-4
+
+                    "
+
+                    >
+
+
+
+                        <div
+
+                        className="
+
+                        flex
+
+                        justify-between
+
+                        "
+
+                        >
+
+
+                            <span>
+
+                                AI Trust Score
+
+                            </span>
+
+
+
+                            <b>
+
+                                {Math.round(trustScore)}%
+
+                            </b>
+
+
+                        </div>
+
+
+
+                        <div
+
+                        className="
+
+                        h-2
+
+                        bg-gray-700
+
+                        rounded-full
+
+                        mt-3
+
+                        "
+
+                        >
+
+
+
+                            <div
+
+                            style={{
+
+                                width:`${trustScore}%`
+
+                            }}
+
+
+
+                            className="
+
+                            h-full
+
+                            bg-gradient-to-r
+
+                            from-green-400
+
+                            to-blue-500
+
+                            rounded-full
+
+                            "
+
+                            />
+
+
+                        </div>
+
+
+
+                    </div>
+
+
+
+
+
+
+
+
+
+                    {/* BUTTONS */}
+
+
+
+                    <button
+
+
+                    onClick={()=>navigate(
+
+                        `/employee/job/${job.id}`
+
+                    )}
+
+
+
+                    className="
+
+                    mt-6
+
+                    w-full
+
+                    bg-gradient-to-r
+
+                    from-blue-600
+
+                    to-purple-600
+
+                    py-3
+
+                    rounded-xl
+
+                    font-semibold
+
+                    "
+
+                    >
+
+                        View Details
+
+                    </button>
+
+
+
+
+
+
+
+                    <button
+
+
+
+                    className="
+
+                    mt-3
+
+                    w-full
+
+                    border
+
+                    border-white/30
+
+                    py-3
+
+                    rounded-xl
+
+                    flex
+
+                    justify-center
+
+                    items-center
+
+                    gap-2
+
+                    "
+
+                    >
+
+                        <Bookmark size={18}/>
+
+                        Save Job
+
+
+                    </button>
+
+
+
+
+
+                </motion.div>
+
+
+                );
+
+
+            }
+
+            )
+
+            }
+
+
+
+
+
+            </div>
+
+
+            }
+
+
+
+
+        </div>
+
+
+    );
 
 
 }

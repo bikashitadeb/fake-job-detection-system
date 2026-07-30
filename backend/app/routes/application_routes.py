@@ -13,67 +13,202 @@ from app.models.user_model import User
 
 
 
+
+
+# =====================================================
+# BLUEPRINT
+# =====================================================
+
+
 application_bp = Blueprint(
+
     "applications",
+
     __name__,
+
     url_prefix="/api/applications"
+
 )
 
 
 
 
 
-# =====================================
+
+
+
+
+# =====================================================
+# RESPONSE HANDLER
+# =====================================================
+
+
+def api_response(
+
+    success=True,
+
+    message="",
+
+    data=None,
+
+    status=200
+
+):
+
+    return jsonify({
+
+        "success": success,
+
+        "message": message,
+
+        "data": data
+
+    }), status
+
+
+
+
+
+
+
+
+
+
+
+# =====================================================
 # APPLY FOR JOB
-# EMPLOYEE
-# =====================================
+# EMPLOYEE ONLY
+# POST /api/applications/<job_id>/apply
+# =====================================================
 
 
 @application_bp.route(
+
     "/<int:job_id>/apply",
+
     methods=["POST"]
+
 )
+
 @jwt_required()
+
 def apply_job(job_id):
 
 
     try:
 
 
+
         user_id = int(
+
             get_jwt_identity()
+
         )
 
 
-        user = User.query.get(user_id)
 
 
+        user = User.query.get(
 
-        if not user or user.role != "employee":
+            user_id
 
-            return jsonify({
-
-                "message":
-                "Only employees can apply"
-
-            }),403
+        )
 
 
 
 
 
-        job = Job.query.get(job_id)
+
+
+        if not user:
+
+
+            return api_response(
+
+                False,
+
+                "User not found",
+
+                status=404
+
+            )
+
+
+
+
+
+
+
+
+        if user.role != "employee":
+
+
+            return api_response(
+
+                False,
+
+                "Only employees can apply",
+
+                status=403
+
+            )
+
+
+
+
+
+
+
+
+
+        job = Job.query.get(
+
+            job_id
+
+        )
+
+
+
 
 
 
         if not job:
 
-            return jsonify({
 
-                "message":
-                "Job not found"
+            return api_response(
 
-            }),404
+                False,
+
+                "Job not found",
+
+                status=404
+
+            )
+
+
+
+
+
+
+
+
+
+        if not job.is_active:
+
+
+            return api_response(
+
+                False,
+
+                "Job is closed",
+
+                status=400
+
+            )
+
+
+
+
 
 
 
@@ -81,9 +216,12 @@ def apply_job(job_id):
 
         existing = Application.query.filter_by(
 
-            jobseeker_id=user.id,
 
-            job_id=job.id
+            job_id=job.id,
+
+
+            jobseeker_id=user.id
+
 
         ).first()
 
@@ -91,14 +229,23 @@ def apply_job(job_id):
 
 
 
+
+
         if existing:
 
-            return jsonify({
 
-                "message":
-                "Already applied"
+            return api_response(
 
-            }),400
+                False,
+
+                "Already applied for this job",
+
+                status=409
+
+            )
+
+
+
 
 
 
@@ -110,13 +257,20 @@ def apply_job(job_id):
 
 
 
+
+
+
+
         application = Application(
+
 
 
             job_id=job.id,
 
 
+
             jobseeker_id=user.id,
+
 
 
             cover_letter=data.get(
@@ -128,6 +282,7 @@ def apply_job(job_id):
             ),
 
 
+
             resume_url=data.get(
 
                 "resume_url"
@@ -135,7 +290,34 @@ def apply_job(job_id):
             ),
 
 
+
+            portfolio_url=data.get(
+
+                "portfolio_url"
+
+            ),
+
+
+
+            github_url=data.get(
+
+                "github_url"
+
+            ),
+
+
+
+            linkedin_url=data.get(
+
+                "linkedin_url"
+
+            ),
+
+
+
             status="pending"
+
+
 
         )
 
@@ -143,7 +325,17 @@ def apply_job(job_id):
 
 
 
+
+
         db.session.add(application)
+
+
+
+        # Analytics
+
+        job.application_count += 1
+
+
 
         db.session.commit()
 
@@ -151,18 +343,38 @@ def apply_job(job_id):
 
 
 
-        return jsonify({
 
 
-            "message":
-            "Application submitted",
+
+        return api_response(
 
 
-            "application":
-            application.to_dict()
+
+            True,
 
 
-        }),201
+            "Application submitted successfully",
+
+
+
+            {
+
+
+                "application":
+
+                application.to_dict()
+
+
+            },
+
+
+            201
+
+
+        )
+
+
+
 
 
 
@@ -175,6 +387,7 @@ def apply_job(job_id):
         db.session.rollback()
 
 
+
         print(
 
             "APPLY ERROR:",
@@ -184,38 +397,52 @@ def apply_job(job_id):
         )
 
 
-        return jsonify({
 
-            "message":str(e)
+        return api_response(
 
-        }),500
+            False,
 
+            str(e),
 
+            status=500
 
-
-
-
-
+        )
 
 
 
 
 
-# =====================================
-# GET EMPLOYEE APPLICATIONS
-# GET /api/applications
-# =====================================
+
+
+
+
+
+
+
+
+
+# =====================================================
+# EMPLOYEE APPLICATION HISTORY
+# GET /api/applications/my
+# =====================================================
+
 
 
 @application_bp.route(
-    "",
+
+    "/my",
+
     methods=["GET"]
+
 )
+
 @jwt_required()
-def get_my_applications():
+
+def my_applications():
 
 
     try:
+
 
 
         user_id = int(
@@ -226,9 +453,18 @@ def get_my_applications():
 
 
 
+
         applications = Application.query.filter_by(
 
+
             jobseeker_id=user_id
+
+
+        ).order_by(
+
+
+            Application.applied_at.desc()
+
 
         ).all()
 
@@ -236,17 +472,41 @@ def get_my_applications():
 
 
 
-        return jsonify({
 
-            "applications":[
 
-                application.to_dict()
+        return api_response(
 
-                for application in applications
 
-            ]
 
-        }),200
+            True,
+
+
+            "Applications fetched",
+
+
+
+            {
+
+
+                "applications":[
+
+
+                    application.to_dict()
+
+
+                    for application in applications
+
+
+                ]
+
+
+            }
+
+
+        )
+
+
+
 
 
 
@@ -255,43 +515,18 @@ def get_my_applications():
     except Exception as e:
 
 
-        print(
 
-            "APPLICATION FETCH ERROR:",
+        return api_response(
 
-            e
+            False,
+
+            str(e),
+
+            status=500
 
         )
 
 
-        return jsonify({
-
-            "message":str(e)
-
-        }),500
-
-
-
-
-
-
-
-
-
-
-# =====================================
-# OLD ROUTE
-# =====================================
-
-
-@application_bp.route(
-    "/my",
-    methods=["GET"]
-)
-@jwt_required()
-def my_applications():
-
-    return get_my_applications()
 
 
 
@@ -304,9 +539,10 @@ def my_applications():
 
 
 
-# =====================================
+# =====================================================
 # RECRUITER VIEW APPLICANTS
-# =====================================
+# GET /api/applications/job/<job_id>
+# =====================================================
 
 
 @application_bp.route(
@@ -316,57 +552,50 @@ def my_applications():
     methods=["GET"]
 
 )
+
 @jwt_required()
+
 def job_applicants(job_id):
 
 
-    user_id = int(
-
-        get_jwt_identity()
-
-    )
+    try:
 
 
 
-    user = User.query.get(user_id)
+        user_id = int(
 
+            get_jwt_identity()
 
-
-    if not user or user.role != "recruiter":
-
-
-        return jsonify({
-
-            "message":
-            "Only recruiters allowed"
-
-        }),403
+        )
 
 
 
 
 
-    applications = Application.query.filter_by(
+        recruiter = User.query.get(
 
-        job_id=job_id
+            user_id
 
-    ).all()
-
-
+        )
 
 
 
-    return jsonify({
 
-        "applications":[
 
-            application.to_dict()
 
-            for application in applications
 
-        ]
+        if not recruiter or recruiter.role != "recruiter":
 
-    }),200
+
+            return api_response(
+
+                False,
+
+                "Recruiter access required",
+
+                status=403
+
+            )
 
 
 
@@ -376,11 +605,152 @@ def job_applicants(job_id):
 
 
 
+        job = Job.query.get(
+
+            job_id
+
+        )
 
 
-# =====================================
+
+
+
+
+
+        if not job:
+
+
+            return api_response(
+
+                False,
+
+                "Job not found",
+
+                status=404
+
+            )
+
+
+
+
+
+
+
+
+        if job.recruiter_id != recruiter.id:
+
+
+
+            return api_response(
+
+                False,
+
+                "Unauthorized access",
+
+                status=403
+
+            )
+
+
+
+
+
+
+
+
+
+
+        applications = Application.query.filter_by(
+
+
+            job_id=job.id
+
+
+        ).order_by(
+
+
+            Application.applied_at.desc()
+
+
+        ).all()
+
+
+
+
+
+
+
+
+        return api_response(
+
+
+
+            True,
+
+
+            "Applicants fetched",
+
+
+
+            {
+
+
+                "applications":[
+
+
+                    application.to_dict()
+
+
+                    for application in applications
+
+
+                ]
+
+
+            }
+
+
+        )
+
+
+
+
+
+
+
+
+
+
+    except Exception as e:
+
+
+
+        return api_response(
+
+            False,
+
+            str(e),
+
+            status=500
+
+        )
+
+
+
+
+
+
+
+
+
+
+
+
+
+# =====================================================
 # UPDATE APPLICATION STATUS
-# =====================================
+# RECRUITER ONLY
+# =====================================================
 
 
 @application_bp.route(
@@ -390,53 +760,263 @@ def job_applicants(job_id):
     methods=["PUT"]
 
 )
+
 @jwt_required()
+
 def update_application(id):
 
 
-    application = Application.query.get(id)
+    try:
 
 
 
-    if not application:
+        user_id = int(
 
+            get_jwt_identity()
 
-        return jsonify({
-
-            "message":
-            "Application not found"
-
-        }),404
+        )
 
 
 
 
+        recruiter = User.query.get(
 
-    data = request.get_json()
+            user_id
 
-
-
-    application.status = data.get(
-
-        "status",
-
-        application.status
-
-    )
+        )
 
 
 
-    db.session.commit()
 
 
 
-    return jsonify({
-
-        "message":
-        "Application updated",
+        if not recruiter or recruiter.role != "recruiter":
 
 
-        "application":
-        application.to_dict()
+            return api_response(
 
-    }),200
+                False,
+
+                "Recruiter access required",
+
+                status=403
+
+            )
+
+
+
+
+
+
+
+
+        application = Application.query.get(
+
+            id
+
+        )
+
+
+
+
+
+
+
+        if not application:
+
+
+            return api_response(
+
+                False,
+
+                "Application not found",
+
+                status=404
+
+            )
+
+
+
+
+
+
+
+
+
+        if application.job.recruiter_id != recruiter.id:
+
+
+            return api_response(
+
+                False,
+
+                "Unauthorized action",
+
+                status=403
+
+            )
+
+
+
+
+
+
+
+
+
+        data = request.get_json() or {}
+
+
+
+
+
+
+
+        allowed_status = [
+
+
+            "pending",
+
+            "shortlisted",
+
+            "interview",
+
+            "selected",
+
+            "rejected",
+
+            "offered"
+
+
+        ]
+
+
+
+
+
+
+
+
+        new_status = data.get(
+
+            "status"
+
+        )
+
+
+
+
+
+
+
+
+        if new_status not in allowed_status:
+
+
+            return api_response(
+
+                False,
+
+                "Invalid application status",
+
+                status=400
+
+            )
+
+
+
+
+
+
+
+
+
+        application.status = new_status
+
+
+
+
+
+
+        application.recruiter_notes = data.get(
+
+            "recruiter_notes",
+
+            application.recruiter_notes
+
+        )
+
+
+
+
+
+        application.rejection_reason = data.get(
+
+            "rejection_reason",
+
+            application.rejection_reason
+
+        )
+
+
+
+
+
+
+        db.session.commit()
+
+
+
+
+
+
+
+        return api_response(
+
+
+
+            True,
+
+
+            "Application status updated",
+
+
+
+            {
+
+
+                "application":
+
+                application.to_dict()
+
+
+            }
+
+
+        )
+
+
+
+
+
+
+
+
+
+    except Exception as e:
+
+
+
+        db.session.rollback()
+
+
+
+        return api_response(
+
+            False,
+
+            str(e),
+
+            status=500
+
+        )

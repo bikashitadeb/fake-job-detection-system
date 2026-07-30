@@ -1,14 +1,48 @@
-import { Navigate, Outlet } from "react-router-dom";
+import {
 
-import { useAuth } from "../context/AuthContext.jsx";
+    Navigate,
+
+    Outlet
+
+} from "react-router-dom";
+
+
+import {
+
+    Box,
+
+    CircularProgress,
+
+    Typography
+
+} from "@mui/material";
+
+
+import {
+
+    motion
+
+} from "framer-motion";
+
+
+import {
+
+    useAuth
+
+} from "../context/AuthContext.jsx";
+
+
+
+
 
 
 
 export default function ProtectedRoute({
 
-    role
+    allowedRoles = []
 
 }) {
+
 
 
     const {
@@ -17,7 +51,9 @@ export default function ProtectedRoute({
 
         token,
 
-        loading
+        loading,
+
+        isAuthenticated
 
     } = useAuth();
 
@@ -25,31 +61,115 @@ export default function ProtectedRoute({
 
 
 
-    // Check authentication loading
+
+
+
+    // ==============================
+    // AUTH LOADING
+    // ==============================
+
 
     if (loading) {
 
+
         return (
 
-            <div
 
-                style={{
+            <Box
 
-                    color: "white",
 
-                    textAlign: "center",
+                sx={{
 
-                    marginTop: "100px",
 
-                    fontSize: "20px"
+                    minHeight:"100vh",
+
+                    display:"flex",
+
+                    flexDirection:"column",
+
+                    alignItems:"center",
+
+                    justifyContent:"center",
+
+                    background:
+
+                    "linear-gradient(135deg,#ede9fe,#fce7f3)"
+
 
                 }}
 
+
+
             >
 
-                Loading...
 
-            </div>
+
+                <motion.div
+
+
+                    animate={{
+
+                        rotate:360
+
+                    }}
+
+
+                    transition={{
+
+                        duration:2,
+
+                        repeat:Infinity,
+
+                        ease:"linear"
+
+                    }}
+
+
+
+                >
+
+
+                    <CircularProgress
+
+                        size={60}
+
+                        thickness={5}
+
+                    />
+
+
+                </motion.div>
+
+
+
+
+
+                <Typography
+
+
+                    sx={{
+
+
+                        mt:3,
+
+                        fontWeight:700,
+
+                        color:"#6d28d9"
+
+                    }}
+
+
+                >
+
+                    Securing your session...
+
+                </Typography>
+
+
+
+
+            </Box>
+
 
         );
 
@@ -59,9 +179,25 @@ export default function ProtectedRoute({
 
 
 
-    // No token = not logged in
 
-    if (!token) {
+
+
+
+    // ==============================
+    // NOT LOGGED IN
+    // ==============================
+
+
+    if(
+
+        !token ||
+
+        !isAuthenticated ||
+
+        !user
+
+    ){
+
 
         return (
 
@@ -81,15 +217,35 @@ export default function ProtectedRoute({
 
 
 
-    // No user data
 
-    if (!user) {
+
+
+    // ==============================
+    // ROLE PROTECTION
+    // ==============================
+
+
+    if(
+
+
+        allowedRoles.length > 0 &&
+
+
+        !allowedRoles.includes(
+
+            user.role
+
+        )
+
+
+    ){
+
 
         return (
 
             <Navigate
 
-                to="/login"
+                to="/unauthorized"
 
                 replace
 
@@ -97,27 +253,6 @@ export default function ProtectedRoute({
 
         );
 
-    }
-
-
-
-
-
-    // Role protection
-
-    if (role && user.role !== role) {
-
-        return (
-
-            <Navigate
-
-                to="/login"
-
-                replace
-
-            />
-
-        );
 
     }
 
@@ -125,7 +260,13 @@ export default function ProtectedRoute({
 
 
 
-    // Allow access
+
+
+
+    // ==============================
+    // ACCESS GRANTED
+    // ==============================
+
 
     return <Outlet />;
 

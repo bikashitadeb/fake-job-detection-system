@@ -5,10 +5,21 @@ from flask_jwt_extended import (
     get_jwt_identity
 )
 
+from sqlalchemy import func
+
+from app.extensions import db
+
 from app.models.user_model import User
 from app.models.job_model import Job
 from app.models.application_model import Application
 
+
+
+
+
+# =====================================================
+# BLUEPRINT
+# =====================================================
 
 
 dashboard_bp = Blueprint(
@@ -25,13 +36,56 @@ dashboard_bp = Blueprint(
 
 
 
-# =====================================
-# COMMON PROFILE
-# =====================================
+
+
+# =====================================================
+# COMMON RESPONSE
+# =====================================================
+
+
+def response(
+
+    success=True,
+
+    message="",
+
+    data=None,
+
+    status=200
+
+):
+
+    return jsonify({
+
+        "success": success,
+
+        "message": message,
+
+        "data": data
+
+    }), status
+
+
+
+
+
+
+
+
+
+
+# =====================================================
+# PROFILE
+# GET /api/dashboard/profile
+# =====================================================
+
 
 @dashboard_bp.route(
+
     "/profile",
+
     methods=["GET"]
+
 )
 
 @jwt_required()
@@ -39,46 +93,93 @@ dashboard_bp = Blueprint(
 def profile():
 
 
-    user_id = int(
-        get_jwt_identity()
-    )
+    try:
 
 
-    user = User.query.get(user_id)
+        user_id = int(
+
+            get_jwt_identity()
+
+        )
 
 
+        user = User.query.get(
 
-    if not user:
+            user_id
 
-        return jsonify({
-
-            "message":"User not found"
-
-        }),404
-
-
-
-
-    return jsonify({
-
-        "user": user.to_dict()
-
-    }),200
+        )
 
 
 
+        if not user:
+
+
+            return response(
+
+                False,
+
+                "User not found",
+
+                status=404
+
+            )
 
 
 
 
-# =====================================
+
+        return response(
+
+            True,
+
+            "Profile loaded",
+
+            {
+
+                "user":
+
+                user.to_dict()
+
+            }
+
+        )
+
+
+
+
+    except Exception as e:
+
+
+        return response(
+
+            False,
+
+            str(e),
+
+            status=500
+
+        )
+
+
+
+
+
+
+
+
+
+# =====================================================
 # EMPLOYEE DASHBOARD
-# =====================================
+# GET /api/dashboard/employee
+# =====================================================
 
 
 @dashboard_bp.route(
+
     "/employee",
+
     methods=["GET"]
+
 )
 
 @jwt_required()
@@ -86,158 +187,125 @@ def profile():
 def employee_dashboard():
 
 
-    user_id = int(
-        get_jwt_identity()
-    )
+    try:
 
 
-    user = User.query.get(user_id)
+        user_id = int(
 
+            get_jwt_identity()
 
-
-    if not user:
-
-        return jsonify({
-
-            "message":"User not found"
-
-        }),404
-
-
-
-
-    if user.role != "employee":
-
-        return jsonify({
-
-            "message":"Access denied"
-
-        }),403
-
-
-
-
-
-
-    # Show all approved jobs
-    jobs = Job.query.filter(
-
-        Job.status.in_(
-            [
-                "verified",
-                "pending"
-            ]
         )
 
-    ).all()
 
 
 
+        user = User.query.get(
 
+            user_id
 
-    applications = Application.query.filter_by(
-
-        jobseeker_id=user.id
-
-    ).all()
-
-
-
-
-
-    suspicious_jobs = Job.query.filter_by(
-
-        is_fake_predicted=True
-
-    ).all()
+        )
 
 
 
 
 
 
-    return jsonify({
+        if not user:
 
 
-        "user":
+            return response(
 
-        user.to_dict(),
+                False,
+
+                "User not found",
+
+                status=404
+
+            )
 
 
 
 
-        "jobs":
 
-        [
 
-            job.to_dict()
+
+        if user.role != "employee":
+
+
+            return response(
+
+                False,
+
+                "Employee access required",
+
+                status=403
+
+            )
+
+
+
+
+
+
+
+
+
+        # Available jobs
+
+
+        jobs = Job.query.filter(
+
+            Job.is_active == True
+
+        ).order_by(
+
+            Job.created_at.desc()
+
+        ).all()
+
+
+
+
+
+
+
+        applications = Application.query.filter_by(
+
+            jobseeker_id=user.id
+
+        ).order_by(
+
+            Application.applied_at.desc()
+
+        ).all()
+
+
+
+
+
+
+
+        suspicious_jobs = Job.query.filter(
+
+            Job.is_fake_predicted == True
+
+        ).all()
+
+
+
+
+
+
+
+        verified_jobs = [
+
+            job
 
             for job in jobs
 
-        ],
+            if job.linkedin_verified
 
-
-
-
-        "applications":
-
-        [
-
-            app.to_dict()
-
-            for app in applications
-
-        ],
-
-
-
-
-
-        "suspicious_jobs":
-
-        [
-
-            job.to_dict()
-
-            for job in suspicious_jobs
-
-        ],
-
-
-
-
-        "analytics":
-
-        {
-
-            "total_jobs":
-
-            len(jobs),
-
-
-
-            "verified_jobs":
-
-            len(
-
-                [
-                    j for j in jobs
-
-                    if j.linkedin_verified
-                ]
-
-            ),
-
-
-
-            "suspicious_jobs":
-
-            len(suspicious_jobs)
-
-        }
-
-
-    }),200
+        ]
 
 
 
@@ -247,16 +315,208 @@ def employee_dashboard():
 
 
 
+        return response(
 
 
-# =====================================
+            True,
+
+
+            "Employee dashboard loaded",
+
+
+
+            {
+
+
+
+                "user":
+
+                user.to_dict(),
+
+
+
+
+
+
+                "jobs":[
+
+
+                    job.to_dict()
+
+                    for job in jobs
+
+
+                ],
+
+
+
+
+
+
+                "applications":[
+
+
+                    app.to_dict()
+
+                    for app in applications
+
+
+                ],
+
+
+
+
+
+
+
+                "suspicious_jobs":[
+
+
+                    job.to_dict()
+
+                    for job in suspicious_jobs
+
+
+                ],
+
+
+
+
+
+
+
+                "analytics":{
+
+
+                    "total_jobs":
+
+                    len(jobs),
+
+
+
+
+                    "verified_jobs":
+
+                    len(verified_jobs),
+
+
+
+
+                    "suspicious_jobs":
+
+                    len(suspicious_jobs),
+
+
+
+
+                    "applications_sent":
+
+                    len(applications),
+
+
+
+
+
+                    "application_status":{
+
+
+                        "pending":
+
+                        len(
+
+                            [
+
+                            a for a in applications
+
+                            if a.status=="pending"
+
+                            ]
+
+                        ),
+
+
+
+                        "selected":
+
+                        len(
+
+                            [
+
+                            a for a in applications
+
+                            if a.status=="selected"
+
+                            ]
+
+                        ),
+
+
+
+                        "rejected":
+
+                        len(
+
+                            [
+
+                            a for a in applications
+
+                            if a.status=="rejected"
+
+                            ]
+
+                        )
+
+
+                    }
+
+
+                }
+
+
+
+            }
+
+        )
+
+
+
+
+
+
+
+    except Exception as e:
+
+
+        return response(
+
+            False,
+
+            str(e),
+
+            status=500
+
+        )
+
+
+
+
+
+
+
+
+
+# =====================================================
 # RECRUITER DASHBOARD
-# =====================================
+# GET /api/dashboard/recruiter
+# =====================================================
 
 
 @dashboard_bp.route(
+
     "/recruiter",
+
     methods=["GET"]
+
 )
 
 @jwt_required()
@@ -264,162 +524,343 @@ def employee_dashboard():
 def recruiter_dashboard():
 
 
-    user_id = int(
+    try:
 
-        get_jwt_identity()
 
-    )
+        user_id = int(
 
+            get_jwt_identity()
 
+        )
 
-    user = User.query.get(user_id)
 
 
 
 
-    if not user:
+        user = User.query.get(
 
-        return jsonify({
+            user_id
 
-            "message":"User not found"
+        )
 
-        }),404
 
 
 
 
 
-    if user.role != "recruiter":
+        if not user:
 
 
-        return jsonify({
+            return response(
 
-            "message":"Access denied"
+                False,
 
-        }),403
+                "User not found",
 
-
-
-
-
-
-
-    jobs = Job.query.filter_by(
-
-        recruiter_id=user.id
-
-    ).all()
-
-
-
-
-
-
-
-    applications = Application.query.join(
-
-        Job
-
-    ).filter(
-
-        Job.recruiter_id == user.id
-
-    ).all()
-
-
-
-
-
-
-    return jsonify({
-
-
-        "user":
-
-        user.to_dict(),
-
-
-
-
-
-        "jobs":
-
-        [
-
-            job.to_dict()
-
-            for job in jobs
-
-        ],
-
-
-
-
-
-
-        "applications":
-
-        [
-
-            app.to_dict()
-
-            for app in applications
-
-        ],
-
-
-
-
-        "analytics":
-
-        {
-
-
-            "total_jobs":
-
-            len(jobs),
-
-
-
-            "fake_jobs":
-
-            len(
-
-                [
-
-                j for j in jobs
-
-                if j.is_fake_predicted
-
-                ]
-
-            ),
-
-
-
-            "average_trust_score":
-
-            (
-
-                sum(
-
-                    j.trust_score or 0
-
-                    for j in jobs
-
-                )
-
-                /
-
-                len(jobs)
+                status=404
 
             )
 
-            if jobs else 0
-
-
-        }
 
 
 
-    }),200
+
+
+        if user.role != "recruiter":
+
+
+            return response(
+
+                False,
+
+                "Recruiter access required",
+
+                status=403
+
+            )
+
+
+
+
+
+
+
+
+
+        jobs = Job.query.filter_by(
+
+            recruiter_id=user.id
+
+        ).order_by(
+
+            Job.created_at.desc()
+
+        ).all()
+
+
+
+
+
+
+
+
+        applications = Application.query.join(
+
+            Job
+
+        ).filter(
+
+            Job.recruiter_id == user.id
+
+        ).order_by(
+
+            Application.applied_at.desc()
+
+        ).all()
+
+
+
+
+
+
+
+        total_trust = sum(
+
+            job.trust_score or 0
+
+            for job in jobs
+
+        )
+
+
+
+
+
+
+        average_trust = (
+
+            total_trust / len(jobs)
+
+        ) if jobs else 0
+
+
+
+
+
+
+
+        shortlisted = len(
+
+            [
+
+                app
+
+                for app in applications
+
+                if app.status=="shortlisted"
+
+            ]
+
+        )
+
+
+
+
+
+
+
+        selected = len(
+
+            [
+
+                app
+
+                for app in applications
+
+                if app.status=="selected"
+
+            ]
+
+        )
+
+
+
+
+
+
+
+
+
+
+        return response(
+
+
+
+            True,
+
+
+            "Recruiter dashboard loaded",
+
+
+
+            {
+
+
+
+                "user":
+
+                user.to_dict(),
+
+
+
+
+
+                "jobs":[
+
+
+                    job.to_dict()
+
+                    for job in jobs
+
+
+                ],
+
+
+
+
+
+                "applications":[
+
+
+                    app.to_dict()
+
+                    for app in applications
+
+
+                ],
+
+
+
+
+
+
+
+                "analytics":{
+
+
+
+                    "total_jobs":
+
+                    len(jobs),
+
+
+
+
+
+                    "active_jobs":
+
+                    len(
+
+                        [
+
+                        j for j in jobs
+
+                        if j.is_active
+
+                        ]
+
+                    ),
+
+
+
+
+
+
+                    "fake_jobs_detected":
+
+                    len(
+
+                        [
+
+                        j for j in jobs
+
+                        if j.is_fake_predicted
+
+                        ]
+
+                    ),
+
+
+
+
+
+
+
+                    "average_trust_score":
+
+                    round(
+
+                        average_trust,
+
+                        2
+
+                    ),
+
+
+
+
+
+
+
+                    "total_applicants":
+
+                    len(applications),
+
+
+
+
+
+
+
+                    "shortlisted_candidates":
+
+                    shortlisted,
+
+
+
+
+
+
+                    "selected_candidates":
+
+                    selected
+
+
+
+
+                }
+
+
+
+            }
+
+
+        )
+
+
+
+
+
+
+    except Exception as e:
+
+
+        return response(
+
+            False,
+
+            str(e),
+
+            status=500
+
+        )

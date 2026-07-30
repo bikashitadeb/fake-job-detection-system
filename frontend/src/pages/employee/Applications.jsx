@@ -1,46 +1,52 @@
-import {
+import React, {
 
-useEffect,
+    useEffect,
 
-useState
+    useState
 
 } from "react";
 
 
 import {
 
-Box,
+    motion
 
-Grid,
-
-Card,
-
-CardContent,
-
-Typography,
-
-Chip,
-
-Button
-
-} from "@mui/material";
+} from "framer-motion";
 
 
 import {
 
-Visibility
 
-} from "@mui/icons-material";
+    Eye,
+
+    Briefcase,
+
+    Calendar,
+
+    CheckCircle,
+
+    XCircle,
+
+    Clock
+
+
+} from "lucide-react";
 
 
 import {
 
-useNavigate
+    useNavigate
 
 } from "react-router-dom";
 
 
 import API from "../../api/API";
+
+
+import EmptyState from "../../components/EmptyState";
+
+
+
 
 
 
@@ -50,499 +56,850 @@ export default function Applications(){
 
 
 
-const navigate = useNavigate();
+    const navigate = useNavigate();
 
 
 
-const [applications,setApplications]=useState([]);
+    const [applications,setApplications] = useState([]);
 
+    const [loading,setLoading] = useState(true);
 
-const [loading,setLoading]=useState(true);
 
 
 
 
 
 
-useEffect(()=>{
 
+    useEffect(()=>{
 
-fetchApplications();
 
+        fetchApplications();
 
-},[]);
 
+    },[]);
 
 
 
 
 
 
-// ============================
-// FETCH APPLICATIONS
-// ============================
 
 
-const fetchApplications=async()=>{
 
+    const fetchApplications = async()=>{
 
-try{
 
+        try{
 
-const response = await API.get(
 
-"/applications"
+            const response = await API.get(
 
-);
+                "/applications/my"
 
+            );
 
 
-setApplications(
 
-response.data.data || []
+            setApplications(
 
-);
+                response.data.applications
 
+                ||
 
+                response.data.data
 
-}
+                ||
 
-catch(error){
+                []
 
+            );
 
-console.log(error);
 
+        }
 
-}
 
-finally{
 
+        catch(error){
 
-setLoading(false);
 
+            console.log(
 
-}
+                "Application fetch error",
 
+                error
 
-};
+            );
 
 
+        }
 
 
 
+        finally{
 
 
+            setLoading(false);
 
 
-if(loading){
+        }
 
 
-return(
+    };
 
-<Typography color="white">
 
-Loading applications...
 
-</Typography>
 
-);
 
 
-}
 
 
 
+    const getStatus = (status)=>{
 
 
+        switch(
 
+            status?.toLowerCase()
 
-const statusColor=(status)=>{
+        ){
 
 
-if(status==="accepted")
 
-return "success";
+            case "accepted":
 
+                return {
 
-if(status==="rejected")
 
-return "error";
+                    text:"Accepted",
 
+                    icon:<CheckCircle size={16}/>,
 
-return "warning";
+                    style:
 
+                    "bg-green-500/20 text-green-400"
 
-};
+                };
 
 
 
 
+            case "rejected":
 
+                return {
 
 
-return(
+                    text:"Rejected",
 
+                    icon:<XCircle size={16}/>,
 
-<Box>
+                    style:
 
+                    "bg-red-500/20 text-red-400"
 
+                };
 
-<Typography
 
-className="dashboard-title"
 
->
 
-My Applications 📄
 
-</Typography>
+            default:
 
 
+                return {
 
 
-<Typography
+                    text:"Pending",
 
-className="dashboard-subtitle"
+                    icon:<Clock size={16}/>,
 
-mb={4}
+                    style:
 
->
+                    "bg-yellow-500/20 text-yellow-400"
 
-Track your job applications and recruiter responses.
+                };
 
-</Typography>
 
+        }
 
 
+    };
 
 
 
 
-{
 
-applications.length===0 ?
 
 
-<Typography
 
-color="#94a3b8"
 
->
+    if(loading){
 
-No applications submitted yet.
 
-</Typography>
+        return (
 
+            <div
 
+            className="
 
+            text-white
 
+            animate-pulse
 
-:
+            "
 
+            >
 
-<Grid
+                Loading applications...
 
-container
+            </div>
 
-spacing={3}
+        );
 
->
 
+    }
 
-{
 
-applications.map((application,index)=>(
 
 
 
-<Grid
 
-item
 
-xs={12}
 
-md={6}
 
-lg={4}
+    return (
 
-key={index}
 
->
 
+        <div
 
+        className="
 
-<Card
+        text-white
 
-className="glass"
+        space-y-8
 
-sx={{
+        "
 
-height:"100%",
+        >
 
-color:"white"
 
-}}
 
->
 
 
+            {/* HEADER */}
 
-<CardContent>
 
 
+            <div>
 
 
+                <h1
 
-<Typography
+                className="
 
-variant="h6"
+                text-4xl
 
-fontWeight="700"
+                font-bold
 
->
+                "
 
-{
+                >
 
-application.job?.title ||
+                    My Applications 📄
 
-application.job_title ||
+                </h1>
 
-"Job Position"
 
-}
 
-</Typography>
+                <p
 
+                className="
 
+                text-gray-400
 
+                mt-2
 
+                "
 
+                >
 
+                    Track your job applications and recruiter responses.
 
-<Typography
+                </p>
 
-color="#94a3b8"
 
->
+            </div>
 
-{
 
-application.job?.company ||
 
-application.company ||
 
-"Company"
 
-}
 
-</Typography>
 
 
 
+            {
 
+            applications.length === 0 ?
 
 
 
+            <EmptyState
 
-<Box mt={2}>
 
+                type="applications"
 
-<Typography>
 
-Applied Date:
+                title="No applications yet"
 
-</Typography>
 
+                description="Start applying for verified jobs."
 
 
-<Typography
+                actionText="Browse Jobs"
 
-color="#94a3b8"
 
->
+                onAction={()=>navigate("/jobs")}
 
-{
 
-application.created_at ||
+            />
 
-"N/A"
 
-}
 
-</Typography>
+            :
 
 
 
-</Box>
 
 
 
+            <div
 
+            className="
 
+            grid
 
+            md:grid-cols-2
 
-<Chip
+            xl:grid-cols-3
 
+            gap-6
 
-sx={{mt:2}}
+            "
 
+            >
 
-label={
 
-application.status ||
 
-"Pending"
 
-}
 
+            {
 
+            applications.map(
 
-color={
+                (application,index)=>{
 
-statusColor(
 
-application.status
 
-)
+                    const status = getStatus(
 
-}
+                        application.status
 
+                    );
 
 
-/>
 
 
 
+                    const job =
 
+                    application.job || {};
 
 
 
 
-{
 
-application.message &&
+                    return (
 
 
-<Box mt={2}>
 
+                    <motion.div
 
-<Typography
 
-fontWeight="600"
 
->
+                    key={application.id || index}
 
-Recruiter Message
 
-</Typography>
 
+                    initial={{
 
+                        opacity:0,
 
-<Typography
+                        y:30
 
-color="#94a3b8"
+                    }}
 
->
 
-{
 
-application.message
+                    animate={{
 
-}
+                        opacity:1,
 
-</Typography>
+                        y:0
 
+                    }}
 
 
-</Box>
 
+                    transition={{
 
-}
+                        delay:index*0.05
 
+                    }}
 
 
 
+                    whileHover={{
 
+                        scale:1.03
 
+                    }}
 
 
 
-<Button
+                    className="
 
+                    bg-white/10
 
-fullWidth
+                    backdrop-blur-xl
 
+                    border
 
-variant="contained"
+                    border-white/20
 
+                    rounded-3xl
 
-startIcon={<Visibility/>}
+                    p-6
 
+                    shadow-xl
 
-sx={{mt:3}}
+                    "
 
 
-onClick={()=>
 
+                    >
 
-navigate(
 
-`/employee/job/${
 
-application.job_id
 
-}`
 
-)
 
 
-}
 
 
+                        {/* JOB TITLE */}
 
->
 
 
-View Job
+                        <div
 
-</Button>
+                        className="
 
+                        flex
 
+                        justify-between
 
+                        "
 
+                        >
 
 
-</CardContent>
 
+                            <div>
 
 
-</Card>
 
+                                <div
 
+                                className="
 
-</Grid>
+                                flex
 
+                                items-center
 
+                                gap-2
 
-))
+                                "
 
+                                >
 
-}
+                                    <Briefcase
 
+                                    className="text-purple-400"
 
+                                    />
 
-</Grid>
 
+                                    <h2
 
+                                    className="
 
-}
+                                    text-xl
 
+                                    font-bold
 
+                                    "
 
-</Box>
+                                    >
 
+                                    {
 
-);
+                                    job.title
+
+                                    ||
+
+                                    application.job_title
+
+                                    ||
+
+                                    "Job Position"
+
+                                    }
+
+
+                                    </h2>
+
+
+
+                                </div>
+
+
+
+
+
+                                <p
+
+                                className="
+
+                                text-gray-400
+
+                                mt-2
+
+                                "
+
+                                >
+
+                                {
+
+                                job.company
+
+                                ||
+
+                                application.company
+
+                                ||
+
+                                "Company"
+
+                                }
+
+
+                                </p>
+
+
+                            </div>
+
+
+
+                        </div>
+
+
+
+
+
+
+
+
+
+                        {/* DATE */}
+
+
+
+                        <div
+
+                        className="
+
+                        mt-5
+
+                        flex
+
+                        gap-2
+
+                        text-gray-400
+
+                        text-sm
+
+                        "
+
+                        >
+
+                            <Calendar size={16}/>
+
+
+
+                            {
+
+                            application.created_at
+
+                            ?
+
+                            new Date(
+
+                                application.created_at
+
+                            ).toLocaleDateString()
+
+                            :
+
+                            "Date unavailable"
+
+                            }
+
+
+                        </div>
+
+
+
+
+
+
+
+
+
+                        {/* STATUS */}
+
+
+
+                        <div
+
+                        className={`
+
+                        mt-5
+
+                        flex
+
+                        items-center
+
+                        gap-2
+
+                        px-4
+
+                        py-2
+
+                        rounded-xl
+
+                        w-fit
+
+                        ${status.style}
+
+                        `}
+
+                        >
+
+
+
+                            {status.icon}
+
+
+
+                            {status.text}
+
+
+
+                        </div>
+
+
+
+
+
+
+
+
+
+                        {/* MESSAGE */}
+
+
+
+                        {
+
+                        application.message &&
+
+
+
+                        <div
+
+                        className="
+
+                        mt-5
+
+                        bg-black/20
+
+                        rounded-xl
+
+                        p-4
+
+                        "
+
+                        >
+
+
+                            <p
+
+                            className="
+
+                            text-sm
+
+                            text-gray-300
+
+                            "
+
+                            >
+
+                                Recruiter Message
+
+                            </p>
+
+
+                            <p
+
+                            className="
+
+                            mt-1
+
+                            "
+
+                            >
+
+                                {application.message}
+
+                            </p>
+
+
+
+                        </div>
+
+
+
+                        }
+
+
+
+
+
+
+
+
+
+                        {/* BUTTON */}
+
+
+
+                        <button
+
+
+                        onClick={()=>navigate(
+
+                            `/employee/job/${
+
+                            application.job_id
+
+                            }`
+
+                        )}
+
+
+
+                        className="
+
+                        mt-6
+
+                        w-full
+
+                        flex
+
+                        items-center
+
+                        justify-center
+
+                        gap-2
+
+                        bg-gradient-to-r
+
+                        from-blue-600
+
+                        to-purple-600
+
+                        py-3
+
+                        rounded-xl
+
+                        font-semibold
+
+                        hover:scale-105
+
+                        transition
+
+                        "
+
+                        >
+
+
+
+                            <Eye size={18}/>
+
+
+                            View Job
+
+
+
+                        </button>
+
+
+
+
+
+
+
+                    </motion.div>
+
+
+
+                    );
+
+
+                }
+
+            )
+
+
+            }
+
+
+
+
+
+            </div>
+
+
+            }
+
+
+
+        </div>
+
+
+    );
 
 
 }

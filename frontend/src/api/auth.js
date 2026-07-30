@@ -1,21 +1,81 @@
+// src/services/authService.js
+
+
 import API from "./API";
 
 
 
-// =====================================
+
+// =====================================================
 // LOGIN USER
-// =====================================
-
-export const loginUser = (data)=>{
+// =====================================================
 
 
-    return API.post(
+export const loginUser = async (data)=>{
 
-        "/auth/login",
 
-        data
+    try{
 
-    );
+
+        const response = await API.post(
+
+            "/auth/login",
+
+            data
+
+        );
+
+
+
+        if(response.data.access_token){
+
+
+            localStorage.setItem(
+
+                "token",
+
+                response.data.access_token
+
+            );
+
+
+        }
+
+
+
+        if(response.data.user){
+
+
+            localStorage.setItem(
+
+                "user",
+
+                JSON.stringify(
+
+                    response.data.user
+
+                )
+
+            );
+
+
+        }
+
+
+
+        return response.data;
+
+
+
+    }
+
+    catch(error){
+
+
+        throw handleAuthError(error);
+
+
+    }
 
 
 };
@@ -23,27 +83,52 @@ export const loginUser = (data)=>{
 
 
 
-// =====================================
+
+
+
+
+
+// =====================================================
 // REGISTER EMPLOYEE
-// =====================================
+// =====================================================
 
 
-export const registerEmployee = (data)=>{
+export const registerEmployee = async(data)=>{
 
 
-    return API.post(
+    try{
 
-        "/auth/register",
 
-        {
+        const response = await API.post(
 
-            ...data,
+            "/auth/register",
 
-            role:"employee"
+            {
 
-        }
 
-    );
+                ...data,
+
+
+                role:"employee"
+
+
+            }
+
+        );
+
+
+        return response.data;
+
+
+    }
+
+    catch(error){
+
+
+        throw handleAuthError(error);
+
+
+    }
 
 
 };
@@ -51,27 +136,52 @@ export const registerEmployee = (data)=>{
 
 
 
-// =====================================
+
+
+
+
+
+// =====================================================
 // REGISTER RECRUITER
-// =====================================
+// =====================================================
 
 
-export const registerRecruiter = (data)=>{
+export const registerRecruiter = async(data)=>{
 
 
-    return API.post(
+    try{
 
-        "/auth/register",
 
-        {
+        const response = await API.post(
 
-            ...data,
+            "/auth/register",
 
-            role:"recruiter"
+            {
 
-        }
 
-    );
+                ...data,
+
+
+                role:"recruiter"
+
+
+            }
+
+        );
+
+
+        return response.data;
+
+
+    }
+
+    catch(error){
+
+
+        throw handleAuthError(error);
+
+
+    }
 
 
 };
@@ -79,19 +189,41 @@ export const registerRecruiter = (data)=>{
 
 
 
-// =====================================
-// GET PROFILE
-// =====================================
 
 
-export const getProfile = ()=>{
 
 
-    return API.get(
 
-        "/auth/profile"
+// =====================================================
+// GET USER PROFILE
+// =====================================================
 
-    );
+
+export const getProfile = async()=>{
+
+
+    try{
+
+
+        const response = await API.get(
+
+            "/auth/profile"
+
+        );
+
+
+        return response.data;
+
+
+    }
+
+    catch(error){
+
+
+        throw handleAuthError(error);
+
+
+    }
 
 
 };
@@ -99,19 +231,168 @@ export const getProfile = ()=>{
 
 
 
-// =====================================
+
+
+
+
+
+// =====================================================
 // CHANGE PASSWORD
-// =====================================
+// =====================================================
 
 
-export const changePassword = (data)=>{
+export const changePassword = async(data)=>{
 
 
-    return API.put(
+    try{
 
-        "/auth/change-password",
 
-        data
+        const response = await API.put(
+
+            "/auth/change-password",
+
+            data
+
+        );
+
+
+        return response.data;
+
+
+    }
+
+    catch(error){
+
+
+        throw handleAuthError(error);
+
+
+    }
+
+
+};
+
+
+
+
+
+
+
+
+
+// =====================================================
+// LOGOUT USER
+// =====================================================
+
+
+export const logoutUser = async()=>{
+
+
+    try{
+
+
+        const response = await API.post(
+
+            "/auth/logout"
+
+        );
+
+
+
+        localStorage.removeItem(
+
+            "token"
+
+        );
+
+
+        localStorage.removeItem(
+
+            "user"
+
+        );
+
+
+
+        return response.data;
+
+
+
+    }
+
+    catch(error){
+
+
+        localStorage.clear();
+
+
+        throw handleAuthError(error);
+
+
+    }
+
+
+};
+
+
+
+
+
+
+
+
+
+// =====================================================
+// GET STORED USER
+// =====================================================
+
+
+export const getCurrentUser = ()=>{
+
+
+    const user = localStorage.getItem(
+
+        "user"
+
+    );
+
+
+    return user
+
+        ?
+
+        JSON.parse(user)
+
+        :
+
+        null;
+
+
+};
+
+
+
+
+
+
+
+
+
+// =====================================================
+// CHECK LOGIN STATUS
+// =====================================================
+
+
+export const isAuthenticated = ()=>{
+
+
+    return Boolean(
+
+        localStorage.getItem(
+
+            "token"
+
+        )
 
     );
 
@@ -121,19 +402,62 @@ export const changePassword = (data)=>{
 
 
 
-// =====================================
-// LOGOUT
-// =====================================
 
 
-export const logoutUser = ()=>{
 
 
-    return API.post(
 
-        "/auth/logout"
+// =====================================================
+// ERROR HANDLER
+// =====================================================
 
-    );
+
+const handleAuthError = (error)=>{
+
+
+    if(error.response){
+
+
+        return {
+
+
+            message:
+
+            error.response.data?.message
+
+            ||
+
+            "Authentication failed",
+
+
+
+            status:
+
+            error.response.status
+
+
+        };
+
+
+    }
+
+
+
+    return {
+
+
+        message:
+
+        "Server connection failed",
+
+
+
+        status:
+
+        500
+
+
+    };
 
 
 };

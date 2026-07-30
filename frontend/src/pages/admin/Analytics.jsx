@@ -1,36 +1,43 @@
+// src/pages/admin/Analytics.jsx
+
+
 import {
 
-useEffect,
+    useEffect,
 
-useState
+    useState
 
 } from "react";
 
 
-
 import {
 
-Box,
+    motion
 
-Grid,
-
-Card,
-
-CardContent,
-
-Typography
-
-} from "@mui/material";
-
+} from "framer-motion";
 
 
 import {
 
-Bar,
 
-Pie,
+    ShieldAlert,
 
-Doughnut
+    ShieldCheck,
+
+    BriefcaseBusiness,
+
+    Building2
+
+
+} from "lucide-react";
+
+
+
+import {
+
+    Bar,
+
+    Doughnut
 
 } from "react-chartjs-2";
 
@@ -38,21 +45,22 @@ Doughnut
 
 import {
 
-Chart as ChartJS,
 
-CategoryScale,
+    Chart as ChartJS,
 
-LinearScale,
+    CategoryScale,
 
-BarElement,
+    LinearScale,
 
-ArcElement,
+    BarElement,
 
-Title,
+    ArcElement,
 
-Tooltip,
+    Tooltip,
 
-Legend
+    Legend,
+
+
 
 } from "chart.js";
 
@@ -66,21 +74,21 @@ import API from "../../api/API";
 
 ChartJS.register(
 
-CategoryScale,
+    CategoryScale,
 
-LinearScale,
+    LinearScale,
 
-BarElement,
+    BarElement,
 
-ArcElement,
+    ArcElement,
 
-Title,
+    Tooltip,
 
-Tooltip,
-
-Legend
+    Legend
 
 );
+
+
 
 
 
@@ -92,17 +100,9 @@ export default function Analytics(){
 
 
 
-const [data,setData]=useState(null);
+    const [data,setData] = useState(null);
 
-
-
-useEffect(()=>{
-
-
-loadAnalytics();
-
-
-},[]);
+    const [error,setError] = useState("");
 
 
 
@@ -110,590 +110,750 @@ loadAnalytics();
 
 
 
-const loadAnalytics=async()=>{
+    useEffect(()=>{
 
 
-try{
+        fetchAnalytics();
 
 
-const response = await API.get(
-
-"/admin/analytics"
-
-);
+    },[]);
 
 
 
-setData(
 
-response.data.data
 
-);
 
+
+
+    const fetchAnalytics = async()=>{
+
+
+        try{
+
+
+            const response = await API.get(
+
+                "/admin/analytics"
+
+            );
+
+
+
+            setData(
+
+                response.data.data
+
+            );
+
+
+        }
+
+
+        catch(err){
+
+
+            setError(
+
+                "Unable to load analytics"
+
+            );
+
+
+        }
+
+
+    };
+
+
+
+
+
+
+
+
+
+    if(error){
+
+
+        return (
+
+            <div className="text-red-400">
+
+                {error}
+
+            </div>
+
+        );
+
+
+    }
+
+
+
+
+
+
+
+
+    if(!data){
+
+
+        return (
+
+            <div
+
+            className="
+
+            text-white
+
+            animate-pulse
+
+            "
+
+            >
+
+                Loading AI Analytics...
+
+            </div>
+
+        );
+
+
+    }
+
+
+
+
+
+
+
+
+
+    const monthlyJobs = {
+
+
+        labels:
+
+        data.jobs_per_month?.map(
+
+            item=>item.month
+
+        ) || [],
+
+
+
+        datasets:[
+
+            {
+
+                label:"Jobs Posted",
+
+
+                data:
+
+                data.jobs_per_month?.map(
+
+                    item=>item.count
+
+                ) || [],
+
+
+                borderRadius:10
+
+            }
+
+        ]
+
+    };
+
+
+
+
+
+
+
+
+
+    const fakeVsReal = {
+
+
+        labels:[
+
+            "Fake Jobs",
+
+            "Genuine Jobs"
+
+        ],
+
+
+
+        datasets:[
+
+            {
+
+                data:[
+
+                    data.fake_jobs || 0,
+
+                    data.genuine_jobs || 0
+
+                ]
+
+
+            }
+
+        ]
+
+    };
+
+
+
+
+
+
+
+
+
+    const trustScore = {
+
+
+        labels:[
+
+            "Low",
+
+            "Medium",
+
+            "High",
+
+            "Excellent"
+
+        ],
+
+
+
+        datasets:[
+
+            {
+
+                label:"Trust Distribution",
+
+
+                data:
+
+                data.trust_distribution || []
+
+            }
+
+        ]
+
+    };
+
+
+
+
+
+
+
+
+
+    const companies = {
+
+
+        labels:
+
+        data.top_companies?.map(
+
+            item=>item.company
+
+        ) || [],
+
+
+
+        datasets:[
+
+            {
+
+                label:"Jobs",
+
+
+                data:
+
+                data.top_companies?.map(
+
+                    item=>item.jobs
+
+                ) || []
+
+            }
+
+        ]
+
+    };
+
+
+
+
+
+
+
+
+
+    const cards=[
+
+
+        {
+
+            title:"Total Jobs",
+
+            value:data.total_jobs || 0,
+
+            icon:<BriefcaseBusiness/>,
+
+            color:"blue"
+
+        },
+
+
+        {
+
+            title:"Fake Jobs Detected",
+
+            value:data.fake_jobs || 0,
+
+            icon:<ShieldAlert/>,
+
+            color:"red"
+
+        },
+
+
+        {
+
+            title:"Verified Jobs",
+
+            value:data.genuine_jobs || 0,
+
+            icon:<ShieldCheck/>,
+
+            color:"green"
+
+        },
+
+
+        {
+
+            title:"Companies",
+
+            value:data.total_companies || 0,
+
+            icon:<Building2/>,
+
+            color:"purple"
+
+        }
+
+
+    ];
+
+
+
+
+
+
+
+
+
+    return(
+
+
+
+        <div
+
+        className="
+
+        text-white
+
+        space-y-8
+
+        "
+
+        >
+
+
+
+
+
+
+
+            <div>
+
+
+                <h1
+
+                className="
+
+                text-4xl
+
+                font-bold
+
+                "
+
+                >
+
+                    AI Recruitment Analytics 📊
+
+                </h1>
+
+
+
+                <p
+
+                className="
+
+                text-gray-400
+
+                mt-2
+
+                "
+
+                >
+
+                    Monitor fake job detection,
+
+                    trust scores and recruitment intelligence.
+
+                </p>
+
+
+            </div>
+
+
+
+
+
+
+
+
+
+            {/* KPI CARDS */}
+
+
+
+            <div
+
+            className="
+
+            grid
+
+            md:grid-cols-4
+
+            gap-6
+
+            "
+
+            >
+
+
+
+            {
+
+            cards.map((card,index)=>(
+
+
+                <motion.div
+
+
+                key={index}
+
+
+                whileHover={{
+
+                    scale:1.05
+
+                }}
+
+
+                className="
+
+                bg-white/10
+
+                backdrop-blur-xl
+
+                border
+
+                border-white/20
+
+                rounded-3xl
+
+                p-6
+
+                "
+
+                >
+
+
+
+                    <div
+
+                    className="
+
+                    flex
+
+                    justify-between
+
+                    "
+
+                    >
+
+
+                        <div>
+
+
+                            <p className="text-gray-400">
+
+
+                                {card.title}
+
+
+                            </p>
+
+
+                            <h2
+
+                            className="
+
+                            text-3xl
+
+                            font-bold
+
+                            mt-2
+
+                            "
+
+                            >
+
+                                {card.value}
+
+                            </h2>
+
+
+                        </div>
+
+
+                        <div
+
+                        className="
+
+                        p-3
+
+                        bg-purple-500/20
+
+                        rounded-xl
+
+                        "
+
+                        >
+
+                            {card.icon}
+
+                        </div>
+
+
+                    </div>
+
+
+                </motion.div>
+
+
+            ))
+
+            }
+
+
+            </div>
+
+
+
+
+
+
+
+
+
+            {/* CHARTS */}
+
+
+
+            <div
+
+            className="
+
+            grid
+
+            lg:grid-cols-2
+
+            gap-6
+
+            "
+
+            >
+
+
+
+
+
+
+                <ChartCard
+
+                title="Jobs Posted Monthly"
+
+                chart={<Bar data={monthlyJobs}/>}
+
+                />
+
+
+
+
+
+                <ChartCard
+
+                title="Fake vs Genuine Jobs"
+
+                chart={<Doughnut data={fakeVsReal}/>}
+
+                />
+
+
+
+
+
+                <ChartCard
+
+                title="Trust Score Distribution"
+
+                chart={<Bar data={trustScore}/>}
+
+                />
+
+
+
+
+
+                <ChartCard
+
+                title="Top Companies"
+
+                chart={<Bar data={companies}/>}
+
+                />
+
+
+
+
+
+            </div>
+
+
+
+
+
+        </div>
+
+
+
+    );
 
 
 }
 
-catch(error){
 
 
-console.log(error);
 
 
-}
 
 
 
-};
 
+function ChartCard({
 
+    title,
 
+    chart
 
+}){
 
 
+    return(
 
 
-if(!data){
+        <motion.div
 
 
-return(
+        initial={{
 
-<Typography color="white">
+            opacity:0,
 
-Loading analytics...
+            y:20
 
-</Typography>
+        }}
 
-);
 
+        animate={{
 
-}
+            opacity:1,
 
+            y:0
 
+        }}
 
 
 
+        className="
 
+        bg-white/10
 
+        backdrop-blur-xl
 
-const monthlyJobs={
+        border
 
+        border-white/20
 
-labels:
+        rounded-3xl
 
-data.jobs_per_month?.map(
+        p-6
 
-(item)=>item.month
+        "
 
-)
+        >
 
-|| [],
 
+            <h2
 
+            className="
 
-datasets:[
+            text-xl
 
-{
+            font-bold
 
-label:"Jobs Posted",
+            mb-5
 
-data:
+            "
 
-data.jobs_per_month?.map(
+            >
 
-(item)=>item.count
+                {title}
 
-)
+            </h2>
 
-|| []
 
-}
 
-]
+            {chart}
 
-};
 
+        </motion.div>
 
 
-
-
-
-
-
-const fakeVsReal={
-
-
-labels:[
-
-"Fake Jobs",
-
-"Genuine Jobs"
-
-],
-
-
-
-datasets:[
-
-{
-
-data:[
-
-data.fake_jobs || 0,
-
-data.genuine_jobs || 0
-
-]
-
-}
-
-]
-
-};
-
-
-
-
-
-
-
-
-const trustDistribution={
-
-
-labels:[
-
-"0-40",
-
-"40-70",
-
-"70-90",
-
-"90-100"
-
-],
-
-
-
-datasets:[
-
-{
-
-label:"Trust Score Range",
-
-data:
-
-data.trust_distribution ||
-
-[]
-
-}
-
-]
-
-};
-
-
-
-
-
-
-
-
-const companies={
-
-
-labels:
-
-data.top_companies?.map(
-
-(item)=>item.company
-
-)
-
-|| [],
-
-
-
-datasets:[
-
-{
-
-label:"Jobs Posted",
-
-data:
-
-data.top_companies?.map(
-
-(item)=>item.jobs
-
-)
-
-|| []
-
-}
-
-]
-
-};
-
-
-
-
-
-
-
-return(
-
-
-<Box>
-
-
-
-<Typography
-
-className="dashboard-title"
-
->
-
-AI Recruitment Analytics 📊
-
-</Typography>
-
-
-
-
-<Typography
-
-className="dashboard-subtitle"
-
-mb={4}
-
->
-
-Monitor fake job detection and recruitment trends.
-
-</Typography>
-
-
-
-
-
-
-
-
-
-<Grid
-
-container
-
-spacing={3}
-
->
-
-
-
-
-<Grid
-
-item
-
-xs={12}
-
-lg={6}
-
->
-
-
-
-<Card
-
-className="glass"
-
-sx={{
-
-padding:3,
-
-color:"white"
-
-}}
-
->
-
-
-
-<CardContent>
-
-
-
-<Typography
-
-variant="h6"
-
-mb={3}
-
->
-
-Jobs Posted Per Month
-
-</Typography>
-
-
-
-<Bar
-
-data={monthlyJobs}
-
-/>
-
-
-
-</CardContent>
-
-
-</Card>
-
-
-</Grid>
-
-
-
-
-
-
-
-
-
-<Grid
-
-item
-
-xs={12}
-
-lg={6}
-
->
-
-
-
-<Card
-
-className="glass"
-
-sx={{
-
-padding:3,
-
-color:"white"
-
-}}
-
-
-
->
-
-
-
-<CardContent>
-
-
-
-<Typography
-
-variant="h6"
-
-mb={3}
-
->
-
-Fake vs Genuine Jobs
-
-</Typography>
-
-
-
-<Doughnut
-
-data={fakeVsReal}
-
-/>
-
-
-
-</CardContent>
-
-
-</Card>
-
-
-</Grid>
-
-
-
-
-
-
-
-
-
-<Grid
-
-item
-
-xs={12}
-
-lg={6}
-
->
-
-
-
-<Card
-
-className="glass"
-
-sx={{
-
-padding:3,
-
-color:"white"
-
-}}
-
-
-
->
-
-
-
-<CardContent>
-
-
-
-<Typography
-
-variant="h6"
-
-mb={3}
-
->
-
-Trust Score Distribution
-
-</Typography>
-
-
-
-<Bar
-
-data={trustDistribution}
-
-/>
-
-
-
-</CardContent>
-
-
-
-</Card>
-
-
-
-</Grid>
-
-
-
-
-
-
-
-
-
-<Grid
-
-item
-
-xs={12}
-
-lg={6}
-
->
-
-
-
-<Card
-
-className="glass"
-
-sx={{
-
-padding:3,
-
-color:"white"
-
-}}
-
-
-
->
-
-
-
-<CardContent>
-
-
-
-<Typography
-
-variant="h6"
-
-mb={3}
-
->
-
-Top Companies
-
-</Typography>
-
-
-
-
-<Bar
-
-data={companies}
-
-/>
-
-
-
-</CardContent>
-
-
-
-</Card>
-
-
-
-</Grid>
-
-
-
-
-
-
-
-
-</Grid>
-
-
-
-
-
-</Box>
-
-
-);
+    );
 
 
 }

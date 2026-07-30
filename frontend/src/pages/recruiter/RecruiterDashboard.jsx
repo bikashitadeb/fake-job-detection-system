@@ -1,42 +1,89 @@
-import {
-    useEffect,
-    useState
-} from "react";
-
+import React from "react";
+import { motion } from "framer-motion";
 
 import {
-    Box,
-    Typography,
-    Grid,
-    Card,
-    Button,
-    CircularProgress,
-    Divider,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    TextField
-} from "@mui/material";
+    Briefcase,
+    Users,
+    CheckCircle,
+    Eye,
+    ShieldCheck,
+    AlertTriangle,
+    XCircle,
+    ArrowUpRight,
+    FileText
+} from "lucide-react";
 
 
-import {
-    Work,
-    People,
-    VerifiedUser,
-    Notifications,
-    Add
-} from "@mui/icons-material";
+const stats = [
+
+    {
+        title:"Total Jobs",
+        value:"24",
+        icon:<Briefcase/>,
+        color:"from-purple-500 to-purple-700",
+        growth:"+12%"
+    },
+
+    {
+        title:"Total Applicants",
+        value:"128",
+        icon:<Users/>,
+        color:"from-blue-500 to-cyan-500",
+        growth:"+18%"
+    },
+
+    {
+        title:"Shortlisted",
+        value:"36",
+        icon:<CheckCircle/>,
+        color:"from-pink-500 to-purple-600",
+        growth:"+8%"
+    },
+
+    {
+        title:"Profile Views",
+        value:"342",
+        icon:<Eye/>,
+        color:"from-cyan-500 to-blue-600",
+        growth:"+24%"
+    }
+
+];
 
 
-import {
-    useNavigate
-} from "react-router-dom";
 
 
-import {
-    getRecruiterDashboard
-} from "../../api/recruiter";
+const jobs=[
+
+{
+title:"Frontend Developer",
+company:"TechCorp Solutions",
+location:"Bangalore",
+time:"2 days ago"
+},
+
+{
+title:"Backend Developer",
+company:"InnovateX",
+location:"Remote",
+time:"5 days ago"
+},
+
+{
+title:"Data Scientist",
+company:"DataMinds",
+location:"Hyderabad",
+time:"1 week ago"
+},
+
+{
+title:"UI/UX Designer",
+company:"DesignHub",
+location:"Pune",
+time:"1 week ago"
+}
+
+];
 
 
 
@@ -45,712 +92,293 @@ import {
 export default function RecruiterDashboard(){
 
 
-const navigate = useNavigate();
+return (
 
+<div className="
+min-h-screen
+text-white
+space-y-8
+">
 
 
-const [dashboard,setDashboard]=useState(null);
+{/* HEADER */}
 
-const [notifications,setNotifications]=useState([]);
+<motion.div
 
-const [loading,setLoading]=useState(true);
+initial={{opacity:0,y:20}}
 
-const [error,setError]=useState("");
-
-
-
-const [verifyOpen,setVerifyOpen]=useState(false);
-
-const [verifyType,setVerifyType]=useState("");
-
-const [verifyValue,setVerifyValue]=useState("");
-
-
-
-
-
-
-
-
-useEffect(()=>{
-
-
-loadDashboard();
-
-
-},[]);
-
-
-
-
-
-
-
-
-const loadDashboard=async()=>{
-
-
-try{
-
-
-const response = await getRecruiterDashboard();
-
-
-console.log(
-
-"RECRUITER DASHBOARD",
-
-response.data
-
-);
-
-
-
-setDashboard(
-
-response.data
-
-);
-
-
-
-setNotifications([]);
-
-
-
-}
-
-
-catch(err){
-
-
-console.log(
-
-err
-
-);
-
-
-setError(
-
-"Unable to load recruiter dashboard"
-
-);
-
-
-}
-
-
-finally{
-
-
-setLoading(false);
-
-
-}
-
-
-};
-
-
-
-
-
-
-
-
-const openVerification=(type)=>{
-
-
-setVerifyType(type);
-
-setVerifyValue("");
-
-setVerifyOpen(true);
-
-
-};
-
-
-
-
-
-
-
-const submitVerification=()=>{
-
-
-console.log(
-
-"Verification Submitted:",
-
-verifyType,
-
-verifyValue
-
-);
-
-
-setVerifyOpen(false);
-
-
-};
-
-
-
-
-
-
-
-
-if(loading){
-
-
-return(
-
-<Box
-
-height="100vh"
-
-display="flex"
-
-justifyContent="center"
-
-alignItems="center"
+animate={{opacity:1,y:0}}
 
 >
 
-<CircularProgress/>
+<p className="text-gray-400 text-xl">
+Welcome back 👋
+</p>
 
-</Box>
 
-);
+<h1 className="
+text-5xl
+font-black
+bg-gradient-to-r
+from-purple-400
+to-pink-500
+bg-clip-text
+text-transparent
+">
 
+Bikashita
 
-}
+</h1>
 
 
+<p className="text-gray-400 mt-2">
+Here's what's happening with your recruitment today.
+</p>
 
 
+</motion.div>
 
 
 
-const jobs =
 
-dashboard?.jobs || [];
 
 
 
-const applications =
+{/* STAT CARDS */}
 
-dashboard?.applications || [];
 
-
-
-const user =
-
-dashboard?.user;
-
-
-
-
-
-
-
-
-return(
-
-
-<Box
-
-sx={{
-
-minHeight:"100vh",
-
-background:
-
-"linear-gradient(135deg,#020617,#111827,#312e81)",
-
-padding:4,
-
-color:"white"
-
-}}
-
->
-
-
-
-
-
-<Typography
-
-variant="h4"
-
-fontWeight="900"
-
->
-
-Recruiter Dashboard 👋
-
-</Typography>
-
-
-
-
-
-<Typography
-
-sx={{
-
-color:"#94a3b8",
-
-mb:4
-
-}}
-
->
-
-Welcome {user?.name || "Recruiter"} • Manage jobs, applicants and verification
-
-</Typography>
-
-
-
-
-
+<div className="
+grid
+grid-cols-1
+md:grid-cols-2
+xl:grid-cols-4
+gap-6
+">
 
 
 {
-error &&
+stats.map((item,index)=>(
 
-<Typography
 
-color="error"
+<motion.div
 
->
+key={index}
 
-{error}
-
-</Typography>
-
-}
-
-
-
-
-
-
-
-
-<Grid
-
-container
-
-spacing={3}
-
->
-
-
-
-<Grid item xs={12} md={3}>
-
-<StatCard
-
-icon={<Work/>}
-
-title="Jobs Posted"
-
-value={jobs.length}
-
-/>
-
-</Grid>
-
-
-
-
-
-<Grid item xs={12} md={3}>
-
-<StatCard
-
-icon={<People/>}
-
-title="Applications"
-
-value={applications.length}
-
-/>
-
-</Grid>
-
-
-
-
-
-<Grid item xs={12} md={3}>
-
-<StatCard
-
-icon={<VerifiedUser/>}
-
-title="Trust Score"
-
-value="92%"
-
-/>
-
-</Grid>
-
-
-
-
-
-<Grid item xs={12} md={3}>
-
-<StatCard
-
-icon={<Notifications/>}
-
-title="Notifications"
-
-value={notifications.length}
-
-/>
-
-</Grid>
-
-
-
-</Grid>
-
-
-
-
-
-
-
-
-
-<Card sx={cardStyle}>
-
-
-<Typography
-
-variant="h5"
-
-fontWeight="800"
-
-mb={3}
-
->
-
-Quick Actions
-
-</Typography>
-
-
-
-
-
-<Button
-
-variant="contained"
-
-startIcon={<Add/>}
-
-onClick={()=>navigate("/recruiter/post-job")}
-
-sx={buttonStyle}
-
->
-
-Post New Job
-
-</Button>
-
-
-
-
-
-<Button
-
-variant="outlined"
-
-onClick={()=>navigate("/recruiter/applicants")}
-
-sx={{
-
-...buttonStyle,
-
-ml:2,
-
-color:"white",
-
-borderColor:"#64748b"
-
+whileHover={{
+y:-8,
+scale:1.03
 }}
 
->
-
-View Applicants
-
-</Button>
-
-
-
-</Card>
-
-
-
-
-
-
-
-
-
-<Card sx={cardStyle}>
-
-
-<Typography
-
-variant="h5"
-
-fontWeight="800"
-
->
-
-Recruiter Verification Score
-
-</Typography>
-
-
-
-
-
-<Typography
-
-fontSize={70}
-
-fontWeight="900"
-
->
-
-92%
-
-</Typography>
-
-
-
-
-
-
-
-<Box
-
-sx={{
-
-height:12,
-
-background:"#334155",
-
-borderRadius:10
-
+transition={{
+duration:.3
 }}
 
->
-
-
-
-<Box
-
-sx={{
-
-width:"92%",
-
-height:"100%",
-
-background:
-
-"linear-gradient(90deg,#6366f1,#22c55e)",
-
-borderRadius:10
-
-}}
-
-/>
-
-
-
-</Box>
-
-
-
-
-
-
-
-
-<Box mt={3}>
-
-
-<Button
-
-variant="contained"
-
-onClick={()=>openVerification("LinkedIn")}
-
-sx={verifyButtonStyle}
+className="
+relative
+overflow-hidden
+rounded-3xl
+p-6
+bg-white/5
+border
+border-white/10
+backdrop-blur-xl
+shadow-xl
+"
 
 >
 
-LinkedIn Verified
 
-</Button>
+<div className={`
+w-14
+h-14
+rounded-2xl
+flex
+items-center
+justify-center
+bg-gradient-to-r
+${item.color}
+`}>
 
+{item.icon}
 
+</div>
 
 
+<p className="
+mt-5
+text-gray-400
+">
 
-<Button
+{item.title}
 
-variant="contained"
+</p>
 
-onClick={()=>openVerification("Email")}
 
-sx={verifyButtonStyle}
+<h2 className="
+text-4xl
+font-black
+mt-2
+">
 
->
+{item.value}
 
-Email Verified
+</h2>
 
-</Button>
 
+<p className="
+text-green-400
+mt-4
+">
 
+↑ {item.growth} from last month
 
+</p>
 
 
-<Button
 
-variant="contained"
-
-onClick={()=>openVerification("Company")}
-
-sx={verifyButtonStyle}
-
->
-
-Company Verified
-
-</Button>
-
-
-
-</Box>
-
-
-
-</Card>
-
-
-
-
-
-
-
-
-
-<Card sx={cardStyle}>
-
-
-<Typography
-
-variant="h5"
-
-fontWeight="800"
-
-mb={3}
-
->
-
-Recent Job Posts
-
-</Typography>
-
-
-
-
-
-{
-
-jobs.length===0
-
-?
-
-<Typography>
-
-No jobs posted yet.
-
-</Typography>
-
-
-
-:
-
-jobs.map(job=>(
-
-
-<Card
-
-key={job.id}
-
-sx={{
-
-background:"rgba(255,255,255,.06)",
-
-padding:3,
-
-marginBottom:2,
-
-color:"white"
-
-}}
-
->
-
-
-<Typography
-
-fontWeight="800"
-
->
-
-{job.title}
-
-</Typography>
-
-
-
-<Typography>
-
-{job.company_name}
-
-</Typography>
-
-
-
-</Card>
+</motion.div>
 
 
 ))
 
+}
+
+</div>
+
+
+
+
+
+
+
+
+<div className="
+grid
+lg:grid-cols-2
+gap-8
+">
+
+
+
+{/* JOB POSTS */}
+
+
+<div className="
+rounded-3xl
+bg-white/5
+border
+border-white/10
+backdrop-blur-xl
+p-6
+">
+
+
+<div className="
+flex
+justify-between
+items-center
+mb-6
+">
+
+
+<h2 className="
+text-2xl
+font-bold
+flex
+gap-3
+items-center
+">
+
+<FileText className="text-purple-400"/>
+
+Recent Job Postings
+
+</h2>
+
+
+<button className="
+px-4
+py-2
+rounded-xl
+bg-purple-600/30
+hover:bg-purple-600
+transition
+">
+
+View All
+
+</button>
+
+
+</div>
+
+
+
+
+
+{
+jobs.map((job,index)=>(
+
+<div
+
+key={index}
+
+className="
+flex
+justify-between
+items-center
+border-b
+border-white/10
+py-5
+"
+
+>
+
+
+<div>
+
+<h3 className="
+font-bold
+text-lg
+">
+
+{job.title}
+
+</h3>
+
+
+<p className="
+text-gray-400
+">
+
+{job.company} • {job.location}
+
+</p>
+
+
+</div>
+
+
+<span className="
+text-green-400
+text-sm
+">
+
+Active
+
+</span>
+
+
+</div>
+
+
+))
 
 }
 
 
 
-</Card>
+</div>
 
 
 
@@ -760,331 +388,246 @@ fontWeight="800"
 
 
 
-<Card sx={cardStyle}>
+{/* AI FRAUD CARD */}
 
 
-<Typography
-
-variant="h5"
-
-fontWeight="800"
-
->
-
-Notifications 🔔
-
-</Typography>
+<div className="
+rounded-3xl
+bg-white/5
+border
+border-white/10
+backdrop-blur-xl
+p-6
+">
 
 
+<h2 className="
+text-2xl
+font-bold
+flex
+items-center
+gap-3
+">
 
-<Divider
+<ShieldCheck className="text-purple-400"/>
 
-sx={{
+AI Fraud Detection Overview
 
-my:2,
+</h2>
 
-borderColor:"#475569"
 
+
+
+<div className="
+flex
+justify-center
+my-10
+">
+
+
+<div className="
+w-52
+h-52
+rounded-full
+border-[12px]
+border-purple-500
+flex
+flex-col
+justify-center
+items-center
+shadow-[0_0_50px_rgba(168,85,247,.6)]
+">
+
+
+<h1 className="
+text-5xl
+font-black
+">
+
+92%
+
+</h1>
+
+
+<p className="text-gray-400">
+Trust Score
+</p>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div className="space-y-4">
+
+
+<div className="
+flex
+justify-between
+bg-black/20
+p-4
+rounded-xl
+">
+
+<span className="flex gap-3">
+
+<CheckCircle className="text-green-400"/>
+
+Verified Jobs
+
+</span>
+
+
+<b className="text-green-400">
+48
+</b>
+
+</div>
+
+
+
+
+
+<div className="
+flex
+justify-between
+bg-black/20
+p-4
+rounded-xl
+">
+
+
+<span className="flex gap-3">
+
+<AlertTriangle className="text-yellow-400"/>
+
+Suspicious Jobs
+
+</span>
+
+
+<b className="text-yellow-400">
+4
+</b>
+
+
+</div>
+
+
+
+
+
+
+<div className="
+flex
+justify-between
+bg-black/20
+p-4
+rounded-xl
+">
+
+
+<span className="flex gap-3">
+
+<XCircle className="text-red-400"/>
+
+Fraudulent Jobs
+
+</span>
+
+
+<b className="text-red-400">
+1
+</b>
+
+
+</div>
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+</div>
+
+
+
+
+{/* PREMIUM BANNER */}
+
+
+<motion.div
+
+whileHover={{
+scale:1.02
 }}
 
-/>
-
-
-
-
-
-<Typography>
-
-No new notifications
-
-</Typography>
-
-
-
-</Card>
-
-
-
-
-
-
-
-
-
-<Dialog
-
-open={verifyOpen}
-
-onClose={()=>setVerifyOpen(false)}
-
-fullWidth
-
-maxWidth="sm"
+className="
+rounded-3xl
+p-6
+bg-gradient-to-r
+from-purple-700
+to-blue-700
+flex
+justify-between
+items-center
+"
 
 >
 
 
-<DialogTitle>
+<div>
 
-Verify {verifyType}
+<h2 className="
+text-3xl
+font-black
+">
 
-</DialogTitle>
+Upgrade to Premium
+
+</h2>
+
+<p>
+Get advanced fraud detection and priority support.
+</p>
 
 
+</div>
 
 
-<DialogContent>
+<button className="
+px-6
+py-3
+rounded-xl
+bg-white
+text-purple-700
+font-bold
+">
+
+Upgrade Now
+
+</button>
 
 
-<TextField
-
-fullWidth
-
-sx={{mt:2}}
-
-label={
-
-verifyType==="LinkedIn"
-
-?
-
-"LinkedIn Profile URL"
-
-:
-
-verifyType==="Email"
-
-?
-
-"Official Email Address"
-
-:
-
-"Company Registration Details"
-
-}
-
-value={verifyValue}
-
-onChange={(e)=>setVerifyValue(e.target.value)}
-
-/>
+</motion.div>
 
 
 
-</DialogContent>
-
-
-
-
-
-
-
-<DialogActions>
-
-
-<Button
-
-onClick={()=>setVerifyOpen(false)}
-
->
-
-Cancel
-
-</Button>
-
-
-
-<Button
-
-variant="contained"
-
-onClick={submitVerification}
-
->
-
-Submit Verification
-
-</Button>
-
-
-
-</DialogActions>
-
-
-
-</Dialog>
-
-
-
-
-
-
-
-
-
-</Box>
+</div>
 
 
 );
 
 
 }
-
-
-
-
-
-
-
-
-function StatCard({
-
-icon,
-
-title,
-
-value
-
-}){
-
-
-return(
-
-
-<Card
-
-sx={{
-
-background:
-
-"linear-gradient(135deg,#1e293b,#0f172a)",
-
-padding:3,
-
-borderRadius:4,
-
-color:"white"
-
-}}
-
->
-
-
-<Box
-
-display="flex"
-
-gap={2}
-
->
-
-{icon}
-
-</Box>
-
-
-
-
-<Typography
-
-fontSize={40}
-
-fontWeight="900"
-
->
-
-{value}
-
-</Typography>
-
-
-
-
-<Typography>
-
-{title}
-
-</Typography>
-
-
-
-</Card>
-
-
-);
-
-
-}
-
-
-
-
-
-
-
-const cardStyle={
-
-
-background:
-
-"rgba(255,255,255,0.08)",
-
-
-backdropFilter:"blur(20px)",
-
-
-border:
-
-"1px solid rgba(255,255,255,0.12)",
-
-
-borderRadius:5,
-
-
-padding:4,
-
-
-mt:4,
-
-
-color:"white"
-
-
-};
-
-
-
-
-
-const buttonStyle={
-
-
-borderRadius:3,
-
-padding:"12px 25px"
-
-
-};
-
-
-
-
-
-const verifyButtonStyle={
-
-
-background:"#22c55e",
-
-color:"#052e16",
-
-borderRadius:3,
-
-marginRight:10,
-
-marginTop:10,
-
-fontWeight:700
-
-
-};

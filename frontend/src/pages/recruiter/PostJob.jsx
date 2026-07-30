@@ -1,53 +1,30 @@
-import {
+import React, {
     useState
 } from "react";
 
 
 import {
 
-    Box,
+    motion
 
-    Card,
-
-    CardContent,
-
-    Typography,
-
-    TextField,
-
-    Button,
-
-    Grid,
-
-    Alert,
-
-    Dialog,
-
-    DialogTitle,
-
-    DialogContent,
-
-    DialogActions,
-
-    Chip,
-
-    CircularProgress
-
-} from "@mui/material";
-
+} from "framer-motion";
 
 
 import {
 
     CheckCircle,
 
-    Warning
+    AlertTriangle,
 
-} from "@mui/icons-material";
+    ShieldCheck,
 
+    Loader2
+
+} from "lucide-react";
 
 
 import API from "../../api/API";
+
 
 
 
@@ -58,7 +35,7 @@ export default function PostJob(){
 
 
 
-const [form,setForm]=useState({
+const [form,setForm] = useState({
 
 
     title:"",
@@ -86,19 +63,14 @@ const [form,setForm]=useState({
 
 
 
-
-
 const [loading,setLoading]=useState(false);
 
 
 const [error,setError]=useState("");
 
 
-
 const [result,setResult]=useState(null);
 
-
-const [open,setOpen]=useState(false);
 
 
 
@@ -115,9 +87,7 @@ setForm({
 
     ...form,
 
-    [e.target.name]:
-
-    e.target.value
+    [e.target.name]:e.target.value
 
 });
 
@@ -140,7 +110,6 @@ e.preventDefault();
 
 setLoading(true);
 
-
 setError("");
 
 
@@ -159,13 +128,30 @@ const response = await API.post(
         title:form.title,
 
 
-        description:form.description,
+        company:form.company,
 
 
         location:form.location,
 
 
-        salary:form.salary
+        salary:form.salary,
+
+
+        requirements:
+
+        `${form.experience} ${form.skills}`,
+
+
+        description:form.description,
+
+
+        website:form.website,
+
+
+        official_email:form.official_email,
+
+
+        linkedin_url:form.linkedin_url
 
 
     }
@@ -175,62 +161,15 @@ const response = await API.post(
 
 
 
-
-console.log(
-
-    "JOB RESPONSE",
-
-    response.data
-
-);
-
-
-
-
-
 setResult(
 
     response.data.job
 
+    ||
+
+    response.data.data
+
 );
-
-
-
-
-
-setOpen(true);
-
-
-
-
-
-setForm({
-
-
-    title:"",
-
-    company:"",
-
-    location:"",
-
-    salary:"",
-
-    experience:"",
-
-    skills:"",
-
-    description:"",
-
-    website:"",
-
-    official_email:"",
-
-    linkedin_url:""
-
-
-});
-
-
 
 
 
@@ -242,33 +181,18 @@ catch(err){
 
 
 
-console.log(
-
-    "JOB POST ERROR",
-
-    err
-
-);
-
-
-
-
 setError(
 
+err.response?.data?.message
 
-err.response?.data?.message ||
+||
 
-
-"Unable to post job"
-
+"Job creation failed"
 
 );
-
 
 
 }
-
-
 
 
 
@@ -279,7 +203,6 @@ setLoading(false);
 
 
 }
-
 
 
 };
@@ -295,36 +218,52 @@ setLoading(false);
 return(
 
 
-<Box>
+
+<div
+
+className="
+
+text-white
+
+space-y-8
+
+"
+
+>
 
 
 
-<Typography
+<h1
 
-className="dashboard-title"
+className="
+
+text-4xl
+
+font-bold
+
+"
 
 >
 
 Post New Job 🚀
 
-</Typography>
+</h1>
 
 
 
+<p
 
+className="
 
+text-gray-400
 
-<Typography
-
-className="dashboard-subtitle"
-
-mb={4}
+"
 
 >
 
-AI will automatically verify this job before publishing.
+AI will verify your job posting before publishing.
 
-</Typography>
+</p>
 
 
 
@@ -337,18 +276,27 @@ AI will automatically verify this job before publishing.
 
 error &&
 
-<Alert
+<div
 
-severity="error"
+className="
 
-sx={{mb:3}}
+bg-red-500/20
+
+border
+
+border-red-500/40
+
+p-4
+
+rounded-xl
+
+"
 
 >
 
 {error}
 
-</Alert>
-
+</div>
 
 }
 
@@ -356,516 +304,135 @@ sx={{mb:3}}
 
 
 
-
-
-
-
-
-
-<Card
-
-className="glass"
-
-sx={{
-
-
-padding:3,
-
-
-color:"white"
-
-
-}}
-
-
-
->
-
-
-<CardContent>
-
-
-
-
-
-<Box
-
-component="form"
+<form
 
 onSubmit={submitJob}
 
->
 
+className="
 
+bg-white/10
 
+backdrop-blur-xl
 
+border
 
-<Grid
+border-white/20
 
-container
+rounded-3xl
 
-spacing={3}
+p-8
 
->
+space-y-6
 
-
-
-
-
-
-
-<Grid
-
-item
-
-xs={12}
-
-md={6}
+"
 
 >
 
 
-<TextField
 
-fullWidth
 
-label="Job Title"
 
-name="title"
 
-value={form.title}
+<div
 
-onChange={handleChange}
+className="
 
-required
+grid
 
-/>
+md:grid-cols-2
 
-</Grid>
+gap-5
 
-
-
-
-
-
-
-
-<Grid
-
-item
-
-xs={12}
-
-md={6}
-
->
-
-
-<TextField
-
-fullWidth
-
-label="Company"
-
-name="company"
-
-value={form.company}
-
-onChange={handleChange}
-
-/>
-
-</Grid>
-
-
-
-
-
-
-
-
-<Grid
-
-item
-
-xs={12}
-
-md={6}
-
->
-
-
-<TextField
-
-fullWidth
-
-label="Location"
-
-name="location"
-
-value={form.location}
-
-onChange={handleChange}
-
-required
-
-/>
-
-</Grid>
-
-
-
-
-
-
-
-
-<Grid
-
-item
-
-xs={12}
-
-md={6}
-
->
-
-
-<TextField
-
-fullWidth
-
-label="Salary"
-
-name="salary"
-
-value={form.salary}
-
-onChange={handleChange}
-
-/>
-
-</Grid>
-
-
-
-
-
-
-
-
-<Grid
-
-item
-
-xs={12}
-
-md={6}
-
->
-
-
-<TextField
-
-fullWidth
-
-label="Experience"
-
-name="experience"
-
-value={form.experience}
-
-onChange={handleChange}
-
-/>
-
-</Grid>
-
-
-
-
-
-
-
-
-<Grid
-
-item
-
-xs={12}
-
-md={6}
-
->
-
-
-<TextField
-
-fullWidth
-
-label="Skills"
-
-name="skills"
-
-value={form.skills}
-
-onChange={handleChange}
-
-/>
-
-</Grid>
-
-
-
-
-
-
-
-
-<Grid
-
-item
-
-xs={12}
-
->
-
-
-<TextField
-
-fullWidth
-
-label="Company Website"
-
-name="website"
-
-value={form.website}
-
-onChange={handleChange}
-
-/>
-
-</Grid>
-
-
-
-
-
-
-
-
-<Grid
-
-item
-
-xs={12}
-
-md={6}
-
->
-
-
-<TextField
-
-fullWidth
-
-label="Official Email"
-
-name="official_email"
-
-value={form.official_email}
-
-onChange={handleChange}
-
-/>
-
-</Grid>
-
-
-
-
-
-
-
-
-<Grid
-
-item
-
-xs={12}
-
-md={6}
-
->
-
-
-<TextField
-
-fullWidth
-
-label="LinkedIn URL"
-
-name="linkedin_url"
-
-value={form.linkedin_url}
-
-onChange={handleChange}
-
-/>
-
-</Grid>
-
-
-
-
-
-
-
-
-
-<Grid
-
-item
-
-xs={12}
-
->
-
-
-<TextField
-
-fullWidth
-
-multiline
-
-rows={6}
-
-label="Job Description"
-
-name="description"
-
-value={form.description}
-
-onChange={handleChange}
-
-required
-
-/>
-
-</Grid>
-
-
-
-
-
-
-
-
-
-<Grid
-
-item
-
-xs={12}
-
->
-
-
-<Button
-
-
-fullWidth
-
-
-type="submit"
-
-
-variant="contained"
-
-
-size="large"
-
-
-disabled={loading}
-
-
-
-sx={{
-
-
-height:55,
-
-
-borderRadius:3,
-
-
-background:
-
-"linear-gradient(90deg,#4f46e5,#7c3aed)"
-
-
-}}
-
+"
 
 >
 
 
 {
 
-loading ?
+[
 
-<CircularProgress
+"title",
 
-size={25}
+"company",
 
-color="inherit"
+"location",
 
-/>
+"salary",
+
+"experience",
+
+"skills",
+
+"website",
+
+"official_email",
+
+"linkedin_url"
+
+].map(field=>(
 
 
-:
 
-"Post Job & Verify With AI"
+<input
+
+
+key={field}
+
+
+name={field}
+
+
+value={form[field]}
+
+
+onChange={handleChange}
+
+
+
+placeholder={
+
+field.replace("_"," ")
+
+.toUpperCase()
 
 }
 
 
 
-</Button>
+className="
 
+bg-black/20
 
-</Grid>
+border
 
+border-white/20
 
+rounded-xl
 
+px-4
 
+py-3
 
+outline-none
 
-
-
-</Grid>
-
-
-
-
-
-
-</Box>
+"
 
 
 
 
-
-
-</CardContent>
-
-
-</Card>
+/>
 
 
 
+))
 
 
+}
+
+
+</div>
 
 
 
@@ -874,37 +441,138 @@ color="inherit"
 
 
 
-<Dialog
+<textarea
 
 
-open={open}
+name="description"
 
 
-onClose={()=>setOpen(false)}
+value={form.description}
 
 
-maxWidth="sm"
+onChange={handleChange}
 
 
-fullWidth
+
+rows="6"
+
+
+placeholder="Detailed job description..."
+
+
+
+className="
+
+w-full
+
+bg-black/20
+
+border
+
+border-white/20
+
+rounded-xl
+
+p-4
+
+outline-none
+
+"
+
+
+/>
+
+
+
+
+
+
+
+
+
+
+<button
+
+
+disabled={loading}
+
+
+
+className="
+
+w-full
+
+bg-gradient-to-r
+
+from-blue-600
+
+to-purple-600
+
+py-4
+
+rounded-xl
+
+font-bold
+
+flex
+
+justify-center
+
+items-center
+
+gap-3
+
+"
 
 
 >
 
 
 
-<DialogTitle>
+{
 
-AI Job Verification Result 🤖
+loading
 
-</DialogTitle>
-
-
+?
 
 
+<>
+
+<Loader2
+
+className="animate-spin"
+
+/>
+
+AI Verification Running...
+
+</>
 
 
-<DialogContent>
+
+:
+
+"Post Job & Verify With AI"
+
+
+}
+
+
+
+</button>
+
+
+
+
+
+
+</form>
+
+
+
+
+
+
 
 
 
@@ -912,179 +580,357 @@ AI Job Verification Result 🤖
 
 result &&
 
-<>
 
 
+<VerificationResult
 
-<Typography
-
-variant="h5"
-
-fontWeight="800"
-
->
-
-Trust Score:
-
-{result.trust_score ?? 0}%
-
-</Typography>
-
-
-
-
-
-
-
-
-<Chip
-
-
-
-sx={{mt:2}}
-
-
-
-icon={
-
-result.status==="verified"
-
-?
-
-<CheckCircle/>
-
-:
-
-<Warning/>
-
-}
-
-
-
-
-label={
-
-result.status ||
-
-"Pending Verification"
-
-}
-
-
-
-
-
-color={
-
-result.status==="verified"
-
-?
-
-"success"
-
-:
-
-"warning"
-
-}
-
+result={result}
 
 />
 
 
 
+}
 
 
 
 
 
 
-<Box mt={3}>
+
+</div>
 
 
-<Typography
 
-fontWeight="700"
+);
+
+
+}
+
+
+
+
+
+
+
+
+
+function VerificationResult({
+
+result
+
+}){
+
+
+const trust =
+
+result.trust_score || 0;
+
+
+
+return(
+
+
+
+<motion.div
+
+
+
+initial={{
+
+opacity:0,
+
+y:30
+
+}}
+
+
+
+animate={{
+
+opacity:1,
+
+y:0
+
+}}
+
+
+
+className="
+
+bg-white/10
+
+backdrop-blur-xl
+
+border
+
+border-white/20
+
+rounded-3xl
+
+p-8
+
+"
 
 >
 
-AI Explanation
-
-</Typography>
 
 
+<div
+
+className="
+
+flex
+
+items-center
+
+gap-3
+
+"
+
+>
 
 
-<Typography
 
-color="text.secondary"
+<ShieldCheck
+
+className="text-green-400"
+
+size={35}
+
+/>
+
+
+
+<h2
+
+className="
+
+text-2xl
+
+font-bold
+
+"
+
+>
+
+AI Verification Result
+
+</h2>
+
+
+</div>
+
+
+
+
+
+
+
+
+<div
+
+className="
+
+mt-6
+
+"
+
+>
+
+
+
+<p className="text-gray-400">
+
+AI Trust Score
+
+</p>
+
+
+
+<h1
+
+className="
+
+text-5xl
+
+font-bold
+
+"
+
+>
+
+{trust}%
+
+</h1>
+
+
+
+
+
+<div
+
+className="
+
+mt-4
+
+h-3
+
+bg-gray-700
+
+rounded-full
+
+"
+
+>
+
+
+
+<div
+
+style={{
+
+width:`${trust}%`
+
+}}
+
+
+
+className="
+
+h-full
+
+bg-gradient-to-r
+
+from-green-400
+
+to-blue-500
+
+rounded-full
+
+"
+
+/>
+
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<div
+
+className="
+
+mt-6
+
+flex
+
+gap-3
+
+items-center
+
+"
+
+>
+
+
+{
+
+result.status==="verified"
+
+?
+
+
+<CheckCircle
+
+className="text-green-400"
+
+/>
+
+
+:
+
+<AlertTriangle
+
+className="text-yellow-400"
+
+/>
+
+
+}
+
+
+
+<p>
+
+{
+
+result.status
+
+||
+
+"Pending Verification"
+
+}
+
+</p>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<p
+
+className="
+
+mt-5
+
+text-gray-300
+
+"
 
 >
 
 {
 
-result.explanation ||
+result.explanation
 
-"Job submitted for AI verification"
+||
 
-}
-
-</Typography>
-
-
-</Box>
-
-
-
-
-
-</>
+"AI analysis completed."
 
 }
 
-
-
-</DialogContent>
-
+</p>
 
 
 
 
 
 
-<DialogActions>
-
-
-<Button
-
-onClick={()=>setOpen(false)}
-
->
-
-Close
-
-</Button>
-
-
-</DialogActions>
-
-
-
-
-
-
-</Dialog>
-
-
-
-
-
-
-</Box>
+</motion.div>
 
 
 );
-
 
 
 }

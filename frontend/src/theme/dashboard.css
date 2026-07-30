@@ -1,305 +1,974 @@
+/* =========================================
+   GLOBAL RESET
+========================================= */
+
+
 * {
+
     box-sizing: border-box;
+
 }
+
+
 
 html,
 body,
 #root {
-    margin: 0;
-    min-height: 100%;
-    font-family: "Inter", Arial, sans-serif;
+
+
+    margin:0;
+
+    min-height:100%;
+
+    width:100%;
+
+    font-family:
+
+    "Inter",
+
+    "Poppins",
+
+    Arial,
+
+    sans-serif;
+
+
 }
+
+
+
 
 
 body {
-    background: #020617;
-    color: white;
+
+
+    background:#020617;
+
+    color:white;
+
+    overflow-x:hidden;
+
+
 }
 
 
-/* Main Dashboard */
 
-.dashboard-container {
-    min-height: 100vh;
-    padding: 35px;
+
+
+
+
+/* =========================================
+   ROOT VARIABLES
+========================================= */
+
+
+:root {
+
+
+    --primary:#6366f1;
+
+    --secondary:#8b5cf6;
+
+    --dark:#020617;
+
+    --card:rgba(15,23,42,.75);
+
+    --border:rgba(255,255,255,.12);
+
+    --muted:#94a3b8;
+
+
+}
+
+
+
+
+
+
+
+
+
+/* =========================================
+   APP BACKGROUND
+========================================= */
+
+
+.app-background {
+
+
+    min-height:100vh;
+
 
     background:
-        radial-gradient(
-            circle at top left,
-            rgba(79,70,229,0.25),
-            transparent 35%
-        ),
-        radial-gradient(
-            circle at bottom right,
-            rgba(124,58,237,0.15),
-            transparent 35%
-        ),
-        #020617;
+
+
+    radial-gradient(
+
+        circle at top left,
+
+        rgba(99,102,241,.35),
+
+        transparent 35%
+
+    ),
+
+
+    radial-gradient(
+
+        circle at bottom right,
+
+        rgba(168,85,247,.25),
+
+        transparent 40%
+
+    ),
+
+
+    #020617;
+
+
 }
 
 
 
-/* Glass Cards */
+
+
+
+
+
+
+/* =========================================
+   GLASS EFFECT
+========================================= */
+
 
 .glass {
 
-    background: rgba(15,23,42,0.75);
 
-    border: 1px solid rgba(255,255,255,0.08);
+    background:
 
-    backdrop-filter: blur(20px);
+    rgba(15,23,42,.65);
 
-    -webkit-backdrop-filter: blur(20px);
 
-    border-radius: 20px;
+    border:
 
-    box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+    1px solid var(--border);
+
+
+    backdrop-filter:
+
+    blur(25px);
+
+
+    -webkit-backdrop-filter:
+
+    blur(25px);
+
+
+    border-radius:24px;
+
+
+    box-shadow:
+
+    0 25px 50px rgba(0,0,0,.35);
+
+
 }
 
 
 
-/* Statistics Cards */
+
+
+
+
+
+
+.glass-hover {
+
+
+    transition:.3s ease;
+
+
+}
+
+
+
+.glass-hover:hover {
+
+
+    transform:
+
+    translateY(-8px);
+
+
+    box-shadow:
+
+    0 30px 60px rgba(0,0,0,.45);
+
+
+}
+
+
+
+
+
+
+
+
+
+/* =========================================
+   DASHBOARD
+========================================= */
+
+
+.dashboard-container {
+
+
+    min-height:100vh;
+
+
+    padding:35px;
+
+
+}
+
+
+
+
+
+.dashboard-title {
+
+
+    font-size:40px;
+
+
+    font-weight:800;
+
+
+    letter-spacing:-1px;
+
+
+}
+
+
+
+
+
+.dashboard-subtitle {
+
+
+    color:var(--muted);
+
+
+    margin-top:8px;
+
+
+}
+
+
+
+
+
+
+
+
+
+/* =========================================
+   CARDS
+========================================= */
+
 
 .stat-card {
 
-    height: 160px;
 
-    padding: 25px;
+    height:160px;
 
-    border-radius: 20px;
 
-    transition: all .3s ease;
+    padding:25px;
 
-    cursor: pointer;
+
+    border-radius:24px;
+
+
+    transition:.3s;
+
+
 }
+
+
+
 
 
 .stat-card:hover {
 
-    transform: translateY(-8px);
 
-    box-shadow: 0 20px 40px rgba(0,0,0,.4);
+    transform:
+
+    translateY(-10px);
+
 
 }
 
 
 
-/* Sidebar */
+
+
+
+
+
+
+/* =========================================
+   SIDEBAR
+========================================= */
+
 
 .sidebar {
 
-    background: linear-gradient(
+
+    background:
+
+
+    linear-gradient(
+
         180deg,
+
         #020617,
-        #0f172a
+
+        #111827
+
     );
 
-    border-right: 1px solid rgba(255,255,255,.08);
+
+    border-right:
+
+    1px solid rgba(255,255,255,.08);
+
 
 }
 
 
 
-/* Sidebar Items */
+
+
+
 
 .sidebar-item {
 
-    display: flex;
 
-    align-items: center;
+    display:flex;
 
-    gap: 15px;
 
-    padding: 15px 18px;
+    align-items:center;
 
-    margin-bottom: 12px;
 
-    border-radius: 14px;
+    gap:15px;
 
-    color: #94a3b8;
 
-    cursor: pointer;
+    padding:14px 18px;
 
-    transition: .3s;
+
+    margin-bottom:10px;
+
+
+    border-radius:16px;
+
+
+    color:#94a3b8;
+
+
+    transition:.3s;
+
+
+    cursor:pointer;
+
+
 }
+
+
+
+
 
 
 
 .sidebar-item:hover {
 
-    background: rgba(99,102,241,.15);
 
-    color: white;
+    background:
+
+    rgba(99,102,241,.15);
+
+
+    color:white;
+
 
 }
 
 
 
-/* Active Menu */
+
+
+
+
+
 
 .active-menu {
 
-    background: linear-gradient(
+
+    background:
+
+
+    linear-gradient(
+
         90deg,
+
         #4f46e5,
+
         #7c3aed
+
     );
 
-    color: white;
 
-    box-shadow: 0 10px 25px rgba(124,58,237,.4);
+    color:white;
+
+
+    box-shadow:
+
+
+    0 15px 35px rgba(124,58,237,.45);
+
 
 }
 
 
 
-/* Dashboard Text */
 
-.dashboard-title {
 
-    font-size: 38px;
 
-    font-weight: 700;
+
+
+
+/* =========================================
+   BUTTONS
+========================================= */
+
+
+.primary-btn {
+
+
+    background:
+
+
+    linear-gradient(
+
+        90deg,
+
+        #4f46e5,
+
+        #7c3aed
+
+    );
+
+
+    color:white;
+
+
+    border:none;
+
+
+    padding:
+
+    13px 28px;
+
+
+    border-radius:14px;
+
+
+    font-weight:600;
+
+
+    cursor:pointer;
+
+
+    transition:.3s;
+
 
 }
 
 
-.dashboard-subtitle {
 
-    color: #94a3b8;
+
+
+.primary-btn:hover {
+
+
+    transform:
+
+    translateY(-3px);
+
+
+    box-shadow:
+
+    0 15px 30px rgba(124,58,237,.4);
+
 
 }
 
 
 
-/* Tables */
+
+
+
+
+.secondary-btn {
+
+
+    border:
+
+    1px solid rgba(255,255,255,.2);
+
+
+    background:
+
+    transparent;
+
+
+    color:white;
+
+
+    padding:
+
+    12px 25px;
+
+
+    border-radius:14px;
+
+
+}
+
+
+
+
+
+
+
+
+
+/* =========================================
+   INPUTS
+========================================= */
+
+
+input,
+textarea,
+select {
+
+
+    color:white;
+
+
+    background:
+
+    rgba(0,0,0,.25);
+
+
+    border:
+
+    1px solid rgba(255,255,255,.15);
+
+
+}
+
+
+
+
+
+input::placeholder,
+textarea::placeholder {
+
+
+    color:#94a3b8;
+
+
+}
+
+
+
+
+
+
+
+
+
+/* =========================================
+   AI TRUST SCORE
+========================================= */
+
+
+.trust-container {
+
+
+    background:
+
+    rgba(0,0,0,.25);
+
+
+    padding:20px;
+
+
+    border-radius:20px;
+
+
+}
+
+
+
+
+
+
+.trust-bar {
+
+
+    height:10px;
+
+
+    background:#1e293b;
+
+
+    border-radius:20px;
+
+
+    overflow:hidden;
+
+
+}
+
+
+
+
+
+.trust-fill {
+
+
+    height:100%;
+
+
+    background:
+
+
+    linear-gradient(
+
+        90deg,
+
+        #22c55e,
+
+        #3b82f6
+
+    );
+
+
+    border-radius:20px;
+
+
+}
+
+
+
+
+
+
+
+
+
+/* =========================================
+   BADGES
+========================================= */
+
+
+.badge {
+
+
+    padding:
+
+    6px 14px;
+
+
+    border-radius:20px;
+
+
+    font-size:14px;
+
+
+    font-weight:600;
+
+
+}
+
+
+
+
+
+.badge-success {
+
+
+    background:
+
+    rgba(34,197,94,.2);
+
+
+    color:#4ade80;
+
+
+}
+
+
+
+
+
+.badge-warning {
+
+
+    background:
+
+    rgba(234,179,8,.2);
+
+
+    color:#facc15;
+
+
+}
+
+
+
+
+
+.badge-danger {
+
+
+    background:
+
+    rgba(239,68,68,.2);
+
+
+    color:#f87171;
+
+
+}
+
+
+
+
+
+
+
+
+
+/* =========================================
+   TABLES
+========================================= */
+
 
 .table-container {
 
-    background: rgba(15,23,42,.75);
 
-    border-radius: 20px;
+    background:
 
-    padding: 25px;
+    rgba(15,23,42,.7);
+
+
+    border-radius:24px;
+
+
+    padding:25px;
+
 
 }
+
+
+
 
 
 .table-row {
 
-    display: flex;
 
-    align-items: center;
+    display:flex;
 
-    justify-content: space-between;
 
-    padding: 18px 10px;
+    justify-content:space-between;
 
-    border-bottom: 1px solid rgba(255,255,255,.08);
 
-    transition: .3s;
+    align-items:center;
+
+
+    padding:18px;
+
+
+    border-bottom:
+
+    1px solid rgba(255,255,255,.08);
+
+
+    transition:.3s;
+
 
 }
+
+
 
 
 
 .table-row:hover {
 
-    background: rgba(255,255,255,.04);
+
+    background:
+
+    rgba(255,255,255,.05);
+
 
 }
 
 
 
-/* Progress */
-
-.progress-bar {
-
-    height: 8px;
-
-    border-radius: 10px;
-
-    overflow: hidden;
-
-    background: #1e293b;
-
-}
 
 
-.progress-fill {
 
-    height: 100%;
 
-    border-radius: 10px;
 
-    background: linear-gradient(
-        90deg,
-        #6366f1,
-        #8b5cf6
-    );
+
+/* =========================================
+   ANIMATIONS
+========================================= */
+
+
+.fade-in {
+
+
+    animation:
+
+    fade .5s ease;
+
 
 }
 
 
 
-/* Buttons */
 
-.primary-btn {
+@keyframes fade {
 
-    background: linear-gradient(
-        90deg,
-        #4f46e5,
-        #7c3aed
-    );
 
-    border: none;
+    from {
 
-    color: white;
 
-    padding: 12px 25px;
+        opacity:0;
 
-    border-radius: 12px;
+        transform:
 
-    cursor: pointer;
+        translateY(20px);
+
+
+    }
+
+
+    to {
+
+
+        opacity:1;
+
+        transform:
+
+        translateY(0);
+
+
+    }
+
 
 }
 
 
 
-/* Scrollbar */
+
+
+
+
+
+
+/* =========================================
+   SCROLLBAR
+========================================= */
+
 
 ::-webkit-scrollbar {
 
-    width: 8px;
+
+    width:8px;
+
 
 }
+
 
 
 ::-webkit-scrollbar-track {
 
-    background: #020617;
+
+    background:#020617;
+
 
 }
+
 
 
 ::-webkit-scrollbar-thumb {
 
-    background: #4f46e5;
 
-    border-radius: 10px;
+    background:
+
+    linear-gradient(
+
+        #6366f1,
+
+        #8b5cf6
+
+    );
+
+
+    border-radius:20px;
+
 
 }
 
 
 
-/* Responsive */
+
+
+
+
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
 
 @media(max-width:900px){
 
-    .dashboard-container {
 
-        padding:20px;
+.dashboard-container{
 
-    }
+
+    padding:20px;
+
+
+}
+
+
+
+.dashboard-title{
+
+
+    font-size:32px;
+
+
+}
+
+
 
 }

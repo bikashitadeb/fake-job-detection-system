@@ -1,48 +1,47 @@
-import {
+// src/pages/recruiter/PostedJobs.jsx
+
+
+import React, {
+
     useEffect,
+
     useState
+
 } from "react";
 
 
 import {
 
-    Box,
+    motion
 
-    Grid,
-
-    Card,
-
-    CardContent,
-
-    Typography,
-
-    Button,
-
-    Chip,
-
-    Stack
-
-} from "@mui/material";
+} from "framer-motion";
 
 
 import {
 
-Delete,
 
-Edit,
+    Eye,
 
-Visibility,
+    Edit3,
 
-VerifiedUser,
+    Trash2,
 
-Warning
+    ShieldCheck,
 
-} from "@mui/icons-material";
+    ShieldAlert,
+
+    MapPin,
+
+    IndianRupee
+
+
+} from "lucide-react";
+
 
 
 import {
 
-useNavigate
+    useNavigate
 
 } from "react-router-dom";
 
@@ -53,18 +52,22 @@ import API from "../../api/API";
 
 
 
+
+
+
+
 export default function PostedJobs(){
 
 
 
-const navigate = useNavigate();
+    const navigate = useNavigate();
 
 
 
-const [jobs,setJobs]=useState([]);
+    const [jobs,setJobs] = useState([]);
 
+    const [loading,setLoading] = useState(true);
 
-const [loading,setLoading]=useState(true);
 
 
 
@@ -72,565 +75,927 @@ const [loading,setLoading]=useState(true);
 
 
 
-useEffect(()=>{
 
+    useEffect(()=>{
 
-loadJobs();
 
+        loadJobs();
 
-},[]);
 
+    },[]);
 
 
 
 
 
 
-// ==========================
-// FETCH RECRUITER JOBS
-// ==========================
 
 
-const loadJobs=async()=>{
 
+    const loadJobs = async()=>{
 
-try{
 
+        try{
 
-const response = await API.get(
 
-"/jobs/my-jobs"
+            const response = await API.get(
 
-);
+                "/jobs/my-jobs"
 
+            );
 
 
-setJobs(
 
-response.data.data || []
+            setJobs(
 
-);
+                response.data.jobs
 
+                ||
 
+                response.data.data
 
-}
+                ||
 
-catch(error){
+                []
 
+            );
 
-console.log(error);
 
+        }
 
-}
 
-finally{
+        catch(error){
 
 
-setLoading(false);
+            console.log(
 
+                "Jobs fetch error",
 
-}
+                error
 
+            );
 
-};
 
+        }
 
 
+        finally{
 
 
+            setLoading(false);
 
 
+        }
 
 
-// ==========================
-// DELETE JOB
-// ==========================
+    };
 
 
-const deleteJob=async(id)=>{
 
 
-try{
 
 
-await API.delete(
 
-`/jobs/${id}`
 
-);
 
+    const deleteJob = async(id)=>{
 
 
-setJobs(
+        const confirmDelete = window.confirm(
 
-jobs.filter(
+            "Delete this job posting?"
 
-(job)=>job.id!==id
+        );
 
-)
 
-);
 
+        if(!confirmDelete)
 
+            return;
 
-}
 
-catch(error){
 
 
-console.log(error);
 
+        try{
 
-}
 
+            await API.delete(
 
-};
+                `/jobs/${id}`
 
+            );
 
 
 
+            setJobs(
 
+                previous =>
 
+                previous.filter(
 
+                    job => job.id !== id
 
-if(loading){
+                )
 
+            );
 
-return(
 
-<Typography color="white">
+        }
 
-Loading posted jobs...
 
-</Typography>
+        catch(error){
 
-);
 
+            console.log(error);
 
-}
 
+        }
 
 
+    };
 
 
 
 
 
-return(
 
 
-<Box>
 
 
+    if(loading){
 
-<Typography
 
-className="dashboard-title"
+        return (
 
->
+            <div className="text-white animate-pulse">
 
-My Posted Jobs 📋
+                Loading posted jobs...
 
-</Typography>
+            </div>
 
+        );
 
 
+    }
 
-<Typography
 
-className="dashboard-subtitle"
 
-mb={4}
 
->
 
-Manage your job postings and AI verification results.
 
-</Typography>
 
 
 
+    return(
 
 
 
+        <div
 
+        className="
 
+        text-white
 
-{
+        space-y-8
 
-jobs.length===0 ?
+        "
 
+        >
 
-<Typography color="#94a3b8">
 
-No jobs posted yet.
 
-</Typography>
 
 
+            <div>
 
 
-:
+                <h1
 
+                className="
 
-<Grid
+                text-4xl
 
-container
+                font-bold
 
-spacing={3}
+                "
 
->
+                >
 
+                    My Posted Jobs 📋
 
+                </h1>
 
-{
 
-jobs.map((job,index)=>(
 
+                <p
 
+                className="
 
-<Grid
+                text-gray-400
 
-item
+                mt-2
 
-xs={12}
+                "
 
-md={6}
+                >
 
-lg={4}
+                    Manage your job listings and AI verification results.
 
-key={index}
+                </p>
 
->
 
+            </div>
 
 
 
 
-<Card
 
-className="glass"
 
 
-sx={{
 
-height:"100%",
 
-color:"white"
+            {
 
-}}
+            jobs.length===0 ?
 
 
->
 
+            <div
 
+            className="
 
-<CardContent>
+            bg-white/10
 
+            backdrop-blur-xl
 
+            border
 
+            border-white/20
 
+            rounded-3xl
 
-<Typography
+            p-10
 
-variant="h6"
+            text-center
 
-fontWeight="800"
+            "
 
->
+            >
 
-{job.title}
 
-</Typography>
 
+                <h2 className="text-2xl font-bold">
 
+                    No jobs posted yet
 
+                </h2>
 
 
 
-<Typography
+                <p className="text-gray-400 mt-2">
 
-color="#94a3b8"
+                    Create your first verified job posting.
 
->
+                </p>
 
-{job.company}
 
-</Typography>
+            </div>
 
 
 
 
 
+            :
 
 
-<Box mt={2}>
 
 
-<Typography>
 
-📍 {job.location}
+            <div
 
-</Typography>
+            className="
 
+            grid
 
+            md:grid-cols-2
 
-<Typography>
+            xl:grid-cols-3
 
-💰 {job.salary || "Not disclosed"}
+            gap-6
 
-</Typography>
+            "
 
+            >
 
 
-</Box>
 
 
 
 
+            {
 
+            jobs.map(
 
+            (job,index)=>{
 
-<Stack
 
-direction="row"
 
-spacing={1}
+                const trust =
 
-mt={3}
+                job.trust_score || 0;
 
-flexWrap="wrap"
 
->
 
+                const fakeProbability =
 
-<Chip
+                job.fake_probability || 0;
 
 
-icon={
 
-job.status==="verified"
+                const verified =
 
-?
+                job.status === "verified";
 
-<VerifiedUser/>
 
-:
 
-<Warning/>
 
-}
 
 
-label={
 
-job.status ||
+                return(
 
-"Pending"
 
-}
 
+                <motion.div
 
 
-color={
 
-job.status==="verified"
+                key={job.id || index}
 
-?
 
-"success"
 
-:
+                initial={{
 
-"warning"
+                    opacity:0,
 
-}
+                    y:30
 
+                }}
 
 
-/>
 
+                animate={{
 
+                    opacity:1,
 
+                    y:0
 
+                }}
 
-<Chip
 
 
-label={
+                transition={{
 
-`Trust Score ${
-job.trust_score || 0
-}%`
+                    delay:index*0.05
 
-}
+                }}
 
 
 
-/>
+                whileHover={{
 
+                    scale:1.03
 
+                }}
 
-</Stack>
 
 
+                className="
 
+                bg-white/10
 
+                backdrop-blur-xl
 
+                border
 
+                border-white/20
 
+                rounded-3xl
 
-<Stack
+                p-6
 
-spacing={1}
+                "
 
-mt={3}
+                >
 
->
 
 
 
-<Button
 
 
-variant="contained"
 
+                    {/* HEADER */}
 
-startIcon={<Visibility/>}
 
 
-onClick={()=>
+                    <div
 
+                    className="
 
-navigate(
+                    flex
 
-`/employee/job/${job.id}`
+                    justify-between
 
-)
+                    "
 
+                    >
 
-}
 
->
 
+                        <div>
 
-View
 
-</Button>
+                            <h2
 
+                            className="
 
+                            text-xl
 
+                            font-bold
 
+                            "
 
+                            >
 
-<Button
+                                {job.title}
 
+                            </h2>
 
-variant="outlined"
 
 
-startIcon={<Edit/>}
+                            <p
 
+                            className="
 
-sx={{
+                            text-gray-400
 
+                            "
 
-color:"white",
+                            >
 
-borderColor:"#64748b"
+                                {job.company}
 
-}}
+                            </p>
 
->
 
+                        </div>
 
-Edit
 
-</Button>
 
 
 
+                        {
 
+                        verified
 
+                        ?
 
-<Button
+                        <ShieldCheck
 
+                        className="text-green-400"
 
-variant="outlined"
+                        />
 
+                        :
 
-startIcon={<Delete/>}
 
 
-sx={{
+                        <ShieldAlert
 
+                        className="text-yellow-400"
 
-color:"#f87171",
+                        />
 
-borderColor:"#ef4444"
+                        }
 
-}}
 
 
+                    </div>
 
-onClick={()=>deleteJob(job.id)}
 
 
 
->
 
 
-Delete
 
-</Button>
 
 
+                    {/* DETAILS */}
 
 
 
-</Stack>
+                    <div
 
+                    className="
 
+                    mt-5
 
+                    space-y-3
 
+                    text-gray-300
 
+                    "
 
+                    >
 
-</CardContent>
 
 
+                        <p
 
-</Card>
+                        className="flex gap-2 items-center"
 
+                        >
 
+                            <MapPin size={17}/>
 
+                            {job.location || "Remote"}
 
+                        </p>
 
-</Grid>
 
 
 
-))
 
+                        <p
 
-}
+                        className="flex gap-2 items-center"
 
+                        >
 
+                            <IndianRupee size={17}/>
 
+                            {job.salary || "Not disclosed"}
 
-</Grid>
+                        </p>
 
 
 
-}
+                    </div>
 
 
 
 
-</Box>
 
 
-);
+
+
+
+                    {/* AI SCORE */}
+
+
+
+                    <div
+
+                    className="
+
+                    mt-5
+
+                    bg-black/20
+
+                    rounded-2xl
+
+                    p-4
+
+                    "
+
+                    >
+
+
+
+                        <div
+
+                        className="flex justify-between"
+
+                        >
+
+
+                            <span>
+
+                                AI Trust Score
+
+                            </span>
+
+
+
+                            <b>
+
+                                {trust}%
+
+                            </b>
+
+
+                        </div>
+
+
+
+
+                        <div
+
+                        className="
+
+                        mt-3
+
+                        h-2
+
+                        bg-gray-700
+
+                        rounded-full
+
+                        "
+
+                        >
+
+
+                            <div
+
+
+                            style={{
+
+                                width:`${trust}%`
+
+                            }}
+
+
+
+                            className="
+
+                            h-full
+
+                            rounded-full
+
+                            bg-gradient-to-r
+
+                            from-green-400
+
+                            to-blue-500
+
+                            "
+
+                            />
+
+
+
+                        </div>
+
+
+
+                    </div>
+
+
+
+
+
+
+
+
+
+                    {/* FRAUD */}
+
+
+
+                    {
+
+                    fakeProbability > 50 &&
+
+
+
+                    <div
+
+                    className="
+
+                    mt-4
+
+                    bg-red-500/10
+
+                    text-red-400
+
+                    rounded-xl
+
+                    p-3
+
+                    "
+
+                    >
+
+                        High fraud probability:
+
+                        {fakeProbability}%
+
+
+                    </div>
+
+
+
+                    }
+
+
+
+
+
+
+
+
+
+                    {/* ACTIONS */}
+
+
+
+                    <div
+
+                    className="
+
+                    mt-6
+
+                    space-y-3
+
+                    "
+
+                    >
+
+
+
+                        <button
+
+
+                        onClick={()=>navigate(
+
+                            `/employee/job/${job.id}`
+
+                        )}
+
+
+
+                        className="
+
+                        w-full
+
+                        bg-blue-600
+
+                        py-3
+
+                        rounded-xl
+
+                        flex
+
+                        justify-center
+
+                        items-center
+
+                        gap-2
+
+                        "
+
+                        >
+
+
+                            <Eye size={18}/>
+
+
+                            View
+
+
+                        </button>
+
+
+
+
+
+
+
+                        <button
+
+
+                        className="
+
+                        w-full
+
+                        border
+
+                        border-white/30
+
+                        py-3
+
+                        rounded-xl
+
+                        flex
+
+                        justify-center
+
+                        items-center
+
+                        gap-2
+
+                        "
+
+                        >
+
+
+                            <Edit3 size={18}/>
+
+
+                            Edit
+
+
+                        </button>
+
+
+
+
+
+
+
+                        <button
+
+
+                        onClick={()=>deleteJob(job.id)}
+
+
+
+                        className="
+
+                        w-full
+
+                        border
+
+                        border-red-500/40
+
+                        text-red-400
+
+                        py-3
+
+                        rounded-xl
+
+                        flex
+
+                        justify-center
+
+                        items-center
+
+                        gap-2
+
+                        "
+
+                        >
+
+
+                            <Trash2 size={18}/>
+
+
+                            Delete
+
+
+                        </button>
+
+
+
+
+
+                    </div>
+
+
+
+
+
+
+                </motion.div>
+
+
+
+                );
+
+
+            }
+
+            )
+
+            }
+
+
+
+
+            </div>
+
+
+            }
+
+
+
+
+        </div>
+
+
+    );
 
 
 }

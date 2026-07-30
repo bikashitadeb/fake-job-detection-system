@@ -1,45 +1,48 @@
+// src/pages/recruiter/RecruiterVerification.jsx
+
+
 import {
 
-useState
+    useState
 
 } from "react";
 
 
 import {
 
-Box,
+    motion
 
-Card,
-
-CardContent,
-
-Typography,
-
-TextField,
-
-Button,
-
-Chip,
-
-Alert,
-
-LinearProgress
-
-} from "@mui/material";
+} from "framer-motion";
 
 
 import {
 
-VerifiedUser,
 
-Warning,
+    ShieldCheck,
 
-Security
+    ShieldAlert,
 
-} from "@mui/icons-material";
+    Linkedin,
+
+    Globe,
+
+    Mail,
+
+    Loader2,
+
+    CheckCircle,
+
+    AlertTriangle
+
+
+} from "lucide-react";
 
 
 import API from "../../api/API";
+
+
+
+
 
 
 
@@ -49,47 +52,25 @@ export default function RecruiterVerification(){
 
 
 
-const [form,setForm]=useState({
+    const [form,setForm] = useState({
 
-linkedin_url:"",
+        linkedin_url:"",
 
-website:"",
+        website:"",
 
-official_email:""
+        official_email:""
 
-});
-
-
-
-const [result,setResult]=useState(null);
-
-
-const [loading,setLoading]=useState(false);
-
-
-const [error,setError]=useState("");
+    });
 
 
 
+    const [result,setResult] = useState(null);
 
 
+    const [loading,setLoading] = useState(false);
 
 
-const handleChange=(e)=>{
-
-
-setForm({
-
-...form,
-
-[e.target.name]:
-
-e.target.value
-
-});
-
-
-};
+    const [error,setError] = useState("");
 
 
 
@@ -98,63 +79,863 @@ e.target.value
 
 
 
-const verifyRecruiter=async()=>{
+
+    const handleChange=(e)=>{
 
 
-setLoading(true);
+        setForm({
 
-setError("");
+            ...form,
+
+            [e.target.name]:e.target.value
+
+        });
 
 
-
-try{
-
-
-const response = await API.post(
-
-"/verification/recruiter",
-
-form
-
-);
+    };
 
 
 
-setResult(
 
-response.data.data
 
-);
 
+
+
+
+    const verifyRecruiter=async()=>{
+
+
+        try{
+
+
+            setLoading(true);
+
+            setError("");
+
+
+
+            const response = await API.post(
+
+                "/verification/recruiter",
+
+                form
+
+            );
+
+
+
+            setResult(
+
+                response.data.data
+
+                ||
+
+                response.data
+
+            );
+
+
+
+        }
+
+
+        catch(error){
+
+
+            setError(
+
+                error.response?.data?.message
+
+                ||
+
+                "Verification failed"
+
+            );
+
+
+        }
+
+
+        finally{
+
+
+            setLoading(false);
+
+
+        }
+
+
+    };
+
+
+
+
+
+
+
+
+
+    return(
+
+
+
+        <div
+
+        className="
+
+        text-white
+
+        space-y-8
+
+        "
+
+        >
+
+
+
+
+
+
+
+            <div>
+
+
+                <h1
+
+                className="
+
+                text-4xl
+
+                font-bold
+
+                "
+
+                >
+
+                    Recruiter Verification 🔐
+
+                </h1>
+
+
+
+                <p
+
+                className="
+
+                text-gray-400
+
+                mt-2
+
+                "
+
+                >
+
+                    Verify your identity and increase recruiter trust score.
+
+                </p>
+
+
+            </div>
+
+
+
+
+
+
+
+
+
+            {
+
+            error &&
+
+
+
+            <div
+
+            className="
+
+            bg-red-500/20
+
+            border
+
+            border-red-500/40
+
+            p-4
+
+            rounded-xl
+
+            "
+
+            >
+
+                {error}
+
+
+            </div>
+
+
+            }
+
+
+
+
+
+
+
+
+
+            {/* FORM */}
+
+
+
+            <div
+
+            className="
+
+            bg-white/10
+
+            backdrop-blur-xl
+
+            border
+
+            border-white/20
+
+            rounded-3xl
+
+            p-8
+
+            "
+
+            >
+
+
+
+                <h2
+
+                className="
+
+                text-2xl
+
+                font-bold
+
+                mb-6
+
+                "
+
+                >
+
+                    Company Verification Details
+
+                </h2>
+
+
+
+
+
+
+
+
+
+                <div
+
+                className="
+
+                space-y-5
+
+                "
+
+                >
+
+
+
+
+
+
+                    <InputBox
+
+                    icon={<Linkedin/>}
+
+                    name="linkedin_url"
+
+                    placeholder="LinkedIn Company/Profile URL"
+
+                    value={form.linkedin_url}
+
+                    onChange={handleChange}
+
+                    />
+
+
+
+
+
+
+
+
+                    <InputBox
+
+                    icon={<Globe/>}
+
+                    name="website"
+
+                    placeholder="Company Website"
+
+                    value={form.website}
+
+                    onChange={handleChange}
+
+                    />
+
+
+
+
+
+
+
+
+
+                    <InputBox
+
+                    icon={<Mail/>}
+
+                    name="official_email"
+
+                    placeholder="Official Company Email"
+
+                    value={form.official_email}
+
+                    onChange={handleChange}
+
+                    />
+
+
+
+
+
+
+
+
+                    <button
+
+
+                    disabled={loading}
+
+
+
+                    onClick={verifyRecruiter}
+
+
+
+                    className="
+
+                    w-full
+
+                    bg-gradient-to-r
+
+                    from-blue-600
+
+                    to-purple-600
+
+                    py-4
+
+                    rounded-xl
+
+                    font-bold
+
+                    flex
+
+                    justify-center
+
+                    gap-3
+
+                    items-center
+
+                    "
+
+                    >
+
+
+
+                    {
+
+                    loading
+
+                    ?
+
+                    <>
+
+                    <Loader2
+
+                    className="animate-spin"
+
+                    />
+
+                    Checking...
+
+                    </>
+
+
+
+                    :
+
+                    <>
+
+                    <ShieldCheck/>
+
+                    Verify Recruiter
+
+                    </>
+
+
+                    }
+
+
+
+                    </button>
+
+
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+
+
+
+
+
+
+            {
+
+            result &&
+
+
+
+            <VerificationResult
+
+            result={result}
+
+            />
+
+
+
+            }
+
+
+
+
+
+        </div>
+
+
+    );
 
 
 }
 
-catch(err){
 
 
-setError(
 
-err.response?.data?.message ||
 
-"Verification failed"
 
-);
+
+
+
+
+
+
+
+function VerificationResult({
+
+    result
+
+}){
+
+
+
+    const score =
+
+    result.trust_score || 0;
+
+
+
+
+
+    const verified =
+
+    result.status==="Verified";
+
+
+
+
+
+
+
+
+    return(
+
+
+
+        <motion.div
+
+
+
+        initial={{
+
+            opacity:0,
+
+            y:30
+
+        }}
+
+
+
+        animate={{
+
+            opacity:1,
+
+            y:0
+
+        }}
+
+
+
+        className="
+
+        bg-white/10
+
+        backdrop-blur-xl
+
+        border
+
+        border-white/20
+
+        rounded-3xl
+
+        p-8
+
+        "
+
+        >
+
+
+
+
+
+            <div
+
+            className="
+
+            flex
+
+            items-center
+
+            gap-3
+
+            "
+
+            >
+
+
+
+                {
+
+                verified
+
+                ?
+
+                <ShieldCheck
+
+                className="text-green-400"
+
+                size={40}
+
+                />
+
+                :
+
+                <ShieldAlert
+
+                className="text-yellow-400"
+
+                size={40}
+
+                />
+
+                }
+
+
+
+
+
+                <h2
+
+                className="
+
+                text-2xl
+
+                font-bold
+
+                "
+
+                >
+
+                    Verification Result
+
+                </h2>
+
+
+            </div>
+
+
+
+
+
+
+
+
+
+            {/* SCORE */}
+
+
+
+            <div
+
+            className="
+
+            mt-8
+
+            "
+
+            >
+
+
+
+                <p className="text-gray-400">
+
+                    Recruiter Trust Score
+
+                </p>
+
+
+
+                <h1
+
+                className="
+
+                text-6xl
+
+                font-black
+
+                "
+
+                >
+
+                    {score}%
+
+                </h1>
+
+
+
+
+
+                <div
+
+                className="
+
+                h-3
+
+                bg-gray-700
+
+                rounded-full
+
+                mt-4
+
+                "
+
+                >
+
+
+
+                    <div
+
+                    style={{
+
+                        width:`${score}%`
+
+                    }}
+
+
+
+                    className="
+
+                    h-full
+
+                    bg-gradient-to-r
+
+                    from-green-400
+
+                    to-blue-500
+
+                    rounded-full
+
+                    "
+
+                    />
+
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+
+
+
+
+
+
+            {/* CHECKS */}
+
+
+
+            <div
+
+            className="
+
+            mt-8
+
+            space-y-4
+
+            "
+
+            >
+
+
+
+                <CheckItem
+
+                title="LinkedIn Validation"
+
+                verified={result.linkedin_verified}
+
+                />
+
+
+
+
+                <CheckItem
+
+                title="Website Verification"
+
+                verified={result.website_verified}
+
+                />
+
+
+
+
+
+                <CheckItem
+
+                title="Official Email Domain"
+
+                verified={result.email_verified}
+
+                />
+
+
+
+
+
+            </div>
+
+
+
+
+
+
+
+
+
+            <div
+
+            className="
+
+            mt-8
+
+            bg-black/20
+
+            rounded-2xl
+
+            p-5
+
+            "
+
+            >
+
+
+
+                <h3 className="font-bold">
+
+                    AI Explanation
+
+                </h3>
+
+
+
+                <p
+
+                className="
+
+                text-gray-300
+
+                mt-2
+
+                "
+
+                >
+
+                    {
+
+                    result.explanation
+
+                    ||
+
+                    "Verification completed successfully."
+
+                    }
+
+                </p>
+
+
+
+            </div>
+
+
+
+
+
+
+        </motion.div>
+
+
+
+    );
 
 
 }
 
-finally{
-
-
-setLoading(false);
-
-
-}
-
-
-
-};
 
 
 
@@ -163,95 +944,102 @@ setLoading(false);
 
 
 
+function InputBox({
 
-const getStatusColor=()=>{
+    icon,
 
+    name,
 
-if(!result)
+    placeholder,
 
-return "warning";
+    value,
 
+    onChange
 
-
-if(result.status==="Verified")
-
-return "success";
-
-
-
-if(result.status==="Suspicious")
-
-return "error";
-
-
-
-return "warning";
-
-
-};
-
-
-
-
-
-
-
+}){
 
 
 return(
 
 
-<Box>
 
+<div
 
+className="
 
-<Typography
+flex
 
-className="dashboard-title"
+items-center
 
->
+gap-3
 
-Recruiter Verification 🔐
+bg-black/20
 
-</Typography>
+border
 
+border-white/20
 
+rounded-xl
 
+px-4
 
-
-<Typography
-
-className="dashboard-subtitle"
-
-mb={4}
-
->
-
-Verify your identity and increase recruiter trust score.
-
-</Typography>
-
-
-
-
-
-
-
-
-{
-error &&
-
-<Alert
-
-severity="error"
-
-sx={{mb:3}}
+"
 
 >
 
-{error}
 
-</Alert>
+
+
+
+{icon}
+
+
+
+
+
+<input
+
+
+name={name}
+
+
+value={value}
+
+
+onChange={onChange}
+
+
+
+placeholder={placeholder}
+
+
+
+className="
+
+flex-1
+
+bg-transparent
+
+outline-none
+
+py-4
+
+"
+
+
+
+
+/>
+
+
+
+
+</div>
+
+
+
+);
+
 
 }
 
@@ -261,497 +1049,75 @@ sx={{mb:3}}
 
 
 
-<Card
 
-className="glass"
 
+function CheckItem({
 
-sx={{
+title,
 
-padding:3,
+verified
 
-color:"white"
+}){
 
-}}
 
+return(
 
 
->
+<div
 
+className="
 
-<CardContent>
+flex
 
+items-center
 
+gap-3
 
-<Typography
+bg-black/20
 
-variant="h5"
+rounded-xl
 
-fontWeight="700"
+p-4
 
-mb={3}
-
->
-
-Company Verification Details
-
-</Typography>
-
-
-
-
-
-
-
-<TextField
-
-
-fullWidth
-
-
-label="LinkedIn Company/Profile URL"
-
-
-name="linkedin_url"
-
-
-value={form.linkedin_url}
-
-
-onChange={handleChange}
-
-
-margin="normal"
-
-
-/>
-
-
-
-
-
-
-
-<TextField
-
-
-fullWidth
-
-
-label="Company Website"
-
-
-name="website"
-
-
-value={form.website}
-
-
-onChange={handleChange}
-
-
-margin="normal"
-
-
-/>
-
-
-
-
-
-
-
-
-<TextField
-
-
-fullWidth
-
-
-label="Official Company Email"
-
-
-name="official_email"
-
-
-value={form.official_email}
-
-
-onChange={handleChange}
-
-
-margin="normal"
-
-
-/>
-
-
-
-
-
-
-
-
-<Button
-
-
-fullWidth
-
-
-variant="contained"
-
-
-size="large"
-
-
-disabled={loading}
-
-
-sx={{
-
-
-mt:3,
-
-
-height:55,
-
-
-background:
-
-"linear-gradient(90deg,#4f46e5,#7c3aed)"
-
-}}
-
-
-
-onClick={verifyRecruiter}
-
-
+"
 
 >
 
 
 {
 
-loading
+verified
 
 ?
 
-"Checking..."
+<CheckCircle
 
-:
-
-"Verify Recruiter"
-
-}
-
-
-</Button>
-
-
-
-
-
-
-</CardContent>
-
-
-</Card>
-
-
-
-
-
-
-
-
-
-{
-
-result &&
-
-
-
-<Card
-
-className="glass"
-
-sx={{
-
-mt:4,
-
-padding:3,
-
-color:"white"
-
-}}
-
-
-
->
-
-
-
-<CardContent>
-
-
-
-
-<Typography
-
-variant="h5"
-
-fontWeight="700"
-
->
-
-Verification Result
-
-</Typography>
-
-
-
-
-
-
-
-<Box mt={3}>
-
-
-<Typography>
-
-Recruiter Trust Score
-
-</Typography>
-
-
-
-<Typography
-
-variant="h2"
-
-fontWeight="900"
-
-color="#22c55e"
-
->
-
-{
-
-result.trust_score ||
-
-0
-
-}%
-
-</Typography>
-
-
-
-
-
-
-
-<LinearProgress
-
-
-variant="determinate"
-
-
-value={
-
-result.trust_score || 0
-
-}
-
-
-sx={{
-
-mt:2,
-
-height:10,
-
-borderRadius:5
-
-}}
-
+className="text-green-400"
 
 />
 
 
-
-</Box>
-
-
-
-
-
-
-
-
-<Chip
-
-
-sx={{mt:3}}
-
-
-icon={
-
-result.status==="Verified"
-
-?
-
-<VerifiedUser/>
-
 :
 
-<Warning/>
+<AlertTriangle
 
-}
-
-
-
-label={
-
-result.status ||
-
-"Needs Review"
-
-}
-
-
-
-color={
-
-getStatusColor()
-
-}
-
-
+className="text-yellow-400"
 
 />
 
-
-
-
-
-
-
-<Box mt={3}>
-
-
-<Typography
-
-fontWeight="700"
-
->
-
-Verification Checks
-
-</Typography>
-
-
-
-<Typography
-
-color="#cbd5e1"
-
-mt={1}
-
->
-
-✓ LinkedIn URL Validation
-
-</Typography>
-
-
-
-<Typography
-
-color="#cbd5e1"
-
->
-
-✓ Company Website Check
-
-</Typography>
-
-
-
-<Typography
-
-color="#cbd5e1"
-
->
-
-✓ Official Email Domain Check
-
-</Typography>
-
-
-
-</Box>
-
-
-
-
-
-
-
-
-
-<Box mt={3}>
-
-
-<Typography
-
-fontWeight="700"
-
->
-
-AI Explanation
-
-</Typography>
-
-
-
-<Typography
-
-color="#94a3b8"
-
-mt={1}
-
->
-
-{
-
-result.explanation ||
-
-"Verification completed."
-
-}
-
-</Typography>
-
-
-</Box>
-
-
-
-
-
-</CardContent>
-
-
-</Card>
-
-
-
 }
 
 
 
-</Box>
+<span>
+
+{title}
+
+</span>
+
+
+
+</div>
 
 
 );

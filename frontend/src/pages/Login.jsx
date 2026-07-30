@@ -1,3 +1,5 @@
+// src/pages/Login.jsx
+
 import {
     useState
 } from "react";
@@ -9,6 +11,11 @@ import {
 
 
 import {
+    motion
+} from "framer-motion";
+
+
+import {
     TextField,
     Button,
     Card,
@@ -16,8 +23,20 @@ import {
     Box,
     Alert,
     CircularProgress,
-    MenuItem
+    MenuItem,
+    IconButton,
+    InputAdornment
 } from "@mui/material";
+
+
+import {
+    Shield,
+    AutoAwesome,
+    Visibility,
+    VisibilityOff,
+    Email,
+    Lock
+} from "@mui/icons-material";
 
 
 import {
@@ -34,58 +53,57 @@ import {
 
 
 
-
 export default function Login(){
 
 
-const navigate = useNavigate();
+    const navigate = useNavigate();
 
 
+    const {login}=useAuth();
 
-const {
-    login
-}=useAuth();
 
 
+    const [showPassword,setShowPassword]=useState(false);
 
 
+    const [loading,setLoading]=useState(false);
 
-const [form,setForm]=useState({
 
-    email:"",
+    const [error,setError]=useState("");
 
-    password:"",
 
-    role:"employee"
 
-});
+    const [form,setForm]=useState({
 
+        email:"",
 
+        password:"",
 
+        role:"employee"
 
+    });
 
-const [error,setError]=useState("");
 
-const [loading,setLoading]=useState(false);
 
 
 
 
+    const handleChange=(e)=>{
 
 
-const handleChange=(e)=>{
+        setForm({
 
+            ...form,
 
-setForm({
+            [e.target.name]:
 
-    ...form,
+            e.target.value
 
-    [e.target.name]:e.target.value
+        });
 
-});
 
+    };
 
-};
 
 
 
@@ -94,188 +112,234 @@ setForm({
 
 
 
-const handleLogin=async(e)=>{
+    const handleLogin=async(e)=>{
 
 
-e.preventDefault();
+        e.preventDefault();
 
 
-setError("");
+        if(loading)
 
-setLoading(true);
+            return;
 
 
 
+        setLoading(true);
 
-try{
+        setError("");
 
 
-const response = await loginUser(form);
 
+        try{
 
 
-const data=response.data;
+            // FIXED:
+            // loginUser already returns response.data
 
+            const data = await loginUser(form);
 
 
-console.log(
-    "LOGIN RESPONSE:",
-    data
-);
 
+            console.log(
 
+                "LOGIN RESPONSE:",
 
+                data
 
+            );
 
-if(!data.user){
 
 
-throw new Error(
-    "User data missing"
-);
 
-}
 
+            if(!data || !data.access_token){
 
 
+                throw new Error(
 
+                    "Token missing from response"
 
+                );
 
 
-login({
+            }
 
-    access_token:data.access_token,
 
-    user:data.user
 
-});
 
 
 
+            localStorage.setItem(
 
+                "access_token",
 
+                data.access_token
 
+            );
 
-switch(data.user.role){
 
 
 
-case "employee":
 
+            localStorage.setItem(
 
-navigate(
-    "/employee/dashboard"
-);
+                "user",
 
+                JSON.stringify(
 
-break;
+                    data.user
 
+                )
 
+            );
 
 
 
-case "recruiter":
 
 
-navigate(
-    "/recruiter/dashboard"
-);
+            login(data);
 
 
-break;
 
 
 
 
 
-case "admin":
+            const routes={
 
 
-navigate(
-    "/admin/dashboard"
-);
+                employee:
 
+                "/employee/dashboard",
 
-break;
 
 
+                recruiter:
 
+                "/recruiter/dashboard",
 
 
-default:
 
+                admin:
 
-navigate("/login");
+                "/admin/dashboard"
 
 
-}
+            };
 
 
 
 
-}
 
 
 
-catch(err){
+            const role = data.user?.role;
 
 
 
-console.log(
 
-    "LOGIN ERROR:",
 
-    err.response?.data || err.message
+            console.log(
 
-);
+                "LOGIN ROLE:",
 
+                role
 
+            );
 
 
 
-setError(
 
-err.response?.data?.message ||
 
-err.message ||
 
-"Invalid email or password"
 
-);
+            if(!role){
 
 
+                throw new Error(
 
-}
+                    "User role missing"
 
+                );
 
 
-finally{
+            }
 
 
-setLoading(false);
 
 
-}
 
 
 
-};
+            navigate(
 
+                routes[role]
 
+            );
 
 
 
+        }
 
 
 
 
-return(
+        catch(err){
+
+
+
+            console.log(
+
+                "LOGIN ERROR",
+
+                err
+
+            );
+
+
+
+            setError(
+
+
+                err.response?.data?.message
+
+                ||
+
+                err.message
+
+                ||
+
+                "Invalid email or password"
+
+
+            );
+
+
+
+        }
+
+
+
+
+        finally{
+
+
+            setLoading(false);
+
+
+        }
+
+
+    };
+        return(
+
 
 
 <Box
 
 
 sx={{
+
 
 
 minHeight:"100vh",
@@ -290,12 +354,214 @@ alignItems:"center",
 justifyContent:"center",
 
 
+position:"relative",
+
+
+overflow:"hidden",
+
+
+px:2,
+
+
+
 background:
 
-"radial-gradient(circle at top,#312e81,#020617)",
 
 
-padding:3
+`
+
+radial-gradient(
+
+circle at top left,
+
+rgba(139,92,246,.35),
+
+transparent 40%
+
+),
+
+
+radial-gradient(
+
+circle at bottom right,
+
+rgba(236,72,153,.3),
+
+transparent 40%
+
+),
+
+
+#020617
+
+`
+
+
+
+}}
+
+
+
+>
+
+
+
+
+
+
+
+
+<motion.div
+
+
+animate={{
+
+x:[0,80,0],
+
+y:[0,-60,0]
+
+}}
+
+
+
+transition={{
+
+duration:12,
+
+repeat:Infinity
+
+}}
+
+
+
+style={{
+
+
+position:"absolute",
+
+width:320,
+
+height:320,
+
+borderRadius:"50%",
+
+background:"rgba(139,92,246,.3)",
+
+filter:"blur(120px)",
+
+top:-100,
+
+left:-100
+
+
+}}
+
+
+
+/>
+
+
+
+
+
+
+
+<motion.div
+
+
+animate={{
+
+
+x:[0,-80,0],
+
+
+y:[0,60,0]
+
+
+}}
+
+
+
+transition={{
+
+
+duration:15,
+
+repeat:Infinity
+
+
+}}
+
+
+
+style={{
+
+
+position:"absolute",
+
+width:320,
+
+height:320,
+
+borderRadius:"50%",
+
+background:"rgba(236,72,153,.25)",
+
+filter:"blur(120px)",
+
+bottom:-100,
+
+right:-100
+
+
+}}
+
+
+/>
+
+
+
+
+
+
+
+
+
+<motion.div
+
+
+initial={{
+
+
+opacity:0,
+
+scale:.9,
+
+y:30
+
+
+}}
+
+
+
+animate={{
+
+
+opacity:1,
+
+scale:1,
+
+y:0
+
+
+}}
+
+
+
+transition={{
+
+
+duration:.6
 
 
 }}
@@ -315,26 +581,47 @@ sx={{
 width:"100%",
 
 
-maxWidth:420,
+maxWidth:430,
 
 
-padding:5,
+p:{
+
+
+xs:3,
+
+sm:4
+
+
+},
+
 
 
 borderRadius:5,
 
 
+
 background:
 
-"rgba(15,23,42,.85)",
+"rgba(15,23,42,.82)",
+
 
 
 backdropFilter:
 
-"blur(20px)",
+"blur(25px)",
 
 
-color:"white"
+
+border:
+
+"1px solid rgba(255,255,255,.12)",
+
+
+
+boxShadow:
+
+"0 35px 90px rgba(0,0,0,.6)"
+
 
 
 }}
@@ -343,65 +630,6 @@ color:"white"
 
 >
 
-
-
-<Typography
-
-variant="h4"
-
-fontWeight="800"
-
-mb={1}
-
->
-
-Welcome Back
-
-</Typography>
-
-
-
-
-
-<Typography
-
-sx={{
-
-color:"#94a3b8",
-
-mb:4
-
-}}
-
->
-
-AI Powered Fake Job Detection System
-
-</Typography>
-
-
-
-
-
-
-
-
-{
-error &&
-
-<Alert
-
-severity="error"
-
-sx={{mb:3}}
-
->
-
-{error}
-
-</Alert>
-
-}
 
 
 
@@ -413,18 +641,192 @@ sx={{mb:3}}
 
 <Box
 
-component="form"
 
-onSubmit={handleLogin}
+sx={{
+
+
+textAlign:"center",
+
+mb:3
+
+}}
+
+
 
 >
 
 
+<motion.div
+
+
+animate={{
+
+
+rotate:[0,10,-10,0],
+
+
+scale:[1,1.1,1]
+
+
+}}
+
+
+
+transition={{
+
+
+duration:4,
+
+repeat:Infinity
+
+}}
+
+
+
+>
+
+
+<Shield
+
+
+sx={{
+
+
+fontSize:{
+
+
+xs:55,
+
+sm:65
+
+},
+
+
+color:"#c084fc",
+
+
+filter:
+
+"drop-shadow(0 0 20px #c084fc)"
+
+
+}}
+
+
+/>
+
+
+
+</motion.div>
 
 
 
 
-{/* ROLE SELECT */}
+
+
+
+<Typography
+
+
+sx={{
+
+
+fontSize:{
+
+
+xs:"2rem",
+
+sm:"2.4rem"
+
+},
+
+
+fontWeight:900,
+
+
+background:
+
+"linear-gradient(90deg,#c084fc,#f472b6)",
+
+
+WebkitBackgroundClip:
+
+"text",
+
+
+color:"transparent"
+
+
+}}
+
+
+
+>
+
+SecureHire AI
+
+</Typography>
+
+
+
+
+
+
+
+</Box>
+
+
+
+
+
+
+
+
+
+{
+error &&
+
+
+<Alert
+
+
+severity="error"
+
+
+sx={{
+
+
+mb:2,
+
+
+borderRadius:3
+
+}}
+
+
+
+>
+
+{error}
+
+</Alert>
+
+
+}
+
+
+
+
+
+
+
+
+
+<form onSubmit={handleLogin}>
+
+
+
+
 
 <TextField
 
@@ -435,7 +837,7 @@ select
 fullWidth
 
 
-label="Login As"
+label="Account Type"
 
 
 name="role"
@@ -447,41 +849,20 @@ value={form.role}
 onChange={handleChange}
 
 
-margin="normal"
-
-
-
-InputLabelProps={{
-
-style:{
-
-color:"#94a3b8"
-
-}
-
-}}
-
-
 
 sx={{
 
 
-"& .MuiOutlinedInput-root":{
+...inputStyle,
 
-"& fieldset":{
-
-borderColor:"#475569"
-
-}
-
-}
-
+mb:2
 
 }}
 
 
 
 >
+
 
 
 <MenuItem value="employee">
@@ -491,10 +872,16 @@ Employee
 </MenuItem>
 
 
-
 <MenuItem value="recruiter">
 
 Recruiter
+
+</MenuItem>
+
+
+<MenuItem value="admin">
+
+Administrator
 
 </MenuItem>
 
@@ -509,60 +896,68 @@ Recruiter
 
 
 
-
 <TextField
+
 
 fullWidth
 
-label="Email"
+
+label="Email Address"
+
 
 name="email"
 
+
 type="email"
+
 
 value={form.email}
 
+
 onChange={handleChange}
-
-margin="normal"
-
-
-
-InputLabelProps={{
-
-style:{
-
-color:"#94a3b8"
-
-}
-
-}}
 
 
 
 sx={{
 
+
+...inputStyle,
+
+mb:2
+
+}}
+
+
+
+slotProps={{
+
+
 input:{
 
-color:"white"
 
-},
+startAdornment:(
 
 
-"& .MuiOutlinedInput-root":{
+<InputAdornment position="start">
 
-"& fieldset":{
 
-borderColor:"#475569"
+<Email sx={{color:"#c084fc"}}/>
+
+
+</InputAdornment>
+
+
+)
+
 
 }
 
-}
 
 }}
 
 
 />
+
 
 
 
@@ -574,55 +969,121 @@ borderColor:"#475569"
 
 <TextField
 
+
 fullWidth
+
 
 label="Password"
 
+
 name="password"
 
-type="password"
+
+
+type={
+
+
+showPassword
+
+?
+
+"text"
+
+:
+
+"password"
+
+
+}
+
+
 
 value={form.password}
 
+
 onChange={handleChange}
 
-margin="normal"
+
+
+sx={inputStyle}
 
 
 
-InputLabelProps={{
+slotProps={{
 
 
-style:{
-
-color:"#94a3b8"
-
-}
-
-}}
-
-
-
-sx={{
 
 input:{
 
-color:"white"
-
-},
 
 
-"& .MuiOutlinedInput-root":{
+startAdornment:(
 
-"& fieldset":{
 
-borderColor:"#475569"
+<InputAdornment position="start">
+
+
+<Lock sx={{color:"#c084fc"}}/>
+
+
+</InputAdornment>
+
+
+),
+
+
+
+
+
+endAdornment:(
+
+
+<InputAdornment position="end">
+
+
+<IconButton
+
+
+type="button"
+
+
+onClick={()=>setShowPassword(!showPassword)}
+
+
+>
+
+
+{
+
+showPassword
+
+?
+
+<VisibilityOff sx={{color:"white"}}/>
+
+:
+
+<Visibility sx={{color:"white"}}/>
 
 }
 
+
+</IconButton>
+
+
+
+</InputAdornment>
+
+
+)
+
+
+
 }
+
 
 }}
+
 
 
 />
@@ -635,36 +1096,54 @@ borderColor:"#475569"
 
 
 
+<motion.div
+
+
+whileHover={{scale:1.03}}
+
+
+whileTap={{scale:.96}}
+
+
+
+>
 
 
 <Button
 
+
 fullWidth
+
 
 type="submit"
 
-variant="contained"
-
-size="large"
 
 disabled={loading}
+
+
+variant="contained"
+
 
 
 sx={{
 
 
-mt:4,
+mt:3,
 
 
-height:50,
+height:52,
 
 
 borderRadius:3,
 
 
+fontWeight:900,
+
+
 background:
 
-"linear-gradient(90deg,#4f46e5,#7c3aed)"
+"linear-gradient(90deg,#8b5cf6,#ec4899)"
+
 
 
 }}
@@ -677,7 +1156,9 @@ background:
 
 {
 
-loading ?
+loading
+
+?
 
 
 <CircularProgress
@@ -691,13 +1172,24 @@ color="inherit"
 
 :
 
-"Login"
+<>
+
+<AutoAwesome sx={{mr:1}}/>
+
+Secure Login
+
+</>
+
 
 }
 
 
 
 </Button>
+
+
+
+</motion.div>
 
 
 
@@ -709,24 +1201,62 @@ color="inherit"
 
 <Button
 
+
 fullWidth
 
-sx={{
 
-mt:2,
-
-color:"#94a3b8"
-
-}}
+variant="outlined"
 
 
 onClick={()=>navigate("/register")}
 
+
+
+sx={{
+
+
+mt:2,
+
+
+height:48,
+
+
+borderRadius:3,
+
+
+color:"#c084fc",
+
+
+borderColor:"rgba(192,132,252,.4)",
+
+
+fontWeight:700,
+
+
+
+"&:hover":{
+
+
+borderColor:"#ec4899",
+
+
+background:
+
+"rgba(236,72,153,.08)"
+
+
+}
+
+
+
+}}
+
+
+
 >
 
 
-Create Account
-
+Create New Account
 
 </Button>
 
@@ -736,12 +1266,18 @@ Create Account
 
 
 
-</Box>
+</form>
+
+
 
 
 
 
 </Card>
+
+
+
+</motion.div>
 
 
 
@@ -754,3 +1290,107 @@ Create Account
 
 
 }
+
+
+
+
+
+
+
+
+
+const inputStyle={
+
+
+
+"& .MuiInputLabel-root":{
+
+color:"#94a3b8"
+
+},
+
+
+
+
+"& .MuiOutlinedInput-root":{
+
+
+
+borderRadius:3,
+
+
+background:
+
+"rgba(255,255,255,.05)",
+
+
+color:"white",
+
+
+
+
+"& .MuiOutlinedInput-input":{
+
+
+padding:"14px"
+
+},
+
+
+
+
+"& input":{
+
+
+color:"white",
+
+
+fontWeight:600
+
+
+},
+
+
+
+
+"& fieldset":{
+
+
+borderColor:
+
+"rgba(255,255,255,.18)"
+
+
+},
+
+
+
+
+"&:hover fieldset":{
+
+
+borderColor:"#c084fc"
+
+
+},
+
+
+
+
+"&.Mui-focused fieldset":{
+
+
+borderColor:"#ec4899",
+
+
+borderWidth:2
+
+
+}
+
+
+}
+
+
+
+};

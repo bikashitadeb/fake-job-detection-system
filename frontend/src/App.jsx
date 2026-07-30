@@ -1,77 +1,25 @@
+// src/App.jsx
+
+
 import {
+    lazy,
+    Suspense
+} from "react";
 
-Routes,
 
-Route,
-
-Navigate
-
+import {
+    Routes,
+    Route,
+    Navigate,
+    useLocation
 } from "react-router-dom";
 
 
-// ==========================
-// AUTH PAGES
-// ==========================
+import {
+    AnimatePresence,
+    motion
+} from "framer-motion";
 
-import Login from "./pages/Login.jsx";
-
-import Register from "./pages/Register.jsx";
-
-
-
-// ==========================
-// EMPLOYEE
-// ==========================
-
-import EmployeeDashboard from "./pages/employee/EmployeeDashboard.jsx";
-
-import JobPostings from "./pages/employee/JobPostings.jsx";
-
-import JobDetails from "./pages/employee/JobDetails.jsx";
-
-import SavedJobs from "./pages/employee/SavedJobs.jsx";
-
-import Applications from "./pages/employee/Applications.jsx";
-
-
-
-// ==========================
-// RECRUITER
-// ==========================
-
-import RecruiterDashboard from "./pages/recruiter/RecruiterDashboard.jsx";
-
-import PostJob from "./pages/recruiter/PostJob.jsx";
-
-import PostedJobs from "./pages/recruiter/PostedJobs.jsx";
-
-import RecruiterVerification from "./pages/recruiter/RecruiterVerification.jsx";
-
-
-
-// ==========================
-// ADMIN
-// ==========================
-
-import AdminDashboard from "./pages/admin/AdminDashboard.jsx";
-
-import Analytics from "./pages/admin/Analytics.jsx";
-
-
-
-// ==========================
-// LAYOUTS
-// ==========================
-
-import EmployeeLayout from "./layouts/EmployeeLayout.jsx";
-
-import RecruiterLayout from "./layouts/RecruiterLayout.jsx";
-
-
-
-// ==========================
-// AUTH GUARD
-// ==========================
 
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
 
@@ -79,13 +27,283 @@ import ProtectedRoute from "./routes/ProtectedRoute.jsx";
 
 
 
+// ============================
+// AUTH
+// ============================
 
 
-export default function App(){
+const Login = lazy(
+    () => import("./pages/Login.jsx")
+);
+
+
+const Register = lazy(
+    () => import("./pages/Register.jsx")
+);
+
+
+
+
+
+// ============================
+// COMMON
+// ============================
+
+
+const Profile = lazy(
+    () => import("./pages/Profile.jsx")
+);
+
+
+
+
+
+// ============================
+// EMPLOYEE
+// ============================
+
+
+const EmployeeLayout = lazy(
+    () => import("./layouts/EmployeeLayout.jsx")
+);
+
+
+const EmployeeDashboard = lazy(
+    () => import("./pages/employee/EmployeeDashboard.jsx")
+);
+
+
+const JobPostings = lazy(
+    () => import("./pages/employee/JobPostings.jsx")
+);
+
+
+const JobDetails = lazy(
+    () => import("./pages/employee/JobDetails.jsx")
+);
+
+
+const SavedJobs = lazy(
+    () => import("./pages/employee/SavedJobs.jsx")
+);
+
+
+const Applications = lazy(
+    () => import("./pages/employee/Applications.jsx")
+);
+
+
+
+
+
+// ============================
+// RECRUITER
+// ============================
+
+
+const RecruiterLayout = lazy(
+    () => import("./layouts/RecruiterLayout.jsx")
+);
+
+
+const RecruiterDashboard = lazy(
+    () => import("./pages/recruiter/RecruiterDashboard.jsx")
+);
+
+
+const PostJob = lazy(
+    () => import("./pages/recruiter/PostJob.jsx")
+);
+
+
+const PostedJobs = lazy(
+    () => import("./pages/recruiter/PostedJobs.jsx")
+);
+
+
+const RecruiterVerification = lazy(
+    () => import("./pages/recruiter/RecruiterVerification.jsx")
+);
+
+
+const RecruiterProfile = lazy(
+    () => import("./pages/recruiter/RecruiterProfile.jsx")
+);
+
+
+
+
+
+// ============================
+// ADMIN
+// ============================
+
+
+const AdminDashboard = lazy(
+    () => import("./pages/admin/AdminDashboard.jsx")
+);
+
+
+const Analytics = lazy(
+    () => import("./pages/admin/Analytics.jsx")
+);
+
+
+const Companies = lazy(
+    () => import("./pages/admin/Companies.jsx")
+);
+
+
+
+
+
+
+
+// ============================
+// LOADING SCREEN
+// ============================
+
+
+function LoadingScreen(){
+
+
+return(
+
+<div
+style={{
+
+height:"100vh",
+
+display:"flex",
+
+alignItems:"center",
+
+justifyContent:"center",
+
+background:"#020617",
+
+color:"white"
+
+}}
+
+>
+
+
+<motion.div
+
+animate={{
+
+scale:[1,1.15,1],
+
+opacity:[0.5,1,0.5]
+
+}}
+
+transition={{
+
+duration:1.5,
+
+repeat:Infinity
+
+}}
+
+style={{
+
+fontSize:"45px",
+
+fontWeight:900,
+
+background:
+
+"linear-gradient(90deg,#8b5cf6,#ec4899)",
+
+WebkitBackgroundClip:"text",
+
+color:"transparent"
+
+}}
+
+>
+
+SecureHire AI
+
+</motion.div>
+
+
+</div>
+
+);
+
+
+}
+
+
+
+
+
+
+
+
+// ============================
+// ROUTES
+// ============================
+
+
+function AnimatedRoutes(){
+
+
+const location = useLocation();
 
 
 
 return(
+
+
+<AnimatePresence mode="wait">
+
+
+<motion.div
+
+
+key={location.pathname}
+
+
+initial={{
+
+opacity:0,
+
+y:20
+
+}}
+
+
+animate={{
+
+opacity:1,
+
+y:0
+
+}}
+
+
+exit={{
+
+opacity:0,
+
+y:-20
+
+}}
+
+
+transition={{
+
+duration:0.3
+
+}}
+
+
+>
+
 
 <Routes>
 
@@ -93,19 +311,19 @@ return(
 
 
 
-{/* ==========================
-        PUBLIC
-========================== */}
-
-
-
 <Route
 
 path="/"
 
-element={<Login/>}
+element={
+
+<Navigate to="/login"/>
+
+}
 
 />
+
+
 
 
 
@@ -116,6 +334,8 @@ path="/login"
 element={<Login/>}
 
 />
+
+
 
 
 
@@ -134,49 +354,41 @@ element={<Register/>}
 
 
 
+<Route
 
-{/* ==========================
-        EMPLOYEE
-========================== */}
+element={
 
+<ProtectedRoute
+
+allowedRoles={[
+
+"employee"
+
+]}
+
+/>
+
+}
+
+>
 
 
 <Route
 
 path="/employee"
 
-element={
-
-
-<ProtectedRoute role="employee">
-
-
-<EmployeeLayout/>
-
-
-</ProtectedRoute>
-
-
-}
-
-
+element={<EmployeeLayout/>}
 
 >
-
 
 
 <Route
 
 index
 
-element={
-
-<Navigate to="dashboard"/>
-
-}
+element={<Navigate to="dashboard"/>}
 
 />
-
 
 
 <Route
@@ -188,7 +400,6 @@ element={<EmployeeDashboard/>}
 />
 
 
-
 <Route
 
 path="jobs"
@@ -196,7 +407,6 @@ path="jobs"
 element={<JobPostings/>}
 
 />
-
 
 
 <Route
@@ -208,7 +418,6 @@ element={<JobDetails/>}
 />
 
 
-
 <Route
 
 path="saved"
@@ -216,7 +425,6 @@ path="saved"
 element={<SavedJobs/>}
 
 />
-
 
 
 <Route
@@ -228,6 +436,17 @@ element={<Applications/>}
 />
 
 
+<Route
+
+path="profile"
+
+element={<Profile/>}
+
+/>
+
+
+</Route>
+
 
 </Route>
 
@@ -238,49 +457,41 @@ element={<Applications/>}
 
 
 
+<Route
 
-{/* ==========================
-        RECRUITER
-========================== */}
+element={
 
+<ProtectedRoute
+
+allowedRoles={[
+
+"recruiter"
+
+]}
+
+/>
+
+}
+
+>
 
 
 <Route
 
 path="/recruiter"
 
-element={
-
-
-<ProtectedRoute role="recruiter">
-
-
-<RecruiterLayout/>
-
-
-</ProtectedRoute>
-
-
-}
-
-
+element={<RecruiterLayout/>}
 
 >
-
 
 
 <Route
 
 index
 
-element={
-
-<Navigate to="dashboard"/>
-
-}
+element={<Navigate to="dashboard"/>}
 
 />
-
 
 
 <Route
@@ -292,7 +503,6 @@ element={<RecruiterDashboard/>}
 />
 
 
-
 <Route
 
 path="post-job"
@@ -300,7 +510,6 @@ path="post-job"
 element={<PostJob/>}
 
 />
-
 
 
 <Route
@@ -312,7 +521,6 @@ element={<PostedJobs/>}
 />
 
 
-
 <Route
 
 path="verification"
@@ -321,6 +529,17 @@ element={<RecruiterVerification/>}
 
 />
 
+
+<Route
+
+path="profile"
+
+element={<RecruiterProfile/>}
+
+/>
+
+
+</Route>
 
 
 </Route>
@@ -332,52 +551,41 @@ element={<RecruiterVerification/>}
 
 
 
+<Route
 
-{/* ==========================
-        ADMIN
-========================== */}
+element={
 
+<ProtectedRoute
+
+allowedRoles={[
+
+"admin"
+
+]}
+
+/>
+
+}
+
+>
 
 
 <Route
 
 path="/admin"
 
-element={
-
-
-<ProtectedRoute role="admin">
-
-
-<div>
-
-
-</div>
-
-
-</ProtectedRoute>
-
-
-}
-
-
+element={<AdminDashboard/>}
 
 >
-
 
 
 <Route
 
 index
 
-element={
-
-<Navigate to="dashboard"/>
-
-}
+element={<Navigate to="dashboard"/>}
 
 />
-
 
 
 <Route
@@ -389,7 +597,6 @@ element={<AdminDashboard/>}
 />
 
 
-
 <Route
 
 path="analytics"
@@ -398,6 +605,17 @@ element={<Analytics/>}
 
 />
 
+
+<Route
+
+path="companies"
+
+element={<Companies/>}
+
+/>
+
+
+</Route>
 
 
 </Route>
@@ -409,28 +627,56 @@ element={<Analytics/>}
 
 
 
-
-{/* ==========================
-        UNKNOWN URL
-========================== */}
-
-
-
 <Route
 
 path="*"
 
-element={
-
-<Navigate to="/login"/>
-
-}
+element={<Navigate to="/login"/>}
 
 />
 
 
 
+
+
 </Routes>
+
+
+</motion.div>
+
+
+</AnimatePresence>
+
+
+);
+
+}
+
+
+
+
+
+
+
+
+
+export default function App(){
+
+
+return(
+
+
+<Suspense
+
+fallback={<LoadingScreen/>}
+
+>
+
+
+<AnimatedRoutes/>
+
+
+</Suspense>
 
 
 );

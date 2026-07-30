@@ -1,42 +1,30 @@
-import {
+// src/components/Sidebar.jsx
 
-Box,
 
-Typography
+import React, { useState } from "react";
 
-} from "@mui/material";
-
+import { motion } from "framer-motion";
 
 import {
 
-Dashboard,
+    LayoutDashboard,
+    Briefcase,
+    FileText,
+    Users,
+    ShieldCheck,
+    BarChart3,
+    Bell,
+    Settings,
+    Menu,
+    X,
+    Building2
 
-Work,
-
-Bookmark,
-
-Assignment,
-
-VerifiedUser,
-
-Person,
-
-AddCircle,
-
-People,
-
-Analytics,
-
-Security
-
-} from "@mui/icons-material";
+} from "lucide-react";
 
 
 import {
 
-useNavigate,
-
-useLocation
+    NavLink
 
 } from "react-router-dom";
 
@@ -44,430 +32,587 @@ useLocation
 
 import {
 
-useAuth
+    getCurrentUser
 
-} from "../context/AuthContext";
+} from "../api/auth";
 
 
 
 
 
-export default function Sidebar(){
 
 
-const navigate = useNavigate();
+const Sidebar = () => {
 
 
-const location = useLocation();
 
+    const user = getCurrentUser();
 
-const {
 
-user
 
-}=useAuth();
+    const [open,setOpen] = useState(true);
 
 
 
 
 
-const employeeMenu=[
+    const role = user?.role || "employee";
 
 
-{
 
-title:"Dashboard",
 
-path:"/employee/dashboard",
 
-icon:<Dashboard/>
 
-},
 
+    const menus = {
 
-{
 
-title:"Browse Jobs",
 
-path:"/employee/jobs",
+        employee:[
 
-icon:<Work/>
 
-},
+            {
+                name:"Dashboard",
+                path:"/dashboard",
+                icon:<LayoutDashboard/>
+            },
 
 
-{
+            {
+                name:"Browse Jobs",
+                path:"/jobs",
+                icon:<Briefcase/>
+            },
 
-title:"Saved Jobs",
 
-path:"/employee/saved",
+            {
+                name:"Applications",
+                path:"/applications",
+                icon:<FileText/>
+            },
 
-icon:<Bookmark/>
 
-},
+            {
+                name:"Notifications",
+                path:"/notifications",
+                icon:<Bell/>
+            },
 
 
-{
+            {
+                name:"Profile",
+                path:"/profile",
+                icon:<Users/>
+            }
 
-title:"Applications",
 
-path:"/employee/applications",
+        ],
 
-icon:<Assignment/>
 
-},
 
 
-{
 
-title:"Verified Jobs",
 
-path:"/employee/verified",
+        recruiter:[
 
-icon:<VerifiedUser/>
 
-},
+            {
+                name:"Dashboard",
+                path:"/recruiter/dashboard",
+                icon:<LayoutDashboard/>
+            },
 
 
-{
+            {
+                name:"My Jobs",
+                path:"/recruiter/jobs",
+                icon:<Briefcase/>
+            },
 
-title:"Profile",
 
-path:"/employee/profile",
+            {
+                name:"Post Job",
+                path:"/recruiter/create-job",
+                icon:<Building2/>
+            },
 
-icon:<Person/>
 
-}
+            {
+                name:"Applicants",
+                path:"/recruiter/applicants",
+                icon:<Users/>
+            },
 
 
-];
+            {
+                name:"Analytics",
+                path:"/recruiter/analytics",
+                icon:<BarChart3/>
+            },
 
 
+            {
+                name:"Notifications",
+                path:"/notifications",
+                icon:<Bell/>
+            }
 
 
+        ],
 
 
 
-const recruiterMenu=[
 
 
-{
 
-title:"Dashboard",
 
-path:"/recruiter/dashboard",
+        admin:[
 
-icon:<Dashboard/>
 
-},
+            {
+                name:"Dashboard",
+                path:"/admin",
+                icon:<LayoutDashboard/>
+            },
 
 
+            {
+                name:"Users",
+                path:"/admin/users",
+                icon:<Users/>
+            },
 
-{
 
-title:"Post Job",
+            {
+                name:"Jobs",
+                path:"/admin/jobs",
+                icon:<Briefcase/>
+            },
 
-path:"/recruiter/post-job",
 
-icon:<AddCircle/>
+            {
+                name:"Fraud Detection",
+                path:"/admin/fraud",
+                icon:<ShieldCheck/>
+            },
 
-},
 
+            {
+                name:"Analytics",
+                path:"/admin/analytics",
+                icon:<BarChart3/>
+            },
 
 
-{
+            {
+                name:"Settings",
+                path:"/admin/settings",
+                icon:<Settings/>
+            }
 
-title:"My Jobs",
 
-path:"/recruiter/jobs",
+        ]
 
-icon:<Work/>
 
-},
 
+    };
 
 
-{
 
-title:"AI Verification",
 
-path:"/recruiter/verification",
 
-icon:<Security/>
 
-},
+    const activeMenus = menus[role] || menus.employee;
 
 
 
-{
 
-title:"Applicants",
 
-path:"/recruiter/applicants",
 
-icon:<People/>
 
-},
+    return (
 
 
 
-{
+        <>
 
-title:"Analytics",
 
-path:"/recruiter/analytics",
 
-icon:<Analytics/>
 
-},
 
+        {/* MOBILE BUTTON */}
 
 
-{
+        <button
 
-title:"Profile",
 
-path:"/recruiter/profile",
+        onClick={()=>setOpen(!open)}
 
-icon:<Person/>
 
-}
+        className="
 
+        fixed
 
-];
+        top-5
 
+        left-5
 
+        z-50
 
+        md:hidden
 
+        bg-white
 
-const menu =
+        p-3
 
-user?.role==="recruiter"
+        rounded-xl
 
-?
+        shadow-lg
 
-recruiterMenu
+        "
 
-:
 
-employeeMenu;
+        >
 
 
+            {
 
+            open
 
+            ?
 
+            <X/>
 
+            :
 
+            <Menu/>
 
-return(
+            }
 
 
-<Box
+        </button>
 
 
-className="sidebar"
 
 
-sx={{
 
 
-width:260,
 
 
-minHeight:"100vh",
 
+        <motion.aside
 
-padding:"25px 15px",
 
 
-display:"flex",
+            initial={{
 
+                x:-300
 
-flexDirection:"column",
+            }}
 
 
-background:
 
-"linear-gradient(180deg,#020617,#0f172a)",
+            animate={{
 
+                x:open ? 0 : -300
 
-borderRight:
+            }}
 
-"1px solid rgba(255,255,255,0.08)"
 
 
-}}
+            transition={{
 
+                duration:0.4
 
->
+            }}
 
 
 
-<Typography
 
 
-variant="h5"
+            className="
 
+            fixed
 
-fontWeight="800"
+            left-0
 
+            top-0
 
-sx={{
+            bottom-0
 
+            z-40
 
-mb:5,
+            w-72
 
+            bg-white/80
 
-textAlign:"center",
+            backdrop-blur-xl
 
+            border-r
 
-color:"white"
+            border-gray-200
 
+            shadow-xl
 
-}}
+            p-6
 
+            "
 
->
 
+        >
 
-FakeJob AI
 
-</Typography>
 
 
 
 
 
+            {/* BRAND */}
 
 
-{
 
-menu.map((item,index)=>(
+            <div
 
+            className="
 
-<Box
+            mb-10
 
+            "
 
-key={index}
+            >
 
 
-onClick={()=>navigate(item.path)}
+                <div
 
+                className="
 
-className={
+                flex
 
-location.pathname===item.path
+                items-center
 
-?
+                gap-3
 
-"active-menu sidebar-item"
+                "
 
-:
+                >
 
-"sidebar-item"
 
-}
+                    <div
 
+                    className="
 
+                    p-3
 
-sx={{
+                    rounded-2xl
 
+                    bg-gradient-to-r
 
-display:"flex",
+                    from-blue-600
 
+                    to-purple-600
 
-alignItems:"center",
+                    "
 
+                    >
 
-gap:2,
 
+                        <ShieldCheck
 
-cursor:"pointer",
+                        className="text-white"
 
+                        />
 
-color:
 
-location.pathname===item.path
+                    </div>
 
-?
 
-"white"
 
-:
 
-"#94a3b8",
 
+                    <div>
 
 
-padding:"14px 18px",
+                        <h1
 
+                        className="
 
-borderRadius:"14px",
+                        font-bold
 
+                        text-xl
 
-mb:1,
+                        "
 
+                        >
 
+                            FakeGuard AI
 
-transition:"0.3s",
+                        </h1>
 
 
 
-"&:hover":{
+                        <p
 
+                        className="
 
-background:
+                        text-xs
 
-"rgba(99,102,241,.15)",
+                        text-gray-500
 
+                        "
 
-color:"white"
+                        >
 
+                            {role.toUpperCase()}
 
-}
+                        </p>
 
 
-}}
+                    </div>
 
 
->
+                </div>
 
 
+            </div>
 
-{
 
-item.icon
 
-}
 
 
 
-<Typography>
 
 
-{item.title}
 
-</Typography>
+            {/* MENU */}
 
 
 
-</Box>
+            <div
 
+            className="
 
+            space-y-3
 
-))
+            "
 
+            >
 
-}
 
 
+            {
 
+            activeMenus.map((item,index)=>(
 
 
-</Box>
 
+                <NavLink
 
-);
 
+                key={index}
 
-}
+
+                to={item.path}
+
+
+
+                className={({isActive})=>`
+
+
+                flex
+
+                items-center
+
+                gap-4
+
+                px-4
+
+                py-3
+
+                rounded-2xl
+
+                transition
+
+
+
+                ${
+
+                isActive
+
+                ?
+
+                "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+
+                :
+
+                "text-gray-600 hover:bg-gray-100"
+
+                }
+
+
+                `}
+
+
+
+                >
+
+
+
+                    {item.icon}
+
+
+
+                    <span
+
+                    className="
+
+                    font-medium
+
+                    "
+
+                    >
+
+                        {item.name}
+
+                    </span>
+
+
+
+                </NavLink>
+
+
+
+            ))
+
+
+            }
+
+
+
+            </div>
+
+
+
+
+
+
+
+        </motion.aside>
+
+
+
+
+
+        </>
+
+
+    );
+
+
+};
+
+
+
+
+
+
+export default Sidebar;

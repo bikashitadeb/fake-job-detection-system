@@ -1,108 +1,388 @@
-from flask import jsonify
+# app/utils/error_handlers.py
 
 
-# =====================================
-# ERROR HANDLER REGISTRATION
-# =====================================
+from flask import jsonify, current_app
+
+
+from sqlalchemy.exc import SQLAlchemyError
+
+
+from werkzeug.exceptions import HTTPException
+
+
+import logging
+
+
+
+
+from app.utils.exceptions import (
+
+    ConflictError,
+
+    UnauthorizedError,
+
+    ForbiddenError
+
+)
+
+
+
+
+
+
+logger = logging.getLogger(__name__)
+
+
+
+
+
+
+
+
+
+# =====================================================
+# STANDARD RESPONSE FORMAT
+# =====================================================
+
+
+def error_response(
+
+        message,
+
+        status_code,
+
+        error=None
+
+):
+
+
+    response = {
+
+
+        "success":False,
+
+
+        "message":message,
+
+
+    }
+
+
+
+    if error:
+
+
+        response["error"] = error
+
+
+
+    return jsonify(response), status_code
+
+
+
+
+
+
+
+
+
+
+
+
+
+# =====================================================
+# REGISTER ERROR HANDLERS
+# =====================================================
 
 
 def register_error_handlers(app):
 
 
+
+
+
+
+
+    # =================================================
+    # CUSTOM APPLICATION ERRORS
+    # =================================================
+
+
+    @app.errorhandler(ConflictError)
+
+    def handle_conflict(error):
+
+
+        return error_response(
+
+            str(error),
+
+            409
+
+        )
+
+
+
+
+
+
+
+    @app.errorhandler(UnauthorizedError)
+
+    def handle_unauthorized(error):
+
+
+        return error_response(
+
+            str(error),
+
+            401
+
+        )
+
+
+
+
+
+
+
+    @app.errorhandler(ForbiddenError)
+
+    def handle_forbidden(error):
+
+
+        return error_response(
+
+            str(error),
+
+            403
+
+        )
+
+
+
+
+
+
+
+
+
+    # =================================================
+    # CLIENT ERRORS
+    # =================================================
+
+
     @app.errorhandler(400)
+
     def bad_request(error):
 
-        return jsonify({
 
-            "success": False,
+        return error_response(
 
-            "message": "Bad request",
+            "Bad request",
 
-            "error": str(error)
+            400,
 
-        }),400
+            str(error)
+
+        )
+
+
+
+
+
 
 
 
 
     @app.errorhandler(401)
+
     def unauthorized(error):
 
-        return jsonify({
 
-            "success":False,
+        return error_response(
 
-            "message":"Unauthorized access",
+            "Authentication required",
 
-            "error":str(error)
+            401
 
-        }),401
+        )
+
+
+
+
 
 
 
 
 
     @app.errorhandler(403)
+
     def forbidden(error):
 
-        return jsonify({
 
-            "success":False,
+        return error_response(
 
-            "message":"Forbidden",
+            "Access forbidden",
 
-            "error":str(error)
+            403
 
-        }),403
+        )
+
+
+
+
 
 
 
 
 
     @app.errorhandler(404)
+
     def not_found(error):
 
-        return jsonify({
 
-            "success":False,
+        return error_response(
 
-            "message":"Resource not found",
+            "Resource not found",
 
-            "error":str(error)
+            404
 
-        }),404
+        )
+
+
+
+
 
 
 
 
 
     @app.errorhandler(422)
+
     def validation_error(error):
 
-        return jsonify({
 
-            "success":False,
+        return error_response(
 
-            "message":"Validation error",
+            "Validation failed",
 
-            "error":str(error)
+            422,
 
-        }),422
+            str(error)
 
-
-
+        )
 
 
 
-    @app.errorhandler(500)
+
+
+
+
+
+
+    # =================================================
+    # DATABASE ERRORS
+    # =================================================
+
+
+    @app.errorhandler(SQLAlchemyError)
+
+    def database_error(error):
+
+
+        logger.exception(
+
+            "Database error occurred"
+
+        )
+
+
+        return error_response(
+
+            "Database operation failed",
+
+            500
+
+        )
+
+
+
+
+
+
+
+
+
+    # =================================================
+    # HTTP EXCEPTIONS
+    # =================================================
+
+
+    @app.errorhandler(HTTPException)
+
+    def http_exception(error):
+
+
+        return error_response(
+
+            error.description,
+
+            error.code
+
+        )
+
+
+
+
+
+
+
+
+
+    # =================================================
+    # GLOBAL SERVER ERROR
+    # =================================================
+
+
+    @app.errorhandler(Exception)
+
     def internal_error(error):
 
-        return jsonify({
 
-            "success":False,
+        logger.exception(
 
-            "message":"Internal server error",
+            "Unhandled server error"
 
-            "error":str(error)
+        )
 
-        }),500
+
+
+        # Production safe response
+
+        if current_app.config.get(
+
+            "DEBUG"
+
+        ):
+
+
+            return error_response(
+
+                "Internal server error",
+
+                500,
+
+                str(error)
+
+            )
+
+
+
+        return error_response(
+
+            "Internal server error",
+
+            500
+
+        )

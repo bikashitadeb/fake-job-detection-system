@@ -1,16 +1,14 @@
+from datetime import datetime, timezone
+
 from app.extensions import db
 
-
 from app.models.user_model import User
-
 from app.models.company_model import Company
-
 
 from app.utils.password_utils import (
     hash_password,
     verify_password
 )
-
 
 from app.utils.exceptions import (
     ConflictError,
@@ -19,233 +17,255 @@ from app.utils.exceptions import (
 
 
 
+# =====================================================
+# EMAIL NORMALIZER
+# =====================================================
+
+def normalize_email(email):
+
+    if not email:
+        return None
+
+    return email.strip().lower()
 
 
 
-
-# =====================================
-# EMPLOYEE REGISTER
-# =====================================
-
+# =====================================================
+# REGISTER EMPLOYEE
+# =====================================================
 
 def register_jobseeker(data):
 
+    email = normalize_email(
+        data.get("email")
+    )
 
-    existing_user = User.query.filter_by(
+    password = data.get("password")
 
-        email=data["email"],
+    name = data.get("full_name")
 
-        role="employee"
 
+    if not email or not password or not name:
+
+        raise ValueError(
+            "Name, email and password are required"
+        )
+
+
+    existing = User.query.filter_by(
+        email=email
     ).first()
 
 
-
-    if existing_user:
-
+    if existing:
 
         raise ConflictError(
+            "Account already exists"
+        )
 
-            "Employee account already exists with this email"
+
+    try:
+
+        user = User(
+
+            name=name.strip(),
+
+            email=email,
+
+            password_hash=hash_password(
+                password
+            ),
+
+            phone=data.get("phone"),
+
+            role="employee",
+
+            is_active=True,
+
+            is_verified=False,
+
+            trust_score=0,
+
+            risk_score=0,
+
+            fraud_reports=0,
+
+            ai_flagged=False,
+
+            login_attempts=0,
+
+            account_locked=False
 
         )
 
 
+        db.session.add(user)
+
+        db.session.commit()
+
+
+        return user
 
 
 
+    except Exception as e:
 
-    user = User(
+        db.session.rollback()
 
+        print(
+            "EMPLOYEE REGISTER ERROR:",
+            e
+        )
 
-        name=data["full_name"],
-
-
-        email=data["email"],
-
-
-        password_hash=hash_password(
-
-            data["password"]
-
-        ),
-
-
-        phone=data.get("phone"),
-
-
-        role="employee"
-
-
-    )
+        raise e
 
 
 
 
 
-    db.session.add(user)
-
-
-    db.session.commit()
-
-
-
-    return user.to_dict()
-
-
-
-
-
-
-
-
-
-
-
-
-# =====================================
-# RECRUITER REGISTER
-# =====================================
-
+# =====================================================
+# REGISTER RECRUITER
+# =====================================================
 
 def register_recruiter(data):
 
 
-    existing_user = User.query.filter_by(
+    email = normalize_email(
+        data.get("email")
+    )
 
+    password = data.get("password")
 
-        email=data["email"],
-
-
-        role="recruiter"
-
-
-    ).first()
+    name = data.get("full_name")
 
 
 
-    if existing_user:
+    if not email or not password or not name:
 
-
-        raise ConflictError(
-
-            "Recruiter account already exists with this email"
-
+        raise ValueError(
+            "Name, email and password are required"
         )
 
 
 
+    existing = User.query.filter_by(
+        email=email
+    ).first()
 
 
+
+    if existing:
+
+        raise ConflictError(
+            "Account already exists"
+        )
 
 
 
     try:
 
 
-
-        # Create Company
-
-
         company = Company(
 
-
             company_name=data.get(
-
-                "company_name"
-
+                "company_name",
+                "Unknown Company"
             ),
 
 
             website_url=data.get(
-
                 "company_website"
-
             ),
 
 
             company_domain=data.get(
-
                 "company_domain"
-
             ),
 
 
             verification_status="pending",
 
+            trust_score=0,
 
-            trust_score=0
+            reputation_score=0,
 
+            risk_score=0
 
         )
 
 
-
-
-
         db.session.add(company)
-
 
         db.session.flush()
 
 
 
-
-
-
-
-        # Create Recruiter User
-
-
         recruiter = User(
 
 
-            name=data["full_name"],
+            name=name.strip(),
 
 
-            email=data["email"],
+            email=email,
 
 
             password_hash=hash_password(
-
-                data["password"]
-
+                password
             ),
 
 
-            phone=data.get("phone"),
+            phone=data.get(
+                "phone"
+            ),
 
 
             role="recruiter",
 
 
-            company_id=company.id
+            company_id=company.id,
 
+
+            is_active=True,
+
+
+            is_verified=False,
+
+
+            trust_score=0,
+
+
+            risk_score=0,
+
+
+            login_attempts=0,
+
+
+            account_locked=False
 
         )
 
 
 
-
-
         db.session.add(recruiter)
-
 
         db.session.commit()
 
 
 
-        return recruiter.to_dict()
-
-
+        return recruiter
 
 
 
     except Exception as e:
 
 
-
         db.session.rollback()
+
+
+        print(
+            "RECRUITER REGISTER ERROR:",
+            e
+        )
 
 
         raise e
@@ -254,33 +274,71 @@ def register_recruiter(data):
 
 
 
-
-
-
-
-
-
-
-# =====================================
-# LOGIN
-# =====================================
-
+# =====================================================
+# LOGIN USER
+# =====================================================
 
 def login_user(data):
 
 
+    print(
+        "RAW LOGIN DATA:",
+        data
+    )
+
+
+    email = normalize_email(
+        data.get("email")
+    )
+
+
+    password = data.get(
+        "password"
+    )
+
+
+    role = data.get(
+        "role"
+    )
+
+
+
+    print(
+        "LOGIN EMAIL:",
+        email
+    )
+
+
+    print(
+        "LOGIN ROLE:",
+        role
+    )
+
+
+
+
+    if not email or not password:
+
+
+        raise UnauthorizedError(
+            "Email and password required"
+        )
+
+
+
+
     user = User.query.filter_by(
 
-
-        email=data["email"],
-
-
-        role=data["role"]
-
+        email=email
 
     ).first()
 
 
+
+    print(
+        "DATABASE USER:",
+        user
+    )
 
 
 
@@ -288,9 +346,44 @@ def login_user(data):
 
 
         raise UnauthorizedError(
+            "Invalid email or password"
+        )
 
-            "Invalid email, password or role"
 
+
+
+
+    # role verification
+
+    if role and user.role != role:
+
+
+        raise UnauthorizedError(
+            "Incorrect account type"
+        )
+
+
+
+
+
+    # account checks
+
+    if not user.is_active:
+
+
+        raise UnauthorizedError(
+            "Account inactive"
+        )
+
+
+
+
+
+    if user.account_locked:
+
+
+        raise UnauthorizedError(
+            "Account locked"
         )
 
 
@@ -298,25 +391,50 @@ def login_user(data):
 
 
 
+    # password check
 
+    password_valid = verify_password(
 
-    if not verify_password(
-
-
-        data["password"],
-
+        password,
 
         user.password_hash
 
+    )
 
-    ):
+
+
+    print(
+        "PASSWORD CHECK:",
+        password_valid
+    )
+
+
+
+
+
+    if not password_valid:
+
+
+        user.login_attempts = (
+
+            user.login_attempts or 0
+
+        ) + 1
+
+
+
+        if user.login_attempts >= 5:
+
+            user.account_locked = True
+
+
+
+        db.session.commit()
 
 
 
         raise UnauthorizedError(
-
-            "Invalid email, password or role"
-
+            "Invalid email or password"
         )
 
 
@@ -324,7 +442,29 @@ def login_user(data):
 
 
 
+    # successful login
 
-    # Return User object for JWT
+
+    user.login_attempts = 0
+
+    user.account_locked = False
+
+
+    user.last_login = datetime.now(
+        timezone.utc
+    )
+
+
+
+    db.session.commit()
+
+
+
+    print(
+        "LOGIN SUCCESS:",
+        user.email
+    )
+
+
 
     return user

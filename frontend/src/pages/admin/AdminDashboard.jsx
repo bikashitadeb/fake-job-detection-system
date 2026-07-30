@@ -1,61 +1,48 @@
 import {
-
-useEffect,
-
-useState
-
+    useEffect,
+    useState
 } from "react";
 
 
 import {
+    motion
+} from "framer-motion";
 
-Grid,
 
-Card,
-
-CardContent,
-
-Typography,
-
-Box,
-
-Chip,
-
-Table,
-
-TableBody,
-
-TableCell,
-
-TableContainer,
-
-TableHead,
-
-TableRow,
-
-Paper
-
+import {
+    Box,
+    Typography,
+    Grid,
+    Card,
+    Chip,
+    Button,
+    LinearProgress
 } from "@mui/material";
 
 
 import {
-
-People,
-
-Business,
-
-Work,
-
-Warning,
-
-VerifiedUser,
-
-Analytics
-
+    Security,
+    People,
+    Work,
+    Warning,
+    Verified,
+    Analytics,
+    Delete,
+    CheckCircle
 } from "@mui/icons-material";
 
 
-import API from "../../api/API";
+import {
+    PieChart,
+    Pie,
+    Cell,
+    ResponsiveContainer,
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    Tooltip
+} from "recharts";
 
 
 
@@ -65,13 +52,65 @@ export default function AdminDashboard(){
 
 
 
-const [stats,setStats]=useState({});
-
-
-const [fakeJobs,setFakeJobs]=useState([]);
-
-
 const [loading,setLoading]=useState(true);
+
+
+
+const [stats,setStats]=useState({
+
+users:2450,
+
+jobs:17880,
+
+fraud:346,
+
+verified:1250
+
+});
+
+
+
+
+
+const [suspiciousJobs,setSuspiciousJobs]=useState([
+
+
+{
+
+title:"Work From Home Data Entry",
+
+company:"Unknown Pvt Ltd",
+
+risk:94
+
+},
+
+
+{
+
+title:"Crypto Investment Manager",
+
+company:"ABC Finance",
+
+risk:91
+
+},
+
+
+{
+
+title:"Fast Money Executive",
+
+company:"XYZ Solutions",
+
+risk:86
+
+}
+
+
+]);
+
+
 
 
 
@@ -82,174 +121,17 @@ const [loading,setLoading]=useState(true);
 useEffect(()=>{
 
 
-loadDashboard();
-
-
-},[]);
-
-
-
-
-
-
-
-
-
-const loadDashboard=async()=>{
-
-
-try{
-
-
-const response = await API.get(
-
-"/admin/dashboard"
-
-);
-
-
-
-setStats(
-
-response.data.data.stats || {}
-
-);
-
-
-
-setFakeJobs(
-
-response.data.data.fake_jobs || []
-
-);
-
-
-
-}
-
-catch(error){
-
-
-console.log(error);
-
-
-}
-
-finally{
+setTimeout(()=>{
 
 
 setLoading(false);
 
 
-}
+},1000);
 
 
-};
 
-
-
-
-
-
-
-
-const cards=[
-
-
-{
-
-
-title:"Total Users",
-
-value:stats.total_users || 0,
-
-icon:<People/>,
-
-color:"#2563eb"
-
-
-},
-
-
-{
-
-
-title:"Recruiters",
-
-value:stats.total_recruiters || 0,
-
-icon:<Business/>,
-
-color:"#9333ea"
-
-
-},
-
-
-{
-
-
-title:"Total Jobs",
-
-value:stats.total_jobs || 0,
-
-icon:<Work/>,
-
-color:"#16a34a"
-
-
-},
-
-
-{
-
-
-title:"Fake Jobs",
-
-value:stats.fake_jobs || 0,
-
-icon:<Warning/>,
-
-color:"#dc2626"
-
-
-},
-
-
-{
-
-
-title:"Verified Jobs",
-
-value:stats.verified_jobs || 0,
-
-icon:<VerifiedUser/>,
-
-color:"#0891b2"
-
-
-},
-
-
-{
-
-
-title:"Avg Trust Score",
-
-value:
-
-`${stats.average_trust_score || 0}%`,
-
-icon:<Analytics/>,
-
-color:"#f97316"
-
-
-}
-
-
-
-];
+},[]);
 
 
 
@@ -262,16 +144,108 @@ if(loading){
 
 return(
 
-<Typography color="white">
 
-Loading admin dashboard...
+<Box
 
-</Typography>
+height="100vh"
 
-);
+display="flex"
+
+justifyContent="center"
+
+alignItems="center"
+
+bgcolor="#020617"
+
+>
+
+
+<Security
+
+sx={{
+
+fontSize:80,
+
+color:"#6366f1"
+
+}}
+
+
+/>
+
+
+</Box>
+
+
+)
 
 
 }
+
+
+
+
+
+
+
+const fraudData=[
+
+
+{
+
+name:"Genuine Jobs",
+
+value:65
+
+},
+
+
+{
+
+name:"Fake Jobs",
+
+value:35
+
+}
+
+
+];
+
+
+
+
+
+const modelData=[
+
+
+{
+
+name:"Accuracy",
+
+value:98
+
+},
+
+
+{
+
+name:"Precision",
+
+value:96
+
+},
+
+
+{
+
+name:"Recall",
+
+value:74
+
+}
+
+
+];
 
 
 
@@ -283,36 +257,65 @@ Loading admin dashboard...
 return(
 
 
-<Box>
+
+<Box sx={pageStyle}>
 
 
+
+
+
+
+
+<motion.div
+
+initial={{
+
+opacity:0,
+
+y:-50
+
+}}
+
+animate={{
+
+opacity:1,
+
+y:0
+
+}}
+
+>
 
 
 <Typography
 
-className="dashboard-title"
+variant="h2"
+
+fontWeight="900"
 
 >
 
-Admin Dashboard 👑
+AI Security Command Center 🛡️
 
 </Typography>
 
 
 
 
-
 <Typography
 
-className="dashboard-subtitle"
+color="#94a3b8"
 
-mb={4}
+fontSize={20}
 
 >
 
-Monitor platform security and AI detection analytics.
+Fake Job Detection Intelligence Platform
 
 </Typography>
+
+
+</motion.div>
 
 
 
@@ -328,13 +331,145 @@ container
 
 spacing={3}
 
+mt={4}
+
 >
 
 
 
-{
 
-cards.map((item,index)=>(
+
+<StatCard
+
+icon={<People/>}
+
+title="Total Users"
+
+value={stats.users}
+
+/>
+
+
+
+<StatCard
+
+icon={<Work/>}
+
+title="Jobs Analysed"
+
+value={stats.jobs}
+
+/>
+
+
+
+
+<StatCard
+
+icon={<Warning/>}
+
+title="Fraud Detected"
+
+value={stats.fraud}
+
+/>
+
+
+
+<StatCard
+
+icon={<Verified/>}
+
+title="Verified Companies"
+
+value={stats.verified}
+
+/>
+
+
+
+</Grid>
+
+
+
+
+
+
+
+
+
+<Card sx={glass}>
+
+
+<Typography
+
+variant="h4"
+
+fontWeight="900"
+
+>
+
+Platform Security Score
+
+</Typography>
+
+
+
+
+
+<Typography
+
+fontSize={80}
+
+fontWeight="900"
+
+>
+
+96%
+
+</Typography>
+
+
+
+
+<LinearProgress
+
+variant="determinate"
+
+value={96}
+
+sx={{
+
+height:15,
+
+borderRadius:10
+
+}}
+
+/>
+
+
+
+</Card>
+
+
+
+
+
+
+
+
+
+<Grid
+
+container
+
+spacing={3}
+
+mt={3}
+
+>
+
 
 
 
@@ -344,152 +479,222 @@ item
 
 xs={12}
 
-sm={6}
-
-lg={4}
-
-key={index}
+md={6}
 
 >
 
 
 
-<Card
-
-
-className="glass stat-card"
-
-
-sx={{
-
-
-background:
-
-`linear-gradient(
-
-135deg,
-
-${item.color},
-
-#020617
-
-)`,
-
-
-color:"white"
-
-}}
-
-
-
->
-
-
-<CardContent>
-
-
-
-<Box
-
-fontSize={40}
-
->
-
-{item.icon}
-
-</Box>
-
-
-
-
-<Typography
-
-variant="h3"
-
-fontWeight="800"
-
-mt={2}
-
->
-
-{item.value}
-
-</Typography>
-
-
-
-<Typography>
-
-{item.title}
-
-</Typography>
-
-
-
-</CardContent>
-
-
-</Card>
-
-
-
-
-</Grid>
-
-
-
-))
-
-
-}
-
-
-
-
-</Grid>
-
-
-
-
-
-
-
-
-
-<Card
-
-
-className="glass"
-
-
-sx={{
-
-
-mt:5,
-
-padding:3,
-
-color:"white"
-
-}}
-
-
-
->
-
+<Card sx={glass}>
 
 
 <Typography
 
 variant="h5"
 
-fontWeight="700"
+fontWeight="800"
+
+>
+
+Fraud Distribution
+
+</Typography>
+
+
+
+
+
+<ResponsiveContainer
+
+width="100%"
+
+height={300}
+
+>
+
+
+<PieChart>
+
+
+<Pie
+
+data={fraudData}
+
+dataKey="value"
+
+cx="50%"
+
+cy="50%"
+
+outerRadius={100}
+
+label
+
+
+>
+
+
+{
+
+fraudData.map(
+
+(entry,index)=>(
+
+
+<Cell
+
+key={index}
+
+fill={
+
+index===0
+
+?
+
+"#22c55e"
+
+:
+
+"#ef4444"
+
+}
+
+/>
+
+
+)
+
+)
+
+}
+
+
+</Pie>
+
+
+</PieChart>
+
+
+</ResponsiveContainer>
+
+
+
+</Card>
+
+
+</Grid>
+
+
+
+
+
+
+
+
+
+<Grid
+
+item
+
+xs={12}
+
+md={6}
+
+>
+
+
+
+<Card sx={glass}>
+
+
+<Typography
+
+variant="h5"
+
+fontWeight="800"
+
+>
+
+ML Model Performance
+
+</Typography>
+
+
+
+
+
+<ResponsiveContainer
+
+width="100%"
+
+height={300}
+
+>
+
+
+<BarChart
+
+data={modelData}
+
+>
+
+
+<XAxis dataKey="name"/>
+
+
+<YAxis/>
+
+
+<Tooltip/>
+
+
+<Bar
+
+dataKey="value"
+
+/>
+
+
+
+</BarChart>
+
+
+</ResponsiveContainer>
+
+
+
+</Card>
+
+
+
+</Grid>
+
+
+
+</Grid>
+
+
+
+
+
+
+
+
+
+<Card sx={glass}>
+
+
+<Typography
+
+variant="h4"
+
+fontWeight="900"
 
 mb={3}
 
 >
 
-Suspicious Jobs Detected By AI 🚨
+AI Threat Monitoring 🚨
 
 </Typography>
 
@@ -499,170 +704,258 @@ Suspicious Jobs Detected By AI 🚨
 
 
 
-
-<TableContainer
-
-component={Paper}
-
-
-sx={{
-
-
-background:"transparent"
-
-}}
-
-
->
-
-
-
-<Table>
-
-
-<TableHead>
-
-
-<TableRow>
-
-
-<TableCell
-
-sx={{color:"white"}}
-
->
-
-Job
-
-</TableCell>
-
-
-<TableCell
-
-sx={{color:"white"}}
-
->
-
-Company
-
-</TableCell>
-
-
-<TableCell
-
-sx={{color:"white"}}
-
->
-
-Trust Score
-
-</TableCell>
-
-
-<TableCell
-
-sx={{color:"white"}}
-
->
-
-Status
-
-</TableCell>
-
-
-</TableRow>
-
-
-</TableHead>
-
-
-
-
-
-
-
-<TableBody>
-
-
-
 {
 
-fakeJobs.map((job,index)=>(
+suspiciousJobs.map((job,index)=>(
 
 
-
-<TableRow
+<motion.div
 
 key={index}
 
+whileHover={{
+
+scale:1.03
+
+}}
+
 >
 
 
 
-<TableCell
+<Card
 
-sx={{color:"white"}}
+sx={dangerCard}
+
+>
+
+
+
+<Typography
+
+variant="h6"
+
+fontWeight="900"
 
 >
 
 {job.title}
 
-</TableCell>
+</Typography>
 
 
 
 
+<Typography>
 
-<TableCell
-
-sx={{color:"white"}}
-
->
+Company:
 
 {job.company}
 
-</TableCell>
+</Typography>
 
 
 
-
-
-<TableCell
-
-sx={{color:"white"}}
-
->
-
-{job.trust_score}%
-
-</TableCell>
-
-
-
-
-
-<TableCell>
 
 
 <Chip
 
+icon={<Warning/>}
 
-label="Suspicious"
+label={
 
+`Risk Score ${job.risk}%`
 
-color="error"
+}
+
+sx={{
+
+mt:2,
+
+background:"#dc2626",
+
+color:"white"
+
+}}
+
 
 />
 
 
-</TableCell>
+
+
+
+
+<Box mt={2}>
+
+
+<Button
+
+variant="contained"
+
+color="success"
+
+startIcon={<CheckCircle/>}
+
+>
+
+Approve
+
+</Button>
+
+
+
+
+<Button
+
+variant="contained"
+
+color="error"
+
+startIcon={<Delete/>}
+
+sx={{ml:2}}
+
+>
+
+Remove
+
+</Button>
+
+
+
+</Box>
+
+
+
+
+</Card>
+
+
+</motion.div>
+
+
+))
+
+
+}
+
+
+
+
+
+</Card>
 
 
 
 
 
 
-</TableRow>
+
+
+
+<Card sx={glass}>
+
+
+<Typography
+
+variant="h4"
+
+fontWeight="900"
+
+>
+
+AI Intelligence Modules
+
+</Typography>
+
+
+
+
+
+<Grid
+
+container
+
+spacing={3}
+
+mt={2}
+
+>
+
+
+
+{
+
+[
+
+"NLP Risk Analysis",
+
+"Company Verification",
+
+"Fake Job Prediction",
+
+"Resume Intelligence",
+
+"Semantic Matching"
+
+].map((x,i)=>(
+
+
+
+<Grid
+
+item
+
+xs={12}
+
+md={4}
+
+key={i}
+
+>
+
+
+
+<motion.div
+
+whileHover={{
+
+scale:1.05
+
+}}
+
+>
+
+
+<Card sx={moduleCard}>
+
+
+<Analytics/>
+
+
+<Typography
+
+mt={2}
+
+fontWeight="800"
+
+>
+
+{x}
+
+</Typography>
+
+
+
+</Card>
+
+
+</motion.div>
+
+
+
+</Grid>
 
 
 
@@ -673,22 +966,11 @@ color="error"
 
 
 
-</TableBody>
-
-
-
-</Table>
-
-
-</TableContainer>
-
-
-
+</Grid>
 
 
 
 </Card>
-
 
 
 
@@ -703,3 +985,216 @@ color="error"
 
 
 }
+
+
+
+
+
+
+
+
+
+function StatCard({
+
+icon,
+
+title,
+
+value
+
+}){
+
+
+return(
+
+
+<Grid
+
+item
+
+xs={12}
+
+md={3}
+
+>
+
+
+<motion.div
+
+whileHover={{
+
+scale:1.08,
+
+y:-10
+
+}}
+
+>
+
+
+<Card sx={statCard}>
+
+
+{icon}
+
+
+
+<Typography
+
+fontSize={45}
+
+fontWeight="900"
+
+>
+
+{value}
+
+</Typography>
+
+
+
+<Typography>
+
+{title}
+
+</Typography>
+
+
+
+</Card>
+
+
+</motion.div>
+
+
+</Grid>
+
+
+);
+
+
+}
+
+
+
+
+
+
+
+
+
+const pageStyle={
+
+
+minHeight:"100vh",
+
+padding:4,
+
+color:"white",
+
+
+background:
+
+"linear-gradient(135deg,#020617,#111827,#312e81)"
+
+
+};
+
+
+
+
+
+
+const glass={
+
+
+padding:4,
+
+mt:4,
+
+borderRadius:6,
+
+
+background:
+
+"rgba(255,255,255,.08)",
+
+
+backdropFilter:"blur(25px)",
+
+
+border:
+
+"1px solid rgba(255,255,255,.1)",
+
+
+color:"white"
+
+};
+
+
+
+
+
+
+const statCard={
+
+
+padding:3,
+
+borderRadius:5,
+
+
+background:
+
+"linear-gradient(135deg,#1e1b4b,#020617)",
+
+
+color:"white"
+
+};
+
+
+
+
+
+const dangerCard={
+
+
+padding:3,
+
+marginBottom:2,
+
+borderRadius:5,
+
+
+background:
+
+"rgba(127,29,29,.35)",
+
+
+color:"white"
+
+
+};
+
+
+
+
+
+const moduleCard={
+
+
+padding:3,
+
+borderRadius:5,
+
+
+background:
+
+"rgba(255,255,255,.05)",
+
+
+color:"white"
+
+};

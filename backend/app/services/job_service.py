@@ -2,79 +2,485 @@ from app.extensions import db
 
 from app.models.job_model import Job
 
+from app.services.ai_verification import predict_fake_job
+
+from app.services.linkedin_verification import verify_company
 
 
 
 
-# =====================================
+
+
+# =====================================================
 # CREATE JOB
-# =====================================
-
-def create_job(data, recruiter_id):
-
-
-    job = Job(
+# RECRUITER
+# =====================================================
 
 
-        title=data.get(
+def create_job(
 
-            "title"
+        data,
 
-        ),
+        recruiter_id
+
+):
 
 
-
-        description=data.get(
-
-            "description"
-
-        ),
+    try:
 
 
 
-        company=data.get(
+        company_name = data.get(
 
             "company",
 
             "Unknown Company"
 
-        ),
+        )
 
 
 
-        location=data.get(
-
-            "location"
-
-        ),
 
 
-
-        salary=data.get(
-
-            "salary"
-
-        ),
+        # ===============================
+        # AI VERIFICATION
+        # ===============================
 
 
+        ai_result = predict_fake_job({
 
-        trust_score=data.get(
 
-            "trust_score",
+            "title":
 
-            0
+            data.get(
 
-        ),
+                "title",
+
+                ""
+
+            ),
 
 
 
-        status="pending",
+            "company":
+
+            company_name,
 
 
 
-        recruiter_id=recruiter_id
+            "description":
+
+            data.get(
+
+                "description",
+
+                ""
+
+            ),
 
 
+
+            "requirements":
+
+            data.get(
+
+                "requirements",
+
+                ""
+
+            )
+
+
+        })
+
+
+
+
+
+
+
+
+        # ===============================
+        # COMPANY VERIFICATION
+        # ===============================
+
+
+        linkedin_result = verify_company(
+
+            company_name
+
+        )
+
+
+
+
+
+
+
+        final_trust = (
+
+
+            ai_result.get(
+
+                "trust_score",
+
+                50
+
+            )
+
+            *
+
+            0.7
+
+
+
+            +
+
+            linkedin_result.get(
+
+                "score",
+
+                0
+
+            )
+
+            *
+
+            0.3
+
+
+
+        )
+
+
+
+
+
+
+
+
+
+        job = Job(
+
+
+
+            title=data.get(
+
+                "title"
+
+            ),
+
+
+
+            description=data.get(
+
+                "description"
+
+            ),
+
+
+
+            location=data.get(
+
+                "location"
+
+            ),
+
+
+
+            salary=data.get(
+
+                "salary"
+
+            ),
+
+
+
+            requirements=data.get(
+
+                "requirements"
+
+            ),
+
+
+
+
+            recruiter_id=recruiter_id,
+
+
+
+
+
+
+            # AI RESULTS
+
+
+            is_fake_predicted=
+
+            ai_result.get(
+
+                "is_fake",
+
+                False
+
+            ),
+
+
+
+
+            fake_probability=
+
+            ai_result.get(
+
+                "fake_probability",
+
+                0
+
+            ),
+
+
+
+
+
+
+            trust_score=
+
+            round(
+
+                final_trust,
+
+                2
+
+            ),
+
+
+
+
+
+            risk_score=
+
+            ai_result.get(
+
+                "risk_score",
+
+                0
+
+            ),
+
+
+
+
+
+
+            risk_level=
+
+            ai_result.get(
+
+                "risk_level",
+
+                "LOW"
+
+            ),
+
+
+
+
+
+
+            ai_warnings=
+
+            str(
+
+                ai_result.get(
+
+                    "suspicious_keywords",
+
+                    []
+
+                )
+
+            ),
+
+
+
+
+
+            ai_explanation=
+
+            ai_result.get(
+
+                "ai_explanation"
+
+            ),
+
+
+
+
+
+
+            # COMPANY VERIFICATION
+
+
+            linkedin_verified=
+
+            linkedin_result.get(
+
+                "verified",
+
+                False
+
+            ),
+
+
+
+            linkedin_url=
+
+            linkedin_result.get(
+
+                "linkedin_url"
+
+            ),
+
+
+
+
+            company_verified=
+
+            linkedin_result.get(
+
+                "verified",
+
+                False
+
+            ),
+
+
+
+
+
+
+            status=(
+
+                "verified"
+
+                if final_trust >=70
+
+                else
+
+                "pending"
+
+            )
+
+
+
+        )
+
+
+
+
+
+
+        db.session.add(
+
+            job
+
+        )
+
+
+        db.session.commit()
+
+
+
+        return job
+
+
+
+
+
+
+
+    except Exception as e:
+
+
+        db.session.rollback()
+
+
+        raise e
+
+
+
+
+
+
+
+
+
+
+
+
+# =====================================================
+# GET ALL JOBS
+# =====================================================
+
+
+def get_all_jobs():
+
+
+    return Job.query.order_by(
+
+        Job.created_at.desc()
+
+    ).all()
+
+
+
+
+
+
+
+
+
+
+
+# =====================================================
+# GET ACTIVE JOBS
+# =====================================================
+
+
+def get_active_jobs():
+
+
+    return Job.query.filter_by(
+
+        is_active=True
+
+    ).order_by(
+
+        Job.created_at.desc()
+
+    ).all()
+
+
+
+
+
+
+
+
+
+
+
+# =====================================================
+# GET SINGLE JOB
+# =====================================================
+
+
+def get_job(job_id):
+
+
+    return Job.query.get(
+
+        job_id
 
     )
 
@@ -82,121 +488,43 @@ def create_job(data, recruiter_id):
 
 
 
-    db.session.add(job)
-
-
-    db.session.commit()
-
-
-
-    return job
 
 
 
 
-
-
-
-# =====================================
-# GET ALL JOBS
-# =====================================
-
-def get_all_jobs():
-
-
-    return Job.query.all()
-
-
-
-
-
-
-
-# =====================================
-# GET SINGLE JOB
-# =====================================
-
-def get_job(job_id):
-
-
-    return Job.query.get(job_id)
-
-
-
-
-
-
-
-
-
-# =====================================
+# =====================================================
 # UPDATE JOB
-# =====================================
-
-def update_job(job_id,data):
+# =====================================================
 
 
-    job = Job.query.get(job_id)
+def update_job(
+
+        job_id,
+
+        data
+
+):
+
+
+    try:
 
 
 
-    if not job:
+        job = Job.query.get(
 
-
-        raise Exception(
-
-            "Job not found"
+            job_id
 
         )
 
 
 
 
-
-    allowed_fields = [
-
-
-        "title",
+        if not job:
 
 
-        "description",
+            raise Exception(
 
-
-        "company",
-
-
-        "location",
-
-
-        "salary",
-
-
-        "status",
-
-
-        "trust_score"
-
-
-
-    ]
-
-
-
-
-
-    for key,value in data.items():
-
-
-        if key in allowed_fields:
-
-
-            setattr(
-
-                job,
-
-                key,
-
-                value
+                "Job not found"
 
             )
 
@@ -204,11 +532,41 @@ def update_job(job_id,data):
 
 
 
-    db.session.commit()
+
+
+        allowed_fields = [
 
 
 
-    return job
+            "title",
+
+
+
+            "description",
+
+
+
+            "location",
+
+
+
+            "salary",
+
+
+
+            "requirements",
+
+
+
+            "status",
+
+
+
+            "is_active"
+
+
+
+        ]
 
 
 
@@ -216,24 +574,74 @@ def update_job(job_id,data):
 
 
 
-# =====================================
+
+        for key,value in data.items():
+
+
+
+            if key in allowed_fields:
+
+
+
+                setattr(
+
+                    job,
+
+                    key,
+
+                    value
+
+                )
+
+
+
+
+
+
+
+        db.session.commit()
+
+
+
+        return job
+
+
+
+
+
+    except Exception as e:
+
+
+        db.session.rollback()
+
+
+        raise e
+
+
+
+
+
+
+
+
+
+
+
+# =====================================================
 # DELETE JOB
-# =====================================
+# =====================================================
+
 
 def delete_job(job_id):
 
 
-    job = Job.query.get(job_id)
+    try:
 
 
 
+        job = Job.query.get(
 
-    if not job:
-
-
-        raise Exception(
-
-            "Job not found"
+            job_id
 
         )
 
@@ -241,8 +649,45 @@ def delete_job(job_id):
 
 
 
-    db.session.delete(job)
+        if not job:
+
+
+            raise Exception(
+
+                "Job not found"
+
+            )
 
 
 
-    db.session.commit()
+
+
+
+
+        db.session.delete(
+
+            job
+
+        )
+
+
+        db.session.commit()
+
+
+
+        return True
+
+
+
+
+
+
+    except Exception as e:
+
+
+
+        db.session.rollback()
+
+
+
+        raise e
