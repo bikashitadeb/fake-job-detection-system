@@ -1,12 +1,13 @@
 // src/components/Sidebar.jsx
 
-
-import React, { useState } from "react";
-
-import { motion } from "framer-motion";
+import React from "react";
 
 import {
+    motion
+} from "framer-motion";
 
+
+import {
     LayoutDashboard,
     Briefcase,
     FileText,
@@ -15,25 +16,18 @@ import {
     BarChart3,
     Bell,
     Settings,
-    Menu,
-    X,
-    Building2
-
+    Building2,
+    X
 } from "lucide-react";
 
 
 import {
-
     NavLink
-
 } from "react-router-dom";
 
 
-
 import {
-
     getCurrentUser
-
 } from "../api/auth";
 
 
@@ -41,19 +35,14 @@ import {
 
 
 
-
-const Sidebar = () => {
+const Sidebar = ({
+    open,
+    setOpen
+}) => {
 
 
 
     const user = getCurrentUser();
-
-
-
-    const [open,setOpen] = useState(true);
-
-
-
 
 
     const role = user?.role || "employee";
@@ -63,9 +52,7 @@ const Sidebar = () => {
 
 
 
-
     const menus = {
-
 
 
         employee:[
@@ -73,36 +60,36 @@ const Sidebar = () => {
 
             {
                 name:"Dashboard",
-                path:"/dashboard",
-                icon:<LayoutDashboard/>
+                path:"/employee/dashboard",
+                icon:<LayoutDashboard size={22}/>
             },
 
 
             {
                 name:"Browse Jobs",
-                path:"/jobs",
-                icon:<Briefcase/>
+                path:"/employee/jobs",
+                icon:<Briefcase size={22}/>
             },
 
 
             {
                 name:"Applications",
-                path:"/applications",
-                icon:<FileText/>
+                path:"/employee/applications",
+                icon:<FileText size={22}/>
             },
 
 
             {
                 name:"Notifications",
                 path:"/notifications",
-                icon:<Bell/>
+                icon:<Bell size={22}/>
             },
 
 
             {
                 name:"Profile",
                 path:"/profile",
-                icon:<Users/>
+                icon:<Users size={22}/>
             }
 
 
@@ -119,42 +106,42 @@ const Sidebar = () => {
             {
                 name:"Dashboard",
                 path:"/recruiter/dashboard",
-                icon:<LayoutDashboard/>
+                icon:<LayoutDashboard size={22}/>
             },
 
 
             {
                 name:"My Jobs",
                 path:"/recruiter/jobs",
-                icon:<Briefcase/>
+                icon:<Briefcase size={22}/>
             },
 
 
             {
                 name:"Post Job",
-                path:"/recruiter/create-job",
-                icon:<Building2/>
+                path:"/recruiter/post-job",
+                icon:<Building2 size={22}/>
             },
 
 
             {
                 name:"Applicants",
                 path:"/recruiter/applicants",
-                icon:<Users/>
+                icon:<Users size={22}/>
             },
 
 
             {
                 name:"Analytics",
                 path:"/recruiter/analytics",
-                icon:<BarChart3/>
+                icon:<BarChart3 size={22}/>
             },
 
 
             {
                 name:"Notifications",
                 path:"/notifications",
-                icon:<Bell/>
+                icon:<Bell size={22}/>
             }
 
 
@@ -171,49 +158,47 @@ const Sidebar = () => {
 
             {
                 name:"Dashboard",
-                path:"/admin",
-                icon:<LayoutDashboard/>
+                path:"/admin/dashboard",
+                icon:<LayoutDashboard size={22}/>
             },
 
 
             {
                 name:"Users",
                 path:"/admin/users",
-                icon:<Users/>
+                icon:<Users size={22}/>
             },
 
 
             {
                 name:"Jobs",
                 path:"/admin/jobs",
-                icon:<Briefcase/>
+                icon:<Briefcase size={22}/>
             },
 
 
             {
                 name:"Fraud Detection",
                 path:"/admin/fraud",
-                icon:<ShieldCheck/>
+                icon:<ShieldCheck size={22}/>
             },
 
 
             {
                 name:"Analytics",
                 path:"/admin/analytics",
-                icon:<BarChart3/>
+                icon:<BarChart3 size={22}/>
             },
 
 
             {
                 name:"Settings",
                 path:"/admin/settings",
-                icon:<Settings/>
+                icon:<Settings size={22}/>
             }
 
 
         ]
-
-
 
     };
 
@@ -222,395 +207,591 @@ const Sidebar = () => {
 
 
 
-    const activeMenus = menus[role] || menus.employee;
 
+    const activeMenus =
+        menus[role] || menus.employee;
 
 
 
 
 
 
-    return (
 
 
+return (
 
-        <>
 
+<>
 
 
+{/* BACKDROP */}
 
+{
 
-        {/* MOBILE BUTTON */}
+open &&
 
+<motion.div
 
-        <button
+initial={{
+opacity:0
+}}
 
+animate={{
+opacity:1
+}}
 
-        onClick={()=>setOpen(!open)}
+exit={{
+opacity:0
+}}
 
+onClick={()=>setOpen(false)}
 
-        className="
+className="
 
-        fixed
+fixed
 
-        top-5
+inset-0
 
-        left-5
+bg-black/40
 
-        z-50
+backdrop-blur-sm
 
-        md:hidden
+z-[120]
 
-        bg-white
+"
 
-        p-3
+/>
 
-        rounded-xl
+}
 
-        shadow-lg
 
-        "
 
 
-        >
 
 
-            {
 
-            open
 
-            ?
+<motion.aside
 
-            <X/>
 
-            :
 
-            <Menu/>
+initial={false}
 
-            }
 
 
-        </button>
+animate={{
 
+x:open ? 0 : -350
 
+}}
 
 
 
+transition={{
 
+duration:.45,
 
+ease:"easeInOut"
 
+}}
 
-        <motion.aside
 
 
 
-            initial={{
+className="
 
-                x:-300
+fixed
 
-            }}
+top-0
 
+left-0
 
+z-[150]
 
-            animate={{
+h-screen
 
-                x:open ? 0 : -300
+w-80
 
-            }}
+bg-white/95
 
+backdrop-blur-xl
 
+shadow-2xl
 
-            transition={{
+border-r
 
-                duration:0.4
+border-gray-200
 
-            }}
+p-6
 
+flex
 
+flex-col
 
+overflow-y-auto
 
+"
 
-            className="
+>
 
-            fixed
 
-            left-0
 
-            top-0
 
-            bottom-0
 
-            z-40
 
-            w-72
 
-            bg-white/80
 
-            backdrop-blur-xl
+{/* CLOSE BUTTON */}
 
-            border-r
 
-            border-gray-200
 
-            shadow-xl
+<button
 
-            p-6
 
-            "
+onClick={()=>setOpen(false)}
 
 
-        >
 
+className="
 
+absolute
 
+top-5
 
+right-5
 
+w-10
 
+h-10
 
-            {/* BRAND */}
+rounded-xl
 
+bg-purple-100
 
+text-purple-700
 
-            <div
+flex
 
-            className="
+items-center
 
-            mb-10
+justify-center
 
-            "
+hover:scale-110
 
-            >
+transition
 
+"
 
-                <div
+>
 
-                className="
+<X size={22}/>
 
-                flex
+</button>
 
-                items-center
 
-                gap-3
 
-                "
 
-                >
 
 
-                    <div
 
-                    className="
 
-                    p-3
 
-                    rounded-2xl
 
-                    bg-gradient-to-r
+{/* BRAND */}
 
-                    from-blue-600
 
-                    to-purple-600
 
-                    "
+<div
 
-                    >
+className="
 
+mb-10
 
-                        <ShieldCheck
+mt-5
 
-                        className="text-white"
+"
 
-                        />
+>
 
 
-                    </div>
 
+<div
 
+className="
 
+flex
 
+items-center
 
-                    <div>
+gap-3
 
+"
 
-                        <h1
+>
 
-                        className="
 
-                        font-bold
 
-                        text-xl
+<div
 
-                        "
+className="
 
-                        >
+w-14
 
-                            FakeGuard AI
+h-14
 
-                        </h1>
+rounded-2xl
 
+bg-gradient-to-br
 
+from-blue-600
 
-                        <p
+to-purple-600
 
-                        className="
+flex
 
-                        text-xs
+items-center
 
-                        text-gray-500
+justify-center
 
-                        "
+shadow-xl
 
-                        >
+"
 
-                            {role.toUpperCase()}
+>
 
-                        </p>
 
+<ShieldCheck
 
-                    </div>
+size={32}
 
+className="text-white"
 
-                </div>
+/>
 
 
-            </div>
+</div>
 
 
 
 
 
+<div>
 
 
+<h1
 
+className="
 
-            {/* MENU */}
+text-xl
 
+font-black
 
+text-transparent
 
-            <div
+bg-gradient-to-r
 
-            className="
+from-blue-600
 
-            space-y-3
+to-purple-600
 
-            "
+bg-clip-text
 
-            >
+"
 
+>
 
+FakeGuard AI
 
-            {
+</h1>
 
-            activeMenus.map((item,index)=>(
 
+<p
 
+className="
 
-                <NavLink
+text-xs
 
+text-gray-500
 
-                key={index}
+"
 
+>
 
-                to={item.path}
+{role.toUpperCase()}
 
+</p>
 
 
-                className={({isActive})=>`
+</div>
 
 
-                flex
+</div>
 
-                items-center
 
-                gap-4
+</div>
 
-                px-4
 
-                py-3
 
-                rounded-2xl
 
-                transition
 
 
 
-                ${
 
-                isActive
 
-                ?
+{/* MENU */}
 
-                "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
 
-                :
 
-                "text-gray-600 hover:bg-gray-100"
+<div
 
-                }
+className="
 
+flex-1
 
-                `}
+space-y-3
 
+"
 
+>
 
-                >
 
 
+{
 
-                    {item.icon}
+activeMenus.map((item,index)=>(
 
 
+<motion.div
 
-                    <span
 
-                    className="
+key={index}
 
-                    font-medium
 
-                    "
 
-                    >
+whileHover={{
 
-                        {item.name}
+x:8
 
-                    </span>
+}}
 
 
 
-                </NavLink>
+transition={{
 
+duration:.2
 
+}}
 
-            ))
 
 
-            }
+>
 
 
+<NavLink
 
-            </div>
 
 
+to={item.path}
 
 
 
+onClick={()=>{
 
 
-        </motion.aside>
+if(window.innerWidth < 900)
 
+setOpen(false);
 
 
+}}
 
 
-        </>
 
 
-    );
+className={({isActive})=>`
+
+
+flex
+
+items-center
+
+gap-4
+
+px-5
+
+py-4
+
+rounded-2xl
+
+font-semibold
+
+transition-all
+
+duration-300
+
+
+
+${
+
+
+isActive
+
+
+?
+
+
+"bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-xl scale-105"
+
+
+:
+
+
+"text-slate-600 hover:bg-purple-50 hover:text-purple-600"
+
+
+}
+
+
+`}
+
+
+
+>
+
+
+
+<motion.div
+
+
+whileHover={{
+
+scale:1.15
+
+}}
+
+>
+
+
+{item.icon}
+
+
+</motion.div>
+
+
+
+
+
+<span>
+
+{item.name}
+
+</span>
+
+
+
+</NavLink>
+
+
+</motion.div>
+
+
+))
+
+
+}
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+{/* FOOTER */}
+
+
+
+<div
+
+className="
+
+mt-auto
+
+p-4
+
+rounded-3xl
+
+bg-gradient-to-r
+
+from-purple-600
+
+to-blue-600
+
+text-white
+
+shadow-xl
+
+"
+
+>
+
+
+<p
+
+className="
+
+font-bold
+
+"
+
+>
+
+AI Protection Active
+
+</p>
+
+
+<p
+
+className="
+
+text-xs
+
+opacity-80
+
+"
+
+>
+
+SecureHire Intelligence
+
+</p>
+
+
+
+</div>
+
+
+
+
+
+
+
+</motion.aside>
+
+
+</>
+
+
+);
 
 
 };
-
-
 
 
 

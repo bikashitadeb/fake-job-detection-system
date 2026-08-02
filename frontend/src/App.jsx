@@ -8,16 +8,20 @@ import {
 
 
 import {
+
     Routes,
     Route,
     Navigate,
     useLocation
+
 } from "react-router-dom";
 
 
 import {
+
     AnimatePresence,
     motion
+
 } from "framer-motion";
 
 
@@ -33,12 +37,12 @@ import ProtectedRoute from "./routes/ProtectedRoute.jsx";
 
 
 const Login = lazy(
-    () => import("./pages/Login.jsx")
+    ()=>import("./pages/Login.jsx")
 );
 
 
 const Register = lazy(
-    () => import("./pages/Register.jsx")
+    ()=>import("./pages/Register.jsx")
 );
 
 
@@ -51,8 +55,15 @@ const Register = lazy(
 
 
 const Profile = lazy(
-    () => import("./pages/Profile.jsx")
+    ()=>import("./pages/Profile.jsx")
 );
+
+
+const Notifications = lazy(
+    ()=>import("./pages/Notifications.jsx")
+);
+
+
 
 
 
@@ -64,33 +75,36 @@ const Profile = lazy(
 
 
 const EmployeeLayout = lazy(
-    () => import("./layouts/EmployeeLayout.jsx")
+    ()=>import("./layouts/EmployeeLayout.jsx")
 );
 
 
 const EmployeeDashboard = lazy(
-    () => import("./pages/employee/EmployeeDashboard.jsx")
+    ()=>import("./pages/employee/EmployeeDashboard.jsx")
 );
 
 
 const JobPostings = lazy(
-    () => import("./pages/employee/JobPostings.jsx")
+    ()=>import("./pages/employee/JobPostings.jsx")
 );
 
 
 const JobDetails = lazy(
-    () => import("./pages/employee/JobDetails.jsx")
+    ()=>import("./pages/employee/JobDetails.jsx")
 );
 
 
 const SavedJobs = lazy(
-    () => import("./pages/employee/SavedJobs.jsx")
+    ()=>import("./pages/employee/SavedJobs.jsx")
 );
 
 
 const Applications = lazy(
-    () => import("./pages/employee/Applications.jsx")
+    ()=>import("./pages/employee/Applications.jsx")
 );
+
+
+
 
 
 
@@ -102,33 +116,46 @@ const Applications = lazy(
 
 
 const RecruiterLayout = lazy(
-    () => import("./layouts/RecruiterLayout.jsx")
+    ()=>import("./layouts/RecruiterLayout.jsx")
 );
 
 
 const RecruiterDashboard = lazy(
-    () => import("./pages/recruiter/RecruiterDashboard.jsx")
+    ()=>import("./pages/recruiter/RecruiterDashboard.jsx")
 );
 
 
 const PostJob = lazy(
-    () => import("./pages/recruiter/PostJob.jsx")
+    ()=>import("./pages/recruiter/PostJob.jsx")
 );
 
 
 const PostedJobs = lazy(
-    () => import("./pages/recruiter/PostedJobs.jsx")
+    ()=>import("./pages/recruiter/PostedJobs.jsx")
 );
 
 
 const RecruiterVerification = lazy(
-    () => import("./pages/recruiter/RecruiterVerification.jsx")
+    ()=>import("./pages/recruiter/RecruiterVerification.jsx")
 );
 
 
 const RecruiterProfile = lazy(
-    () => import("./pages/recruiter/RecruiterProfile.jsx")
+    ()=>import("./pages/recruiter/RecruiterProfile.jsx")
 );
+
+
+const Applicants = lazy(
+    ()=>import("./pages/recruiter/Applicants.jsx")
+);
+
+
+const RecruiterAnalytics = lazy(
+    ()=>import("./pages/recruiter/Analytics.jsx")
+);
+
+
+
 
 
 
@@ -140,18 +167,20 @@ const RecruiterProfile = lazy(
 
 
 const AdminDashboard = lazy(
-    () => import("./pages/admin/AdminDashboard.jsx")
+    ()=>import("./pages/admin/AdminDashboard.jsx")
 );
 
 
 const Analytics = lazy(
-    () => import("./pages/admin/Analytics.jsx")
+    ()=>import("./pages/admin/Analytics.jsx")
 );
 
 
 const Companies = lazy(
-    () => import("./pages/admin/Companies.jsx")
+    ()=>import("./pages/admin/Companies.jsx")
 );
+
+
 
 
 
@@ -160,7 +189,7 @@ const Companies = lazy(
 
 
 // ============================
-// LOADING SCREEN
+// LOADING
 // ============================
 
 
@@ -169,8 +198,12 @@ function LoadingScreen(){
 
 return(
 
+
 <div
+
+
 style={{
+
 
 height:"100vh",
 
@@ -184,20 +217,28 @@ background:"#020617",
 
 color:"white"
 
+
 }}
+
+
 
 >
 
 
 <motion.div
 
+
+
 animate={{
 
 scale:[1,1.15,1],
 
-opacity:[0.5,1,0.5]
+opacity:[.5,1,.5]
+
 
 }}
+
+
 
 transition={{
 
@@ -207,7 +248,10 @@ repeat:Infinity
 
 }}
 
+
+
 style={{
+
 
 fontSize:"45px",
 
@@ -221,16 +265,23 @@ WebkitBackgroundClip:"text",
 
 color:"transparent"
 
+
 }}
+
+
 
 >
 
+
 SecureHire AI
+
 
 </motion.div>
 
 
+
 </div>
+
 
 );
 
@@ -244,68 +295,89 @@ SecureHire AI
 
 
 
+
 // ============================
-// ROUTES
+// ANIMATED ROUTES
 // ============================
 
 
 function AnimatedRoutes(){
 
 
+
 const location = useLocation();
+
 
 
 
 return(
 
 
+
 <AnimatePresence mode="wait">
+
 
 
 <motion.div
 
 
+
 key={location.pathname}
 
 
+
 initial={{
+
 
 opacity:0,
 
 y:20
 
+
 }}
 
 
+
 animate={{
+
 
 opacity:1,
 
 y:0
 
+
 }}
 
 
+
 exit={{
+
 
 opacity:0,
 
 y:-20
 
+
 }}
+
 
 
 transition={{
 
-duration:0.3
+
+duration:.35
+
 
 }}
+
 
 
 >
 
 
+
 <Routes>
+
 
 
 
@@ -315,11 +387,7 @@ duration:0.3
 
 path="/"
 
-element={
-
-<Navigate to="/login"/>
-
-}
+element={<Navigate to="/login"/>}
 
 />
 
@@ -334,7 +402,6 @@ path="/login"
 element={<Login/>}
 
 />
-
 
 
 
@@ -354,17 +421,19 @@ element={<Register/>}
 
 
 
+
+{/* ================= EMPLOYEE ================= */}
+
+
+
+
 <Route
 
 element={
 
 <ProtectedRoute
 
-allowedRoles={[
-
-"employee"
-
-]}
+allowedRoles={["employee"]}
 
 />
 
@@ -445,14 +514,30 @@ element={<Profile/>}
 />
 
 
-</Route>
+<Route
+
+path="notifications"
+
+element={<Notifications/>}
+
+/>
 
 
 </Route>
 
 
+</Route>
 
 
+
+
+
+
+
+
+
+
+{/* ================= RECRUITER ================= */}
 
 
 
@@ -463,11 +548,7 @@ element={
 
 <ProtectedRoute
 
-allowedRoles={[
-
-"recruiter"
-
-]}
+allowedRoles={["recruiter"]}
 
 />
 
@@ -494,6 +575,8 @@ element={<Navigate to="dashboard"/>}
 />
 
 
+
+
 <Route
 
 path="dashboard"
@@ -502,14 +585,6 @@ element={<RecruiterDashboard/>}
 
 />
 
-
-<Route
-
-path="post-job"
-
-element={<PostJob/>}
-
-/>
 
 
 <Route
@@ -521,6 +596,19 @@ element={<PostedJobs/>}
 />
 
 
+
+
+<Route
+
+path="post-job"
+
+element={<PostJob/>}
+
+/>
+
+
+
+
 <Route
 
 path="verification"
@@ -528,6 +616,30 @@ path="verification"
 element={<RecruiterVerification/>}
 
 />
+
+
+
+
+<Route
+
+path="applicants"
+
+element={<Applicants/>}
+
+/>
+
+
+
+
+<Route
+
+path="analytics"
+
+element={<RecruiterAnalytics/>}
+
+/>
+
+
 
 
 <Route
@@ -539,14 +651,33 @@ element={<RecruiterProfile/>}
 />
 
 
-</Route>
+
+
+<Route
+
+path="notifications"
+
+element={<Notifications/>}
+
+/>
+
+
 
 
 </Route>
 
 
+</Route>
 
 
+
+
+
+
+
+
+
+{/* ================= ADMIN ================= */}
 
 
 
@@ -557,11 +688,7 @@ element={
 
 <ProtectedRoute
 
-allowedRoles={[
-
-"admin"
-
-]}
+allowedRoles={["admin"]}
 
 />
 
@@ -588,6 +715,7 @@ element={<Navigate to="dashboard"/>}
 />
 
 
+
 <Route
 
 path="dashboard"
@@ -595,6 +723,7 @@ path="dashboard"
 element={<AdminDashboard/>}
 
 />
+
 
 
 <Route
@@ -606,6 +735,7 @@ element={<Analytics/>}
 />
 
 
+
 <Route
 
 path="companies"
@@ -615,10 +745,20 @@ element={<Companies/>}
 />
 
 
+<Route
+
+path="notifications"
+
+element={<Notifications/>}
+
+/>
+
+
 </Route>
 
 
 </Route>
+
 
 
 
@@ -639,16 +779,24 @@ element={<Navigate to="/login"/>}
 
 
 
+
 </Routes>
+
+
 
 
 </motion.div>
 
 
+
+
 </AnimatePresence>
 
 
+
 );
+
+
 
 }
 

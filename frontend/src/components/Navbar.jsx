@@ -1,849 +1,435 @@
 // src/components/Navbar.jsx
 
-
-import React, { useState } from "react";
-
-import {
-    motion
-} from "framer-motion";
-
+import React from "react";
 
 import {
-
     Bell,
-
     UserCircle,
-
-    LogOut,
-
-    Menu,
-
-    X,
-
-    ShieldCheck,
-
     ChevronDown
-
 } from "lucide-react";
 
 
 import {
-
-    useNavigate
-
-} from "react-router-dom";
-
-
-
-import {
-
-    logoutUser,
-
     getCurrentUser
-
 } from "../api/auth";
 
 
 
 
-
-
-
-const Navbar = () => {
-
-
-
-    const navigate = useNavigate();
-
+export default function Navbar(){
 
 
     const user = getCurrentUser();
 
 
 
-    const [open,setOpen] = useState(false);
+return (
 
+<header
 
+className="
 
-    const [mobile,setMobile] = useState(false);
+h-20
 
+w-full
 
+flex
 
+items-center
 
+justify-between
 
+px-6
 
-    const handleLogout = async()=>{
+md:px-10
 
+bg-white/95
 
-        try{
+backdrop-blur-xl
 
-            await logoutUser();
+border-b
 
-        }
+border-gray-200
 
-        catch(error){
+shadow-sm
 
-            console.log(
-                "LOGOUT ERROR",
-                error
-            );
+relative
 
-        }
+z-40
 
+"
 
-        localStorage.removeItem(
-            "access_token"
-        );
+>
 
 
-        localStorage.removeItem(
-            "user"
-        );
 
 
-        navigate("/login");
 
 
-    };
 
+{/* LEFT LOGO */}
 
 
+<div
 
+className="
 
+flex
 
+items-center
 
+gap-4
 
+"
 
-    return (
+>
 
 
 
-        <motion.nav
+<div
 
+className="
 
+w-12
 
-            initial={{
+h-12
 
-                y:-50,
+rounded-2xl
 
-                opacity:0
+bg-gradient-to-br
 
-            }}
+from-blue-600
 
+to-purple-600
 
+flex
 
-            animate={{
+items-center
 
-                y:0,
+justify-center
 
-                opacity:1
+shadow-lg
 
-            }}
+"
 
+>
 
 
-            className="
+<span
 
-            fixed
+className="
 
-            top-0
+text-white
 
-            left-0
+text-xl
 
-            right-0
+font-black
 
-            z-50
+"
 
-            backdrop-blur-xl
+>
 
-            bg-white/70
+✓
 
-            border-b
+</span>
 
-            border-gray-200
 
-            shadow-sm
+</div>
 
-            "
 
 
-        >
 
 
 
+<div>
 
 
-            <div
+<h1
 
-            className="
+className="
 
-            max-w-7xl
+text-xl
 
-            mx-auto
+md:text-2xl
 
-            px-6
+font-black
 
-            py-4
+bg-gradient-to-r
 
-            flex
+from-blue-600
 
-            justify-between
+to-purple-600
 
-            items-center
+bg-clip-text
 
-            "
+text-transparent
 
+"
 
-            >
+>
 
+FakeGuard AI
 
+</h1>
 
 
 
+<p
 
-                {/* LOGO */}
+className="
 
+text-xs
 
+text-gray-500
 
-                <div
+"
 
-                onClick={()=>navigate("/")}
+>
 
-                className="
+AI Job Verification
 
-                flex
+</p>
 
-                items-center
 
-                gap-3
+</div>
 
-                cursor-pointer
 
-                "
+</div>
 
-                >
 
 
 
-                    <div
 
-                    className="
 
-                    p-2
 
-                    rounded-xl
 
-                    bg-gradient-to-r
 
-                    from-blue-600
+{/* RIGHT SECTION */}
 
-                    to-purple-600
 
-                    "
+<div
 
-                    >
+className="
 
+flex
 
-                        <ShieldCheck
+items-center
 
-                        className="text-white"
+gap-6
 
-                        size={25}
+"
 
-                        />
+>
 
 
-                    </div>
 
 
 
 
 
-                    <div>
+{/* NOTIFICATION */}
 
 
-                        <h1
 
-                        className="
+<button
 
-                        text-xl
 
-                        font-bold
+className="
 
-                        bg-gradient-to-r
+relative
 
-                        from-blue-600
+text-slate-700
 
-                        to-purple-600
+hover:text-purple-600
 
-                        bg-clip-text
+transition
 
-                        text-transparent
+hover:scale-110
 
-                        "
+"
 
-                        >
+>
 
-                            FakeGuard AI
 
+<Bell size={28}/>
 
-                        </h1>
 
 
+<span
 
 
-                        <p
+className="
 
-                        className="
+absolute
 
-                        text-xs
+top-[-8px]
 
-                        text-gray-500
+right-[-8px]
 
-                        "
+bg-red-500
 
-                        >
+text-white
 
-                            AI Job Verification
+text-xs
 
+font-bold
 
-                        </p>
+w-5
 
+h-5
 
-                    </div>
+rounded-full
 
+flex
 
-                </div>
+items-center
 
+justify-center
 
+"
 
+>
 
+3
 
+</span>
 
 
 
+</button>
 
 
-                {/* DESKTOP MENU */}
 
 
 
-                <div
 
-                className="
 
-                hidden
 
-                md:flex
 
-                items-center
+{/* PROFILE */}
 
-                gap-6
 
-                "
 
-                >
+<div
 
+className="
 
+flex
 
+items-center
 
-                    <button
+gap-3
 
-                    onClick={()=>navigate("/dashboard")}
+cursor-pointer
 
-                    className="
+hover:bg-gray-100
 
-                    text-gray-700
+px-3
 
-                    hover:text-blue-600
+py-2
 
-                    transition
+rounded-xl
 
-                    "
+transition
 
-                    >
+"
 
-                        Dashboard
+>
 
-                    </button>
 
 
+<UserCircle
 
+size={42}
 
+className="text-slate-700"
 
-                    <button
+/>
 
-                    onClick={()=>navigate("/jobs")}
 
-                    className="
 
-                    text-gray-700
 
-                    hover:text-blue-600
 
-                    transition
+<div
 
-                    "
+className="hidden md:block"
 
-                    >
+>
 
-                        Jobs
 
-                    </button>
+<p
 
+className="
 
+font-bold
 
+text-slate-800
 
+"
 
+>
 
 
+{user?.name || "Bikashita"}
 
 
-                    <button
+</p>
 
-                    onClick={()=>navigate("/notifications")}
 
-                    className="
 
-                    relative
+<p
 
-                    "
+className="
 
-                    >
+text-xs
 
+text-slate-500
 
-                        <Bell
+"
 
-                        size={22}
+>
 
-                        className="text-gray-700"
+Recruiter
 
-                        />
+</p>
 
 
-                        <span
+</div>
 
-                        className="
 
-                        absolute
 
-                        -top-2
 
-                        -right-2
 
-                        bg-red-500
 
-                        text-white
 
-                        text-xs
+<ChevronDown
 
-                        w-5
+size={18}
 
-                        h-5
+className="text-slate-600"
 
-                        rounded-full
+/>
 
-                        flex
 
-                        items-center
 
-                        justify-center
 
-                        "
+</div>
 
-                        >
 
-                            3
 
-                        </span>
 
 
-                    </button>
 
+</div>
 
 
 
 
 
+</header>
 
 
+);
 
-                    {/* PROFILE */}
 
-
-
-                    <div
-
-                    className="relative"
-
-                    >
-
-
-
-                        <button
-
-
-                        onClick={()=>setOpen(!open)}
-
-
-                        className="
-
-                        flex
-
-                        items-center
-
-                        gap-2
-
-                        "
-
-                        >
-
-
-
-                            <UserCircle
-
-                            size={30}
-
-                            className="text-gray-700"
-
-                            />
-
-
-
-                            <span
-
-                            className="font-medium"
-
-                            >
-
-                                {user?.name || "User"}
-
-                            </span>
-
-
-
-                            <ChevronDown
-
-                            size={18}
-
-                            />
-
-
-
-                        </button>
-
-
-
-
-
-
-
-                        {
-
-                        open &&
-
-
-
-                        <motion.div
-
-
-                        initial={{
-
-                            opacity:0,
-
-                            y:-10
-
-                        }}
-
-
-                        animate={{
-
-                            opacity:1,
-
-                            y:0
-
-                        }}
-
-
-                        className="
-
-                        absolute
-
-                        right-0
-
-                        mt-3
-
-                        w-48
-
-                        bg-white
-
-                        rounded-2xl
-
-                        shadow-xl
-
-                        border
-
-                        p-3
-
-                        "
-
-
-                        >
-
-
-
-                            <button
-
-                            onClick={()=>navigate("/profile")}
-
-                            className="
-
-                            w-full
-
-                            text-left
-
-                            px-3
-
-                            py-2
-
-                            rounded-lg
-
-                            hover:bg-gray-100
-
-                            "
-
-                            >
-
-                                Profile
-
-                            </button>
-
-
-
-
-
-
-
-                            <button
-
-                            onClick={handleLogout}
-
-                            className="
-
-                            w-full
-
-                            text-left
-
-                            px-3
-
-                            py-2
-
-                            rounded-lg
-
-                            hover:bg-red-50
-
-                            text-red-600
-
-                            flex
-
-                            gap-2
-
-                            items-center
-
-                            "
-
-                            >
-
-
-                                <LogOut size={17}/>
-
-                                Logout
-
-
-                            </button>
-
-
-
-
-                        </motion.div>
-
-
-                        }
-
-
-
-
-                    </div>
-
-
-
-
-
-
-                </div>
-
-
-
-
-
-
-
-
-
-                {/* MOBILE BUTTON */}
-
-
-
-                <button
-
-                className="md:hidden"
-
-                onClick={()=>setMobile(!mobile)}
-
-                >
-
-
-                    {
-
-                    mobile
-
-                    ?
-
-                    <X/>
-
-                    :
-
-                    <Menu/>
-
-                    }
-
-
-                </button>
-
-
-
-
-
-            </div>
-
-
-
-
-
-
-
-
-
-            {/* MOBILE MENU */}
-
-
-
-            {
-
-            mobile &&
-
-
-
-            <motion.div
-
-
-            initial={{
-
-                opacity:0
-
-            }}
-
-
-            animate={{
-
-                opacity:1
-
-            }}
-
-
-
-            className="
-
-            md:hidden
-
-            px-6
-
-            pb-5
-
-            space-y-3
-
-            "
-
-
-            >
-
-
-
-                <button
-
-                className="block"
-
-                onClick={()=>navigate("/dashboard")}
-
-                >
-
-                    Dashboard
-
-                </button>
-
-
-
-                <button
-
-                className="block"
-
-                onClick={()=>navigate("/jobs")}
-
-                >
-
-                    Jobs
-
-                </button>
-
-
-
-                <button
-
-                onClick={handleLogout}
-
-                className="
-
-                text-red-600
-
-                "
-
-                >
-
-                    Logout
-
-                </button>
-
-
-
-            </motion.div>
-
-
-            }
-
-
-
-
-
-        </motion.nav>
-
-
-    );
-
-
-};
-
-
-
-
-
-export default Navbar;
+}

@@ -6,14 +6,11 @@ import axios from "axios";
 // BACKEND URL
 // ================================
 
-
 const BASE_URL =
 
     import.meta.env.VITE_API_URL ||
 
     "http://127.0.0.1:5000/api";
-
-
 
 
 
@@ -26,23 +23,15 @@ const BASE_URL =
 
 const API = axios.create({
 
-
     baseURL: BASE_URL,
 
-
-    timeout: 15000,
-
+    timeout:15000,
 
     headers:{
 
-
-        "Content-Type":
-
-        "application/json"
-
+        "Content-Type":"application/json"
 
     }
-
 
 });
 
@@ -52,9 +41,9 @@ const API = axios.create({
 
 
 
+
 // ================================
 // REQUEST INTERCEPTOR
-// ATTACH JWT TOKEN
 // ================================
 
 
@@ -64,11 +53,15 @@ API.interceptors.request.use(
 (config)=>{
 
 
-    const token = localStorage.getItem(
+    const token =
 
-        "access_token"
+        localStorage.getItem("token")
 
-    );
+        ||
+
+        localStorage.getItem("access_token");
+
+
 
 
 
@@ -77,7 +70,7 @@ API.interceptors.request.use(
 
         config.headers.Authorization =
 
-            `Bearer ${token}`;
+        `Bearer ${token}`;
 
 
     }
@@ -88,7 +81,7 @@ API.interceptors.request.use(
 
     console.log(
 
-        "API REQUEST:",
+        "REQUEST:",
 
         config.method?.toUpperCase(),
 
@@ -98,10 +91,7 @@ API.interceptors.request.use(
 
 
 
-
-
     return config;
-
 
 
 },
@@ -115,8 +105,6 @@ API.interceptors.request.use(
 
 }
 
-
-
 );
 
 
@@ -129,7 +117,6 @@ API.interceptors.request.use(
 
 // ================================
 // RESPONSE INTERCEPTOR
-// GLOBAL ERROR HANDLING
 // ================================
 
 
@@ -137,17 +124,6 @@ API.interceptors.response.use(
 
 
 (response)=>{
-
-
-    console.log(
-
-        "API SUCCESS:",
-
-        response.status,
-
-        response.config.url
-
-    );
 
 
     return response;
@@ -166,7 +142,7 @@ API.interceptors.response.use(
 
         console.error(
 
-            "Backend server not reachable"
+            "Backend not reachable"
 
         );
 
@@ -186,26 +162,41 @@ API.interceptors.response.use(
 
 
 
-    // JWT expired / invalid
+    console.error(
+
+        "API ERROR:",
+
+        status,
+
+        error.response.data
+
+    );
 
 
-    if(
 
-        status === 401 ||
 
-        status === 422
 
-    ){
+
+
+    // ONLY logout for real authentication failure
+
+    if(status === 401){
 
 
 
         console.warn(
 
-            "Authentication expired"
+            "Token expired"
 
         );
 
 
+
+        localStorage.removeItem(
+
+            "token"
+
+        );
 
 
         localStorage.removeItem(
@@ -223,20 +214,7 @@ API.interceptors.response.use(
 
 
 
-
-
-        if(
-
-            window.location.pathname !== "/login"
-
-        ){
-
-
-            window.location.href="/login";
-
-
-        }
-
+        window.location.href="/login";
 
 
     }
@@ -246,41 +224,10 @@ API.interceptors.response.use(
 
 
 
-    // Permission denied
+    // DO NOT LOGOUT FOR 403,404,422,500
 
+    // These are normal API errors
 
-    if(status === 403){
-
-
-        console.warn(
-
-            "Forbidden request"
-
-        );
-
-
-    }
-
-
-
-
-
-    // Server error
-
-
-    if(status >= 500){
-
-
-        console.error(
-
-            "Server error:",
-
-            error.response.data
-
-        );
-
-
-    }
 
 
 
@@ -291,12 +238,7 @@ API.interceptors.response.use(
 
 }
 
-
-
 );
-
-
-
 
 
 
