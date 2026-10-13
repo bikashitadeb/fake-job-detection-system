@@ -1,0 +1,102 @@
+erDiagram
+    USERS ||--o| RECRUITERS : "extends (1:1)"
+    USERS ||--o| ADMINS : "extends (1:1)"
+    USERS ||--o{ APPLICATIONS : "submits"
+    USERS ||--o{ SAVED_JOBS : "bookmarks"
+    USERS ||--o{ REPORTS : "files"
+
+    COMPANIES ||--o{ RECRUITERS : "employs"
+    COMPANIES ||--o{ JOBS : "owns"
+
+    RECRUITERS ||--o{ JOBS : "posts"
+
+    ADMINS ||--o{ JOBS : "verifies (override)"
+    ADMINS ||--o{ REPORTS : "reviews"
+
+    JOBS ||--o{ APPLICATIONS : "receives"
+    JOBS ||--o{ SAVED_JOBS : "saved as"
+    JOBS ||--o{ PREDICTIONS : "scored by"
+    JOBS ||--o{ REPORTS : "flagged in"
+
+    USERS {
+        bigint user_id PK
+        varchar full_name
+        varchar email UK
+        varchar password_hash
+        enum role
+        varchar phone
+        boolean is_active
+        boolean email_verified
+    }
+
+    COMPANIES {
+        bigint company_id PK
+        varchar company_name
+        varchar company_domain UK
+        varchar industry
+        enum company_size
+        varchar registration_number
+        boolean is_verified
+    }
+
+    RECRUITERS {
+        bigint recruiter_id PK
+        bigint user_id FK "UK"
+        bigint company_id FK
+        varchar designation
+        varchar work_email
+        boolean is_verified_recruiter
+    }
+
+    ADMINS {
+        bigint admin_id PK
+        bigint user_id FK "UK"
+        enum access_level
+    }
+
+    JOBS {
+        bigint job_id PK
+        bigint recruiter_id FK
+        bigint company_id FK
+        varchar title
+        text description
+        enum employment_type
+        decimal salary_min
+        decimal salary_max
+        enum status
+        bigint verified_by_admin_id FK
+    }
+
+    APPLICATIONS {
+        bigint application_id PK
+        bigint job_id FK
+        bigint user_id FK
+        varchar resume_url
+        enum status
+    }
+
+    SAVED_JOBS {
+        bigint saved_id PK
+        bigint user_id FK
+        bigint job_id FK
+        timestamp saved_at
+    }
+
+    PREDICTIONS {
+        bigint prediction_id PK
+        bigint job_id FK
+        enum ml_label
+        decimal ml_confidence
+        decimal rule_based_score
+        enum final_verdict
+        varchar model_version
+    }
+
+    REPORTS {
+        bigint report_id PK
+        bigint job_id FK
+        bigint reported_by FK
+        enum reason
+        enum status
+        bigint reviewed_by FK
+    }
