@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # FakeGuard AI — Fake Job Detection System
 
 FakeGuard AI is a recruitment portal with an NLP/ML-backed job-posting risk assessment. The frontend calls the Flask API for job listings, recruiter submissions, AI prediction fields, trust scores, notifications, and analytics.
@@ -70,3 +71,6 @@ Open the Vite URL shown in the terminal (normally `http://localhost:5173`).
 5. Open **My Jobs** and verify the posted job appears with its saved values.
 6. Open **Recruitment Analytics** and verify counts reflect your database.
 7. Sign in as an employee and confirm **Browse Jobs** loads the same saved listing.
+=======
+# fake-job-detection-system
+>>>>>>> b3d1bdf91d8725ef64b6d5bd85ca085dc05366a6
