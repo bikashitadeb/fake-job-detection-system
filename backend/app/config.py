@@ -3,6 +3,7 @@ import ssl
 from datetime import timedelta
 from pathlib import Path
 
+from sqlalchemy.engine import make_url
 from dotenv import load_dotenv
 
 
@@ -23,7 +24,21 @@ class Config:
     APP_ENV = os.getenv("APP_ENV", "development").strip().lower()
     SECRET_KEY = os.getenv("SECRET_KEY")
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
-    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
+    DATABASE_URL = os.getenv("DATABASE_URL")
+    if DATABASE_URL:
+        database_url = make_url(DATABASE_URL)
+        if database_url.drivername == "mysql+pymysql":
+            # PyMySQL does not accept MySQL's `ssl-mode` URL option. TLS is
+            # configured below through SQLAlchemy's PyMySQL connect_args.
+            query = {
+                key: value
+                for key, value in database_url.query.items()
+                if key.lower() != "ssl-mode"
+            }
+            database_url = database_url.set(query=query)
+        SQLALCHEMY_DATABASE_URI = database_url
+    else:
+        SQLALCHEMY_DATABASE_URI = None
 
     if not SECRET_KEY:
         raise RuntimeError("SECRET_KEY is required. Set it through the environment or backend/.env.")
