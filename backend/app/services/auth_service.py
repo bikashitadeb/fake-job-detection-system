@@ -83,9 +83,8 @@ def register_jobseeker(data):
 
         return user
 
-    except Exception as e:
+    except Exception:
         db.session.rollback()
-        print("EMPLOYEE REGISTER ERROR:", e)
         raise
 
 
@@ -139,9 +138,8 @@ def register_recruiter(data):
 
         return recruiter
 
-    except Exception as e:
+    except Exception:
         db.session.rollback()
-        print("RECRUITER REGISTER ERROR:", e)
         raise
 
 

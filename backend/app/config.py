@@ -49,6 +49,9 @@ class Config:
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
+        # Keep bound values such as emails and password hashes out of SQLAlchemy
+        # exception messages and logs.
+        "hide_parameters": True,
         "pool_pre_ping": True,
         "pool_recycle": int(os.getenv("DB_POOL_RECYCLE", "1800")),
         "pool_size": int(os.getenv("DB_POOL_SIZE", "5")),

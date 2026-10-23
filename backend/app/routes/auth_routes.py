@@ -1,5 +1,5 @@
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, current_app, request, jsonify
 
 from flask_jwt_extended import (
     jwt_required,
@@ -17,7 +17,7 @@ from app.services.auth_service import (
 )
 
 from app.models.user_model import User
-from app.utils.exceptions import UnauthorizedError
+from app.utils.exceptions import ConflictError, UnauthorizedError
 
 
 # =====================================================
@@ -157,14 +157,30 @@ def register():
             201
         )
 
-    except Exception as e:
+    except ConflictError as e:
         db.session.rollback()
-        print("REGISTER ERROR:", repr(e))
+        return response(
+            False,
+            str(e),
+            status=409
+        )
 
+    except ValueError as e:
+        db.session.rollback()
         return response(
             False,
             str(e),
             status=400
+        )
+
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("Unexpected error during registration")
+
+        return response(
+            False,
+            "Registration failed. Please check the server logs.",
+            status=500
         )
 
 
@@ -238,9 +254,9 @@ def login():
             status=401
         )
 
-    except Exception as e:
+    except Exception:
         db.session.rollback()
-        print("LOGIN ERROR:", repr(e))
+        current_app.logger.exception("Unexpected error during login")
 
         return response(
             False,
