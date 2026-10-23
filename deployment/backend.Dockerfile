@@ -13,4 +13,4 @@ COPY backend/ ./
 
 EXPOSE 5000
 
-CMD ["sh", "-c", "exec gunicorn --bind 0.0.0.0:${PORT:-5000} --workers 2 --timeout 120 --access-logfile - --error-logfile - wsgi"]
+CMD ["sh", "-c", "python -m flask --app wsgi:app db upgrade && exec gunicorn --bind 0.0.0.0:${PORT:-5000} --workers 2 --timeout 120 --access-logfile - --error-logfile - wsgi"]
