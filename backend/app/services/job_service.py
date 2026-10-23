@@ -1,6 +1,7 @@
 from app.extensions import db
 
 from app.models.job_model import Job
+from app.models.notification_model import Notification
 
 from app.services.ai_verification import predict_fake_job
 
@@ -597,61 +598,28 @@ def update_job(
 
 
 def delete_job(job_id):
-
+    job = db.session.get(Job, job_id)
+    if not job:
+        raise LookupError("Job not found")
 
     try:
+        # Prediction and verification FKs are non-null and have no DB cascade.
+        for prediction in list(job.predictions):
+            db.session.delete(prediction)
 
+        if job.verification:
+            db.session.delete(job.verification)
 
-
-        job = Job.query.get(
-
-            job_id
-
+        # Keep notification rows while clearing their optional job reference.
+        Notification.query.filter_by(job_id=job.id).update(
+            {Notification.job_id: None},
+            synchronize_session=False,
         )
 
-
-
-
-
-        if not job:
-
-
-            raise Exception(
-
-                "Job not found"
-
-            )
-
-
-
-
-
-
-
-        db.session.delete(
-
-            job
-
-        )
-
-
+        # Applications and flag logs use the Job model's existing ORM cascades.
+        db.session.delete(job)
         db.session.commit()
-
-
-
         return True
-
-
-
-
-
-
-    except Exception as e:
-
-
-
+    except Exception:
         db.session.rollback()
-
-
-
-        raise e
+        raise

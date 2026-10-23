@@ -5,7 +5,9 @@ import React, {
 
     useEffect,
 
-    useState
+    useState,
+
+    useRef
 
 } from "react";
 
@@ -67,6 +69,12 @@ export default function PostedJobs(){
     const [jobs,setJobs] = useState([]);
 
     const [loading,setLoading] = useState(true);
+
+    const [deletingJobId, setDeletingJobId] = useState(null);
+
+    const [deleteError, setDeleteError] = useState("");
+
+    const deletionInProgress = useRef(false);
 
 
 
@@ -160,6 +168,9 @@ export default function PostedJobs(){
 
     const deleteJob = async(id)=>{
 
+        if(deletionInProgress.current)
+            return;
+
 
         const confirmDelete = window.confirm(
 
@@ -172,6 +183,10 @@ export default function PostedJobs(){
         if(!confirmDelete)
 
             return;
+
+        setDeleteError("");
+        deletionInProgress.current = true;
+        setDeletingJobId(id);
 
 
 
@@ -207,7 +222,21 @@ export default function PostedJobs(){
         catch(error){
 
 
-            console.log(error);
+            const message =
+                error.response?.data?.message
+                || error.response?.data?.error
+                || error.message
+                || "Unable to delete this job. Please try again.";
+
+            console.error("Job deletion failed:", message);
+            setDeleteError(message);
+
+        }
+
+        finally{
+
+            deletionInProgress.current = false;
+            setDeletingJobId(null);
 
 
         }
@@ -306,6 +335,16 @@ export default function PostedJobs(){
 
 
             </div>
+
+
+            {deleteError && (
+                <div
+                    role="alert"
+                    className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-red-200"
+                >
+                    {deleteError}
+                </div>
+            )}
 
 
 
@@ -920,6 +959,8 @@ export default function PostedJobs(){
 
                         onClick={()=>deleteJob(job.id)}
 
+                        disabled={deletingJobId !== null}
+
 
 
                         className="
@@ -952,7 +993,7 @@ export default function PostedJobs(){
                             <Trash2 size={18}/>
 
 
-                            Delete
+                            {deletingJobId === job.id ? "Deleting..." : "Delete"}
 
 
                         </button>

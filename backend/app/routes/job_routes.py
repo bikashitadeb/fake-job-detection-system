@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, current_app, request, jsonify
 import numpy as np
 
 from flask_jwt_extended import (
@@ -19,6 +19,7 @@ from app.services.linkedin_verification import (
 from app.services.ai_verification import (
     predict_fake_job
 )
+from app.services.job_service import delete_job as delete_job_record
 
 
 
@@ -1104,11 +1105,6 @@ def my_jobs():
         )
 
 
-
-
-
-
-
     except Exception as e:
 
 
@@ -1132,3 +1128,38 @@ def my_jobs():
             status=500
 
         )
+
+
+@job_bp.route("/<int:id>", methods=["DELETE"])
+@jwt_required()
+def delete_recruiter_job(id):
+    try:
+        user_id = int(get_jwt_identity())
+    except (TypeError, ValueError):
+        return api_response(False, "Invalid authentication identity", status=401)
+
+    user = db.session.get(User, user_id)
+    if not user:
+        return api_response(False, "User not found", status=401)
+
+    if user.role != "recruiter":
+        return api_response(False, "Only recruiters can delete job postings", status=403)
+
+    job = db.session.get(Job, id)
+    if not job:
+        return api_response(False, "Job not found", status=404)
+
+    if job.recruiter_id != user.id:
+        return api_response(False, "You are not authorized to delete this job", status=403)
+
+    try:
+        job_id = job.id
+        delete_job_record(job_id)
+        return api_response(True, "Job deleted successfully", {"job_id": job_id})
+    except LookupError:
+        db.session.rollback()
+        return api_response(False, "Job not found", status=404)
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("Failed to delete job id=%s", id)
+        return api_response(False, "Unable to delete job. Please try again.", status=500)
