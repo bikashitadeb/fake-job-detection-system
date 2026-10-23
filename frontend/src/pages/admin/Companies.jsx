@@ -28,7 +28,7 @@ import {
 
     Building2,
 
-    Linkedin,
+    Link,
 
     CheckCircle,
 
@@ -614,7 +614,7 @@ export default function Companies(){
                         ?
 
 
-                        <Linkedin
+                        <Link
 
                         className="text-blue-400"
 

@@ -547,6 +547,49 @@ def my_applications():
 
 @application_bp.route(
 
+    "/recruiter",
+
+    methods=["GET"]
+
+)
+
+@jwt_required()
+
+def recruiter_applications():
+
+
+    try:
+
+
+        user_id = int(get_jwt_identity())
+        recruiter = User.query.get(user_id)
+
+        if not recruiter or recruiter.role != "recruiter":
+            return api_response(False, "Recruiter access required", status=403)
+
+        applications = (
+            Application.query.join(Job)
+            .filter(Job.recruiter_id == recruiter.id)
+            .order_by(Application.applied_at.desc())
+            .all()
+        )
+
+        return api_response(
+            True,
+            "Recruiter applications fetched",
+            {"applications": [application.to_dict() for application in applications]},
+        )
+
+
+    except Exception as e:
+
+
+        return api_response(False, str(e), status=500)
+
+
+
+@application_bp.route(
+
     "/job/<int:job_id>",
 
     methods=["GET"]

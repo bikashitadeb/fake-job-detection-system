@@ -1,6 +1,12 @@
 import os
 import joblib
 import re
+from scipy.sparse import hstack
+
+from app.ai.artifacts import (
+    AI_VERIFICATION_MODEL_PATH,
+    AI_VERIFICATION_VECTORIZER_PATH,
+)
 
 
 # =====================================================
@@ -8,25 +14,8 @@ import re
 # =====================================================
 
 
-BASE_DIR = os.path.dirname(
-    os.path.dirname(
-        os.path.abspath(__file__)
-    )
-)
-
-
-MODEL_PATH = os.path.join(
-    BASE_DIR,
-    "ai_model",
-    "fake_job_model.pkl"
-)
-
-
-VECTORIZER_PATH = os.path.join(
-    BASE_DIR,
-    "ai_model",
-    "tfidf_vectorizer.pkl"
-)
+MODEL_PATH = AI_VERIFICATION_MODEL_PATH
+VECTORIZER_PATH = AI_VERIFICATION_VECTORIZER_PATH
 
 
 
@@ -41,22 +30,38 @@ model = None
 vectorizer = None
 
 
+# These features match backend/app/ai_model/train_model.py. The XGBoost model
+# was trained on TF-IDF features plus these three numeric columns.
+MODEL_SUSPICIOUS_WORDS = [
+    "urgent",
+    "guaranteed",
+    "money",
+    "pay",
+    "fee",
+    "deposit",
+    "whatsapp",
+    "telegram",
+    "easy money",
+    "work from home",
+    "no experience",
+    "limited seats",
+]
+
+
 
 try:
 
 
-    if os.path.exists(MODEL_PATH):
+    model = joblib.load(MODEL_PATH)
 
-        model = joblib.load(
-            MODEL_PATH
-        )
+    vectorizer = joblib.load(VECTORIZER_PATH)
 
-
-
-    if os.path.exists(VECTORIZER_PATH):
-
-        vectorizer = joblib.load(
-            VECTORIZER_PATH
+    expected_features = getattr(model, "n_features_in_", None)
+    actual_features = len(vectorizer.vocabulary_) + 3
+    if expected_features is not None and expected_features != actual_features:
+        raise RuntimeError(
+            "AI model/vectorizer feature mismatch: "
+            f"model expects {expected_features}, vectorizer pipeline produces {actual_features}."
         )
 
 
@@ -161,6 +166,11 @@ def detect_keywords(text):
 
 
     return found
+
+
+def model_suspicious_count(text):
+    normalized_text = text.lower()
+    return sum(word in normalized_text for word in MODEL_SUSPICIOUS_WORDS)
 
 
 
@@ -399,11 +409,13 @@ def predict_fake_job(data):
 
 
 
-            vector = vectorizer.transform(
-
-                [text]
-
-            )
+            tfidf_features = vectorizer.transform([text])
+            numerical_features = [[
+                model_suspicious_count(text),
+                len(data.get("description", "")),
+                1 if len(data.get("company", "")) > 10 else 0,
+            ]]
+            vector = hstack([tfidf_features, numerical_features])
 
 
 

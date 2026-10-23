@@ -22,7 +22,7 @@ import {
 
     ShieldAlert,
 
-    Linkedin,
+    Link,
 
     Globe,
 
@@ -354,7 +354,7 @@ export default function RecruiterVerification(){
 
                     <InputBox
 
-                    icon={<Linkedin/>}
+                    icon={<Link/>}
 
                     name="linkedin_url"
 

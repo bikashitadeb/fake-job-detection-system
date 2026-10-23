@@ -3,3 +3,8 @@ from app.models.job_model import Job
 from app.models.company_model import Company
 from app.models.application_model import Application
 from app.models.flag_log_model import FlagLog
+from app.models.notification_model import Notification
+from app.models.prediction_model import Prediction
+from app.models.recruiter_model import Recruiter
+from app.models.token_blocklist_model import TokenBlocklist
+from app.models.verification_model import Verification

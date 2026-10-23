@@ -25,7 +25,7 @@ MYSQL_CONFIG = {
     "host": "127.0.0.1",
     "port": 3306,
     "user": "root",
-    "password": "2709",
+    "password": os.getenv("MYSQL_PASSWORD"),
     "database": "fake_job_detection_db"
 }
 

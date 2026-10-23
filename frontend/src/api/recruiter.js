@@ -310,6 +310,37 @@ export const getApplicants = async(jobId)=>{
 };
 
 
+export const getRecruiterApplications = async()=>{
+
+
+    try{
+
+
+        const response = await API.get(
+
+            "/applications/recruiter"
+
+        );
+
+
+        return response.data;
+
+
+    }
+
+
+    catch(error){
+
+
+        throw handleRecruiterError(error);
+
+
+    }
+
+
+};
+
+
 
 
 
@@ -340,7 +371,7 @@ export const updateApplicationStatus = async(
 
             {
 
-                status
+                status: typeof status === "object" ? status.status : status
 
             }
 

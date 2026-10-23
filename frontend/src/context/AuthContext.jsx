@@ -18,6 +18,7 @@ export function AuthProvider({ children }) {
     // CLEAR SESSION
     // =====================================
     const clearSession = () => {
+        localStorage.removeItem("token");
         localStorage.removeItem("access_token");
         localStorage.removeItem("user");
         localStorage.removeItem("login_time");
@@ -32,7 +33,9 @@ export function AuthProvider({ children }) {
     // =====================================
     useEffect(() => {
         try {
-            const savedToken = localStorage.getItem("access_token");
+            const savedToken =
+                localStorage.getItem("access_token") ||
+                localStorage.getItem("token");
             const savedUser = localStorage.getItem("user");
 
             if (!savedToken || !savedUser) {
@@ -91,6 +94,7 @@ export function AuthProvider({ children }) {
             };
 
             localStorage.setItem("access_token", accessToken);
+            localStorage.setItem("token", accessToken);
             localStorage.setItem(
                 "user",
                 JSON.stringify(normalizedUser)
