@@ -16,7 +16,7 @@ services:
       - key: JWT_SECRET_KEY
         sync: false
       - key: CORS_ORIGINS
-        sync: false
+        value: https://fakeguard-frontend-74g3.onrender.com
       - key: CORS_SUPPORTS_CREDENTIALS
         value: "true"
       - key: LOG_LEVEL
