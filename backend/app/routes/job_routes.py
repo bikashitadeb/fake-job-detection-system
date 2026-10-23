@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+import numpy as np
 
 from flask_jwt_extended import (
     jwt_required,
@@ -49,6 +50,23 @@ job_bp = Blueprint(
 # =====================================================
 
 
+def _json_safe(value):
+    """Convert NumPy values in API payloads to native JSON-compatible types."""
+    if isinstance(value, np.generic):
+        return value.item()
+
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+
+    if isinstance(value, dict):
+        return {key: _json_safe(item) for key, item in value.items()}
+
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(item) for item in value]
+
+    return value
+
+
 def api_response(
 
     success=True,
@@ -67,7 +85,7 @@ def api_response(
 
         "message": message,
 
-        "data": data
+        "data": _json_safe(data)
 
     }), status
 
