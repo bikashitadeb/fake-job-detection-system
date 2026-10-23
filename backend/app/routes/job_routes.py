@@ -678,7 +678,12 @@ def create_job():
 
                 ),
 
-                "salary": data.get("salary", "")
+                "salary": data.get("salary", ""),
+                "company_verified": linkedin_result.get("verified", False),
+                "company_score": linkedin_result.get("score", 0),
+                "website": data.get("website"),
+                "official_email": data.get("official_email"),
+                "linkedin_url": data.get("linkedin_url") or linkedin_result.get("linkedin_url"),
 
 
             })
@@ -706,6 +711,8 @@ def create_job():
 
                 "is_fake":False,
 
+                "xgboost_prediction":False,
+
 
                 "fake_probability":0,
 
@@ -713,7 +720,21 @@ def create_job():
                 "trust_score":50,
 
 
-                "confidence":50
+                "confidence":50,
+
+                "ai_confidence":0,
+
+                "risk_score":50,
+
+                "risk_level":"MEDIUM",
+
+                "suspicious_keywords":[],
+
+                "risk_signals":[],
+
+                "salary_anomaly":False,
+
+                "ai_explanation":"AI verification unavailable"
 
 
             }
@@ -732,35 +753,9 @@ def create_job():
 
 
 
-        trust_score = (
-
-            ai_result.get(
-
-                "trust_score",
-
-                50
-
-            )
-
-            *
-
-            0.7
-
-            +
-
-            linkedin_result.get(
-
-                "score",
-
-                0
-
-            )
-
-            *
-
-            0.3
-
-        )
+        trust_score = float(ai_result.get("trust_score", 50))
+        is_fake = bool(ai_result.get("is_fake", False))
+        risk_level_value = ai_result.get("risk_level", "LOW")
 
 
 
@@ -814,13 +809,7 @@ def create_job():
 
             is_fake_predicted=
 
-            ai_result.get(
-
-                "is_fake",
-
-                False
-
-            ),
+            is_fake,
 
 
 
@@ -861,7 +850,7 @@ def create_job():
 
             risk_score=ai_result.get("risk_score", 0),
 
-            risk_level=ai_result.get("risk_level", "LOW"),
+            risk_level=risk_level_value,
 
             ai_warnings=", ".join(ai_result.get("suspicious_keywords", [])),
 
@@ -909,14 +898,24 @@ def create_job():
 
             ),
 
+            verification_status="pending",
+
+            is_flagged=is_fake,
+
+            flag_reason=ai_result.get("ai_explanation") if is_fake else None,
+
 
 
 
 
             status=(
                 "flagged"
-                if ai_result.get("is_fake", False)
-                else ("verified" if trust_score >= 70 else "pending")
+                if is_fake
+                else (
+                    "verified"
+                    if risk_level_value == "LOW" and linkedin_result.get("verified", False)
+                    else "pending"
+                )
             )
 
 

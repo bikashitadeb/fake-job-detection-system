@@ -39,6 +39,9 @@ def create_job(
         )
 
 
+        linkedin_result = verify_company(company_name)
+
+
 
 
 
@@ -90,7 +93,17 @@ def create_job(
 
             ),
 
-            "salary": data.get("salary", "")
+            "salary": data.get("salary", ""),
+
+            "company_verified": linkedin_result.get("verified", False),
+
+            "company_score": linkedin_result.get("score", 0),
+
+            "website": data.get("website"),
+
+            "official_email": data.get("official_email"),
+
+            "linkedin_url": data.get("linkedin_url") or linkedin_result.get("linkedin_url"),
 
 
         })
@@ -107,52 +120,9 @@ def create_job(
         # ===============================
 
 
-        linkedin_result = verify_company(
-
-            company_name
-
-        )
-
-
-
-
-
-
-
-        final_trust = (
-
-
-            ai_result.get(
-
-                "trust_score",
-
-                50
-
-            )
-
-            *
-
-            0.7
-
-
-
-            +
-
-            linkedin_result.get(
-
-                "score",
-
-                0
-
-            )
-
-            *
-
-            0.3
-
-
-
-        )
+        final_trust = float(ai_result.get("trust_score", 50))
+        is_fake = bool(ai_result.get("is_fake", False))
+        risk_level_value = ai_result.get("risk_level", "LOW")
 
 
 
@@ -219,13 +189,7 @@ def create_job(
 
             is_fake_predicted=
 
-            ai_result.get(
-
-                "is_fake",
-
-                False
-
-            ),
+            is_fake,
 
 
 
@@ -276,13 +240,7 @@ def create_job(
 
             risk_level=
 
-            ai_result.get(
-
-                "risk_level",
-
-                "LOW"
-
-            ),
+            risk_level_value,
 
 
 
@@ -356,21 +314,25 @@ def create_job(
 
             ),
 
+            verification_status="pending",
+
+            is_flagged=is_fake,
+
+            flag_reason=ai_result.get("ai_explanation") if is_fake else None,
+
 
 
 
 
 
             status=(
-
-                "verified"
-
-                if final_trust >=70
-
-                else
-
-                "pending"
-
+                "flagged"
+                if is_fake
+                else (
+                    "verified"
+                    if risk_level_value == "LOW" and linkedin_result.get("verified", False)
+                    else "pending"
+                )
             )
 
 
