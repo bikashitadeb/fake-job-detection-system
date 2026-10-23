@@ -72,7 +72,7 @@ class Job(db.Model):
 
     salary = db.Column(
 
-        db.Float,
+        db.Text,
 
         nullable=True
 

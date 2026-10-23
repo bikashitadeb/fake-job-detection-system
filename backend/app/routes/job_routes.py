@@ -658,7 +658,9 @@ def create_job():
 
                     ""
 
-                )
+                ),
+
+                "salary": data.get("salary", "")
 
 
             })

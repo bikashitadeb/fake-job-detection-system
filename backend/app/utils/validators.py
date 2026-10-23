@@ -506,24 +506,9 @@ def validate_job_payload(data):
 
 
 
-    if salary:
+    if salary is not None and not isinstance(salary, (str, int, float)):
 
-
-        try:
-
-
-            float(salary)
-
-
-
-        except ValueError:
-
-
-            errors["salary"] = (
-
-                "Salary must be numeric."
-
-            )
+        errors["salary"] = "Salary must be text or a number."
 
 
 

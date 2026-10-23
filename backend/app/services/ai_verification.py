@@ -614,7 +614,9 @@ def predict_fake_job(data):
 
             "salary_anomaly":
 
-            salary_check(text),
+            salary_check(
+                f"{text} {data.get('salary') or ''}"
+            ),
 
 
 
