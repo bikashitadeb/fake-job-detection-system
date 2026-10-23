@@ -33,7 +33,7 @@ import {
   getJobs,
   getApplications,
   getProfile,
-} from "../../api/dashboard";
+} from "../../api/Dashboard";
 import API from "../../api/API";
 
 const getPayload = (response) => response?.data ?? response ?? {};
